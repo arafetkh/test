@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../localization/app_localizations.dart';
+import '../theme/adaptive_colors.dart';
 
 class SearchAndFilterBar extends StatelessWidget {
   final TextEditingController searchController;
   final Function(String) onSearchChanged;
   final VoidCallback onAddNewEmployee;
-  final Function(BuildContext) onFilterTap; // Changed to pass BuildContext
+  final Function(BuildContext) onFilterTap;
 
   const SearchAndFilterBar({
     super.key,
@@ -32,27 +33,32 @@ class SearchAndFilterBar extends StatelessWidget {
             child: Container(
               height: screenHeight * 0.065, // Reduced height
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AdaptiveColors.cardColor(context),
                 borderRadius: BorderRadius.circular(screenWidth * 0.006),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: AdaptiveColors.borderColor(context)),
               ),
               child: TextField(
                 controller: searchController,
                 onChanged: onSearchChanged,
+                style: TextStyle(
+                  color: AdaptiveColors.primaryTextColor(context),
+                  fontSize: screenHeight * 0.022, // Consistent font size
+                ),
                 decoration: InputDecoration(
                   hintText: localizations.getString('search'),
                   border: InputBorder.none,
-                  prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: screenHeight * 0.028),
+                  prefixIcon: Icon(
+                      Icons.search,
+                      color: AdaptiveColors.secondaryTextColor(context),
+                      size: screenHeight * 0.028
+                  ),
                   hintStyle: TextStyle(
-                    color: Colors.grey.shade500,
+                    color: AdaptiveColors.secondaryTextColor(context),
                   ),
                   contentPadding: EdgeInsets.symmetric(
                     vertical: screenHeight * 0.018, // Center text vertically
                   ),
                   isDense: true, // Makes the field more compact
-                ),
-                style: TextStyle(
-                  fontSize: screenHeight * 0.022, // Consistent font size
                 ),
                 textAlignVertical: TextAlignVertical.center, // Center text vertically
               ),
@@ -92,19 +98,23 @@ class SearchAndFilterBar extends StatelessWidget {
                 vertical: screenHeight * 0.01,
               ),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AdaptiveColors.cardColor(context),
                 borderRadius: BorderRadius.circular(screenWidth * 0.006),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: AdaptiveColors.borderColor(context)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.filter_list, size: screenHeight * 0.025),
+                  Icon(
+                    Icons.filter_list,
+                    size: screenHeight * 0.025,
+                    color: AdaptiveColors.primaryTextColor(context),
+                  ),
                   SizedBox(width: screenWidth * 0.008),
                   Text(
                     localizations.getString('filter'),
                     style: TextStyle(
                       fontSize: screenHeight * 0.022,
-                      color: Colors.black87,
+                      color: AdaptiveColors.primaryTextColor(context),
                     ),
                   ),
                 ],

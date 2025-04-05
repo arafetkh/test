@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../localization/app_localizations.dart';
-
+import '../theme/adaptive_colors.dart';
+import '../NotificationsScreen.dart';
 class EmployeeTableHeader extends StatelessWidget {
   final ScrollController horizontalScrollController;
 
@@ -18,14 +19,14 @@ class EmployeeTableHeader extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AdaptiveColors.cardColor(context),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(screenWidth * 0.008),
           topRight: Radius.circular(screenWidth * 0.008),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: AdaptiveColors.shadowColor(context),
             spreadRadius: screenWidth * 0.001,
             blurRadius: screenWidth * 0.003,
             offset: const Offset(0, 2),
@@ -46,7 +47,7 @@ class EmployeeTableHeader extends StatelessWidget {
                 localizations.getString('employeeName'),
                 style: TextStyle(
                   fontWeight: FontWeight.w500,
-                  color: Colors.black87,
+                  color: AdaptiveColors.primaryTextColor(context),
                   fontSize: screenHeight * 0.025,
                 ),
               ),
@@ -89,7 +90,7 @@ class EmployeeTableHeader extends StatelessWidget {
           title,
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
+            color: AdaptiveColors.primaryTextColor(context),
             fontSize: screenHeight * 0.025,
           ),
         ),
@@ -99,7 +100,6 @@ class EmployeeTableHeader extends StatelessWidget {
 }
 
 class EmployeeTableView extends StatelessWidget {
-
   final List<Map<String, dynamic>> employees;
   final ScrollController mainScrollController;
   final ScrollController horizontalScrollController;
@@ -111,9 +111,20 @@ class EmployeeTableView extends StatelessWidget {
     required this.horizontalScrollController,
   });
 
-
   @override
   Widget build(BuildContext context) {
+    if (employees.isEmpty) {
+      return Center(
+        child: Text(
+          AppLocalizations.of(context).getString('noEmployeesFound'),
+          style: TextStyle(
+            fontSize: 16,
+            color: AdaptiveColors.secondaryTextColor(context),
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
       controller: mainScrollController,
       itemCount: employees.length,
@@ -124,6 +135,10 @@ class EmployeeTableView extends StatelessWidget {
         final screenHeight = screenSize.height;
         final rowHeight = screenHeight * 0.09;
 
+        final isDarkMode = AdaptiveColors.isDarkMode(context);
+        final borderColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
+        final lightBorderColor = isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100;
+
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -132,8 +147,8 @@ class EmployeeTableView extends StatelessWidget {
               height: rowHeight,
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: Colors.grey.shade100),
-                  right: BorderSide(color: Colors.grey.shade200),
+                  bottom: BorderSide(color: lightBorderColor),
+                  right: BorderSide(color: borderColor),
                 ),
               ),
               child: Padding(
@@ -160,6 +175,7 @@ class EmployeeTableView extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: screenHeight * 0.022,
+                          color: AdaptiveColors.primaryTextColor(context),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -177,7 +193,7 @@ class EmployeeTableView extends StatelessWidget {
                   width: screenWidth * 0.68,
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey.shade100),
+                      bottom: BorderSide(color: lightBorderColor),
                     ),
                   ),
                   child: Row(
@@ -192,8 +208,9 @@ class EmployeeTableView extends StatelessWidget {
                           child: PopupMenuButton<String>(
                             icon: Icon(Icons.more_vert,
                                 size: screenHeight * 0.035,
-                                color: Colors.grey.shade700),
+                                color: AdaptiveColors.secondaryTextColor(context)),
                             padding: EdgeInsets.zero,
+                            color: AdaptiveColors.cardColor(context),
                             onSelected: (String result) {},
                             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                               _buildPopupItem(context, 'view', Icons.visibility_outlined, 'view'),
@@ -229,7 +246,7 @@ class EmployeeTableView extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
-            color: Colors.black87,
+            color: AdaptiveColors.primaryTextColor(context),
             fontSize: screenHeight * 0.022,
           ),
         ),
@@ -248,59 +265,17 @@ class EmployeeTableView extends StatelessWidget {
           Icon(
             icon,
             size: screenHeight * 0.035,
-            color: isDelete ? Colors.red : null,
+            color: isDelete ? Colors.red : AdaptiveColors.secondaryTextColor(context),
           ),
           SizedBox(width: MediaQuery.of(context).size.width * 0.008),
           Text(
             localizations.getString(textKey),
             style: TextStyle(
-              color: isDelete ? Colors.red : null,
+              color: isDelete ? Colors.red : AdaptiveColors.primaryTextColor(context),
               fontSize: screenHeight * 0.022,
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class PaginationButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onPressed;
-
-  const PaginationButton({
-    super.key,
-    required this.icon,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final screenWidth = screenSize.width;
-    final screenHeight = screenSize.height;
-
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.004),
-      child: InkWell(
-        onTap: onPressed,
-        child: Container(
-          width: screenHeight * 0.056,
-          height: screenHeight * 0.056,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(screenWidth * 0.004),
-            border: Border.all(
-              color: Colors.grey.shade300,
-            ),
-          ),
-          child: Icon(
-            icon,
-            size: screenHeight * 0.032,
-            color: onPressed == null ? Colors.grey.shade400 : Colors.black87,
-          ),
-        ),
       ),
     );
   }
@@ -321,6 +296,7 @@ class UserHeader extends StatelessWidget {
     final screenHeight = screenSize.height;
     final avatarSize = screenHeight * 0.035;
     final localizations = AppLocalizations.of(context);
+    final isDarkMode = AdaptiveColors.isDarkMode(context);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -331,12 +307,12 @@ class UserHeader extends StatelessWidget {
           horizontal: screenWidth * 0.015,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFFFAFAFA),
+          color: AdaptiveColors.cardColor(context),
           boxShadow: isHeaderVisible
               ? []
               : [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: AdaptiveColors.shadowColor(context),
               spreadRadius: screenWidth * 0.001,
               blurRadius: screenWidth * 0.003,
               offset: const Offset(0, 1),
@@ -367,6 +343,7 @@ class UserHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: screenHeight * 0.025,
                       fontWeight: FontWeight.bold,
+                      color: AdaptiveColors.primaryTextColor(context),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -374,23 +351,38 @@ class UserHeader extends StatelessWidget {
                     localizations.getString('juniorFullStackDeveloper'),
                     style: TextStyle(
                       fontSize: screenHeight * 0.021,
-                      color: Colors.grey,
+                      color: AdaptiveColors.secondaryTextColor(context),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            Container(
-              padding: EdgeInsets.all(screenWidth * 0.008),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5F5E5),
-                borderRadius: BorderRadius.circular(screenWidth * 0.02),
-              ),
-              child: Icon(
-                Icons.notifications_outlined,
-                color: const Color(0xFF2E7D32),
-                size: screenHeight * 0.032,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.all(screenWidth * 0.008),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? const Color(0xFF1E4620)
+                      : const Color(0xFFE5F5E5),
+                  borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                ),
+                child: Stack(
+                  children: [
+                    Icon(
+                      Icons.notifications_outlined,
+                      color: AdaptiveColors.primaryGreen,
+                      size: screenHeight * 0.032,
+                    ),
+
+                  ],
+                ),
               ),
             ),
           ],

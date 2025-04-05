@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/adaptive_colors.dart';
 
 /// Model class for notification data
 class NotificationModel {
@@ -108,6 +109,7 @@ class NotificationItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final isDark = AdaptiveColors.isDarkMode(context);
 
     return GestureDetector(
       onTap: onTap,
@@ -118,17 +120,17 @@ class NotificationItem extends StatelessWidget {
         ),
         padding: EdgeInsets.all(screenWidth * 0.04),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AdaptiveColors.cardColor(context),
           borderRadius: BorderRadius.circular(screenWidth * 0.02),
           border: Border.all(
               color: notification.isRead
-                  ? Colors.grey.shade200
-                  : Colors.blue.shade100,
+                  ? (isDark ? Colors.grey.shade800 : Colors.grey.shade200)
+                  : (isDark ? Colors.blue.shade700 : Colors.blue.shade100),
               width: 1
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
+              color: AdaptiveColors.shadowColor(context),
               spreadRadius: 1,
               blurRadius: 3,
               offset: const Offset(0, 1),
@@ -139,7 +141,7 @@ class NotificationItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Avatar or Icon
-            _buildAvatar(screenWidth),
+            _buildAvatar(screenWidth, context),
             SizedBox(width: screenWidth * 0.03),
 
             // Content
@@ -152,6 +154,7 @@ class NotificationItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: screenWidth * 0.035,
                       fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+                      color: AdaptiveColors.primaryTextColor(context),
                     ),
                   ),
                   SizedBox(height: screenWidth * 0.01),
@@ -159,7 +162,7 @@ class NotificationItem extends StatelessWidget {
                     notification.message,
                     style: TextStyle(
                       fontSize: screenWidth * 0.03,
-                      color: Colors.grey.shade600,
+                      color: AdaptiveColors.secondaryTextColor(context),
                     ),
                   ),
                 ],
@@ -174,7 +177,7 @@ class NotificationItem extends StatelessWidget {
                   _formatTimestamp(notification.timestamp),
                   style: TextStyle(
                     fontSize: screenWidth * 0.025,
-                    color: Colors.grey.shade500,
+                    color: AdaptiveColors.secondaryTextColor(context),
                   ),
                 ),
                 if (!notification.isRead && onMarkAsRead != null) ...[
@@ -199,8 +202,8 @@ class NotificationItem extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar(double screenWidth) {
-    // If avatar initials are provided, use them
+  Widget _buildAvatar(double screenWidth, BuildContext context) {
+    // Si avatar initials are provided, use them
     if (notification.avatarInitials != null && notification.avatarInitials!.isNotEmpty) {
       return CircleAvatar(
         radius: screenWidth * 0.06,
@@ -212,7 +215,7 @@ class NotificationItem extends StatelessWidget {
             ? Text(
           notification.avatarInitials!,
           style: TextStyle(
-            color: Colors.grey.shade700,
+            color: AdaptiveColors.isDarkMode(context) ? Colors.white : Colors.grey.shade700,
             fontWeight: FontWeight.bold,
             fontSize: screenWidth * 0.04,
           ),
@@ -220,14 +223,16 @@ class NotificationItem extends StatelessWidget {
             : null,
       );
     }
-    // If icon is provided, use it
+    // Si icon is provided, use it
     else if (notification.icon != null) {
       return CircleAvatar(
         radius: screenWidth * 0.06,
-        backgroundColor: notification.iconBackgroundColor ?? Colors.grey.shade200,
+        backgroundColor: notification.iconBackgroundColor ??
+            (AdaptiveColors.isDarkMode(context) ? Colors.grey.shade800 : Colors.grey.shade200),
         child: Icon(
           notification.icon!,
-          color: notification.iconColor ?? Colors.grey.shade700,
+          color: notification.iconColor ??
+              (AdaptiveColors.isDarkMode(context) ? Colors.white : Colors.grey.shade700),
           size: screenWidth * 0.06,
         ),
       );
@@ -236,10 +241,10 @@ class NotificationItem extends StatelessWidget {
     else {
       return CircleAvatar(
         radius: screenWidth * 0.06,
-        backgroundColor: Colors.grey.shade200,
+        backgroundColor: AdaptiveColors.isDarkMode(context) ? Colors.grey.shade800 : Colors.grey.shade200,
         child: Icon(
           Icons.notifications_outlined,
-          color: Colors.grey.shade700,
+          color: AdaptiveColors.isDarkMode(context) ? Colors.white : Colors.grey.shade700,
           size: screenWidth * 0.06,
         ),
       );

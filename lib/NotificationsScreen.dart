@@ -9,6 +9,7 @@ import 'package:in_out/widget/translate_text.dart';
 import 'package:in_out/widget/bottom_navigation_bar.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 
+// Gardez la classe NotificationsService telle quelle
 class NotificationsService {
   static final NotificationsService _instance = NotificationsService._internal();
 
@@ -213,7 +214,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     // Handle different notification types
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Notification tapped: ${notification.title}')),
+      SnackBar(
+        content: Text('Notification tapped: ${notification.title}'),
+        backgroundColor: AdaptiveColors.primaryGreen,
+      ),
     );
   }
 
@@ -252,6 +256,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ),
             ],
           ),
+          if (_notifications.isNotEmpty && _notificationsService.unreadCount > 0)
+            TextButton(
+              onPressed: _handleMarkAllAsRead,
+              style: TextButton.styleFrom(
+                foregroundColor: AdaptiveColors.primaryGreen,
+              ),
+              child: Text(
+                "Mark all as read",
+                style: TextStyle(
+                  fontSize: screenWidth * 0.035,
+                ),
+              ),
+            ),
         ],
       ),
     );

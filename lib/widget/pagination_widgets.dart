@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../localization/app_localizations.dart';
+import '../theme/adaptive_colors.dart';
 
 class PaginationFooter extends StatelessWidget {
   final int currentPage;
@@ -35,7 +36,7 @@ class PaginationFooter extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: Colors.grey.shade200),
+          top: BorderSide(color: AdaptiveColors.borderColor(context)),
         ),
       ),
       child: Row(
@@ -44,7 +45,7 @@ class PaginationFooter extends StatelessWidget {
           Text(
             '${localizations.getString('showing')} $start ${localizations.getString('to')} $end ${localizations.getString('outOf')} $filteredEmployeesCount ${localizations.getString('records')}',
             style: TextStyle(
-              color: Colors.grey.shade600,
+              color: AdaptiveColors.secondaryTextColor(context),
               fontSize: screenHeight * 0.02, // Slightly smaller text
             ),
           ),
@@ -78,12 +79,9 @@ class PaginationFooter extends StatelessWidget {
     final screenHeight = screenSize.height;
     final localizations = AppLocalizations.of(context);
     List<Widget> pageNumbers = [];
-
-    // Determine which page numbers to show
     List<int> pagesToShow = [];
 
     if (totalPages <= 5) {
-      // If 5 or fewer pages, show all
       pagesToShow = List.generate(totalPages, (i) => i + 1);
     } else {
       // Always include first page
@@ -123,7 +121,7 @@ class PaginationFooter extends StatelessWidget {
             child: Text(
               localizations.getString('ellipsis'),
               style: TextStyle(
-                color: Colors.grey.shade600,
+                color: AdaptiveColors.secondaryTextColor(context),
                 fontSize: screenHeight * 0.024,
               ),
             ),
@@ -132,37 +130,38 @@ class PaginationFooter extends StatelessWidget {
       } else {
         // Page number
         pageNumbers.add(
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.004),
-              child: InkWell(
-                onTap: () => onPageChanged(pagesToShow[i]),
-                child: Container(
-                  width: screenHeight * 0.045, // Reduced width
-                  height: screenHeight * 0.045, // Reduced height
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.004),
+            child: InkWell(
+              onTap: () => onPageChanged(pagesToShow[i]),
+              child: Container(
+                width: screenHeight * 0.045, // Reduced width
+                height: screenHeight * 0.045, // Reduced height
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: currentPage == pagesToShow[i]
+                      ? const Color(0xFF2E7D32)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(screenWidth * 0.004),
+                  border: Border.all(
                     color: currentPage == pagesToShow[i]
                         ? const Color(0xFF2E7D32)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(screenWidth * 0.004),
-                    border: Border.all(
-                      color: currentPage == pagesToShow[i]
-                          ? const Color(0xFF2E7D32)
-                          : Colors.grey.shade300,
-                    ),
+                        : AdaptiveColors.borderColor(context),
                   ),
-                  child: Text(
-                    '${pagesToShow[i]}',
-                    style: TextStyle(
-                      color: currentPage == pagesToShow[i] ? Colors.white : Colors.black87,
-                      fontWeight: currentPage == pagesToShow[i] ? FontWeight.bold : FontWeight.normal,
-                      fontSize: screenHeight * 0.02, // Smaller text
-                    ),
+                ),
+                child: Text(
+                  '${pagesToShow[i]}',
+                  style: TextStyle(
+                    color: currentPage == pagesToShow[i]
+                        ? Colors.white
+                        : AdaptiveColors.primaryTextColor(context),
+                    fontWeight: currentPage == pagesToShow[i] ? FontWeight.bold : FontWeight.normal,
+                    fontSize: screenHeight * 0.02, // Smaller text
                   ),
                 ),
               ),
             ),
-
+          ),
         );
       }
     }
@@ -170,33 +169,34 @@ class PaginationFooter extends StatelessWidget {
   }
 
   Widget _buildPaginationButton(BuildContext context, {required IconData icon, required VoidCallback? onPressed}) {
-   final screenSize = MediaQuery.of(context).size;
-   final screenWidth = screenSize.width;
-   final screenHeight = screenSize.height;
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final screenHeight = screenSize.height;
 
-   return Container(
-     margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.004),
-     child: InkWell(
-       onTap: onPressed,
-       child: Container(
-         width: screenHeight * 0.045, // Reduced width
-         height: screenHeight * 0.045, // Reduced height
-         alignment: Alignment.center,
-         decoration: BoxDecoration(
-           color: Colors.transparent,
-           borderRadius: BorderRadius.circular(screenWidth * 0.004),
-           border: Border.all(
-             color: Colors.grey.shade300,
-           ),
-         ),
-         child: Icon(
-           icon,
-           size: screenHeight * 0.022, // Smaller icon
-           color: onPressed == null ? Colors.grey.shade400 : Colors.black87,
-         ),
-       ),
-     ),
-   );
- }
-
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.004),
+      child: InkWell(
+        onTap: onPressed,
+        child: Container(
+          width: screenHeight * 0.045, // Reduced width
+          height: screenHeight * 0.045, // Reduced height
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(screenWidth * 0.004),
+            border: Border.all(
+              color: AdaptiveColors.borderColor(context),
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: screenHeight * 0.022, // Smaller icon
+            color: onPressed == null
+                ? AdaptiveColors.tertiaryTextColor(context)
+                : AdaptiveColors.primaryTextColor(context),
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:in_out/AttendanceScreen.dart';
 import 'package:in_out/EmployeeTableScreen.dart';
 import 'package:in_out/Login_screens/login_page.dart';
 import 'package:in_out/NotificationsScreen.dart';
@@ -78,7 +79,7 @@ class MyApp extends StatelessWidget {
               Locale('fr', ''),
             ],
             locale: Locale(languageProvider.currentLanguage),
-            home: const DashboardScreen(),
+            home: const AttendanceScreen(),
           ),
         );
       },

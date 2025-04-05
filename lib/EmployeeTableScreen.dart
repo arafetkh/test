@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_out/services/NavigationService.dart';
+import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
 import 'package:in_out/widget/bottom_navigation_bar.dart';
-import 'employees_data.dart';
+import 'data/employees_data.dart';
 import 'widget/employee_table_widgets.dart';
 import 'widget/pagination_widgets.dart';
 import 'localization/app_localizations.dart';
@@ -125,10 +126,11 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
   Set<String> _selectedDepartments = {};
   Set<String> _selectedWorkTypes = {};
   void _showFilterDialog(BuildContext context) {
+    final isDarkMode = AdaptiveColors.isDarkMode(context);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-
         final size = MediaQuery.of(context).size;
         final screenWidth = size.width;
         final screenHeight = size.height;
@@ -152,6 +154,7 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
 
         return StatefulBuilder(builder: (context, setState) {
           return Dialog(
+            backgroundColor: AdaptiveColors.cardColor(context),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(screenWidth * 0.012),
             ),
@@ -197,7 +200,12 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                                     ListTileControlAffinity.leading,
                                     activeColor:
                                     const Color(0xFF377D25),
-                                    title: Text(dept),
+                                    title: Text(
+                                      dept,
+                                      style: TextStyle(
+                                        color: AdaptiveColors.primaryTextColor(context),
+                                      ),
+                                    ),
                                     value: selectedDepartments
                                         .contains(dept),
                                     onChanged: (selected) {
@@ -227,7 +235,12 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                                     ListTileControlAffinity.leading,
                                     activeColor:
                                     const Color(0xFF377D25),
-                                    title: Text(skill),
+                                    title: Text(
+                                      skill,
+                                      style: TextStyle(
+                                        color: AdaptiveColors.primaryTextColor(context),
+                                      ),
+                                    ),
                                     value: selectedDepartments
                                         .contains(skill),
                                     onChanged: (selected) {
@@ -256,6 +269,7 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: screenWidth * 0.016,
+                              color: AdaptiveColors.primaryTextColor(context),
                             ),
                           ),
                           SizedBox(height: screenHeight * 0.01),
@@ -287,13 +301,13 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                                     borderRadius: BorderRadius.circular(
                                         screenWidth * 0.02),
                                     color: selectedWorkTypes.contains(type)
-                                        ? const Color(0xFFEAF2EB)
-                                        : Colors.white,
+                                        ? const Color(0xFFEAF2EB).withOpacity(isDarkMode ? 0.3 : 1.0)
+                                        : AdaptiveColors.cardColor(context),
                                   ),
                                   child: Text(
                                     type,
-                                    style: const TextStyle(
-                                      color: Colors.black87,
+                                    style: TextStyle(
+                                      color: AdaptiveColors.primaryTextColor(context),
                                     ),
                                   ),
                                 ),
@@ -374,6 +388,7 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
     final screenWidth = screenSize.width;
     final screenHeight = screenSize.height;
     final localizations = AppLocalizations.of(context);
+
     return ResponsiveNavigationScaffold(
       selectedIndex: _selectedIndex,
       onItemTapped: _onItemTapped,
@@ -398,11 +413,11 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                   screenWidth * 0.015,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AdaptiveColors.cardColor(context),
                   borderRadius: BorderRadius.circular(screenWidth * 0.008),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: AdaptiveColors.shadowColor(context),
                       spreadRadius: screenWidth * 0.001,
                       blurRadius: screenWidth * 0.003,
                       offset: const Offset(0, 1),
@@ -439,5 +454,4 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
       ),
     );
   }
-
 }

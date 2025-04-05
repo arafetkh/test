@@ -72,18 +72,18 @@ class AdaptiveColors {
   }
 
   static Color positiveIndicatorColor(BuildContext context) {
-    return Color(0xFF4CAF50); // Flèche verte positive (+12% sur la capture)
+    return Color(0xFF4CAF50);
   }
 
   static Color negativeIndicatorColor(BuildContext context) {
-    return Color(0xFFF44336); // Flèche rouge négative (-6% sur la capture)
+    return Color(0xFFF44336);
   }
 
   static Color sidebarActiveColor() {
     return darkSidebarActive;
   }
 
-  // Décoration pour le graphique d'assiduité avec bordure bleue
+
   static BoxDecoration chartBoxDecoration(BuildContext context) {
     return BoxDecoration(
       color: cardColor(context),
@@ -91,7 +91,6 @@ class AdaptiveColors {
     );
   }
 
-  // Décoration standard pour cartes
   static BoxDecoration cardBoxDecoration(BuildContext context) {
     return BoxDecoration(
       color: cardColor(context),
@@ -105,6 +104,9 @@ class AdaptiveColors {
         ),
       ],
     );
+  }
+  static Color dividerColor(BuildContext context) {
+    return isDarkMode(context) ? Colors.grey.shade800 : Colors.grey.shade200;
   }
 
   // Décoration pour les indicateurs de tendance avec flèches
