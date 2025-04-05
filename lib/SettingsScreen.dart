@@ -1,11 +1,13 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:in_out/services/NavigationService.dart';
+import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
 import 'package:in_out/widget/UserProfileHeader.dart';
+import 'package:in_out/widget/bottom_navigation_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:in_out/provider/language_provider.dart';
 import 'package:in_out/widget/translate_text.dart';
-import 'package:in_out/widget/bottom_navigation_bar.dart';
 
 import 'NotificationsScreen.dart';
 
@@ -21,13 +23,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isHeaderVisible = true;
   final ScrollController _scrollController = ScrollController();
 
-  // Settings switches
   bool _twoFactorEnabled = true;
   bool _mobilePushEnabled = true;
   bool _desktopPushEnabled = true;
   bool _emailNotificationsEnabled = true;
 
-  // Theme dropdown - use translation keys
   String _selectedTheme = 'light';
   List<String> themeOptions = ['light', 'dark', 'system'];
 
@@ -35,6 +35,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+
+    // Initialize theme dropdown based on actual theme mode
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeThemeSelection();
+    });
+  }
+
+  void _initializeThemeSelection() {
+    final adaptiveTheme = AdaptiveTheme.of(context);
+    if (adaptiveTheme.mode == AdaptiveThemeMode.dark) {
+      setState(() {
+        _selectedTheme = 'dark';
+      });
+    } else if (adaptiveTheme.mode == AdaptiveThemeMode.light) {
+      setState(() {
+        _selectedTheme = 'light';
+      });
+    } else {
+      setState(() {
+        _selectedTheme = 'system';
+      });
+    }
   }
 
   @override
@@ -50,6 +72,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  void _changeTheme(String themeMode) {
+    setState(() {
+      _selectedTheme = themeMode;
+    });
+
+    if (themeMode == 'light') {
+      AdaptiveTheme.of(context).setLight();
+    } else if (themeMode == 'dark') {
+      AdaptiveTheme.of(context).setDark();
+    } else if (themeMode == 'system') {
+      AdaptiveTheme.of(context).setSystem();
+    }
+  }
+
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
 
@@ -60,95 +96,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     NavigationService.navigateToScreen(context, index);
   }
 
-  Widget _buildHeader() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final avatarSize = screenWidth * 0.06;
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: screenWidth * 0.04,
-        horizontal: screenWidth * 0.04,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        boxShadow: _isHeaderVisible
-            ? []
-            : [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: avatarSize,
-            backgroundColor: const Color(0xFFFFD6EC),
-            child: Text(
-              "RA",
-              style: TextStyle(
-                color: const Color(0xFFD355A8),
-                fontWeight: FontWeight.bold,
-                fontSize: avatarSize * 0.7,
-              ),
-            ),
-          ),
-          SizedBox(width: screenWidth * 0.03),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Robert Allen",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                TranslateText(
-                  "juniorFullStackDeveloper",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.03,
-                    color: Colors.grey,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(screenWidth * 0.02),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE5F5E5),
-              borderRadius: BorderRadius.circular(screenWidth * 0.06),
-            ),
-            child: Icon(
-              Icons.notifications_outlined,
-              color: const Color(0xFF2E7D32),
-              size: screenWidth * 0.05,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSettingsHeader(String titleKey, String subtitleKey) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Use TranslateText for title and subtitle
         TranslateText(
           titleKey,
           style: TextStyle(
             fontSize: screenWidth * 0.05,
             fontWeight: FontWeight.bold,
+            color: AdaptiveColors.primaryTextColor(context),
           ),
         ),
         SizedBox(height: screenWidth * 0.01),
@@ -156,7 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           subtitleKey,
           style: TextStyle(
             fontSize: screenWidth * 0.03,
-            color: Colors.grey.shade600,
+            color: AdaptiveColors.secondaryTextColor(context),
           ),
         ),
         SizedBox(height: screenWidth * 0.04),
@@ -168,18 +127,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required String subtitle,
     required Widget trailing,
-  })
-  {
+  }) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Container(
       margin: EdgeInsets.only(bottom: screenWidth * 0.04),
       padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AdaptiveColors.cardColor(context),
         borderRadius: BorderRadius.circular(screenWidth * 0.04),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
+            color: AdaptiveColors.shadowColor(context),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
@@ -192,12 +150,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Use TranslateText for title and subtitle
                 TranslateText(
                   title,
                   style: TextStyle(
                     fontSize: screenWidth * 0.035,
                     fontWeight: FontWeight.w500,
+                    color: AdaptiveColors.primaryTextColor(context),
                   ),
                 ),
                 SizedBox(height: screenWidth * 0.01),
@@ -205,7 +163,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle,
                   style: TextStyle(
                     fontSize: screenWidth * 0.03,
-                    color: Colors.grey.shade600,
+                    color: AdaptiveColors.secondaryTextColor(context),
                   ),
                 ),
               ],
@@ -226,21 +184,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         vertical: screenWidth * 0.015,
       ),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: AdaptiveColors.borderColor(context)),
         borderRadius: BorderRadius.circular(screenWidth * 0.04),
+        color: AdaptiveColors.dropdownBackgroundColor(context),
       ),
       child: DropdownButton<String>(
         value: value,
         icon: Icon(
           Icons.keyboard_arrow_down,
           size: screenWidth * 0.045,
+          color: AdaptiveColors.secondaryTextColor(context),
         ),
-        iconEnabledColor: Colors.grey.shade700,
         style: TextStyle(
           fontSize: screenWidth * 0.035,
           fontWeight: FontWeight.w500,
-          color: Colors.black87,
+          color: AdaptiveColors.primaryTextColor(context),
         ),
+        dropdownColor: AdaptiveColors.dropdownBackgroundColor(context),
         underline: Container(height: 0),
         isDense: true,
         borderRadius: BorderRadius.circular(screenWidth * 0.03),
@@ -248,7 +208,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         items: options.map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
-            child: TranslateText(value), // Use TranslateText here
+            child: TranslateText(
+              value,
+              style: TextStyle(
+                color: AdaptiveColors.primaryTextColor(context),
+              ),
+            ),
           );
         }).toList(),
       ),
@@ -260,9 +225,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       value: value,
       onChanged: onChanged,
       activeColor: Colors.white,
-      activeTrackColor: const Color(0xFF2E7D32),
+      activeTrackColor: AdaptiveColors.primaryGreen,
       inactiveThumbColor: Colors.white,
-      inactiveTrackColor: Colors.grey.shade300,
+      inactiveTrackColor: AdaptiveColors.isDarkMode(context)
+          ? Colors.grey.shade700
+          : Colors.grey.shade300,
     );
   }
 
@@ -326,10 +293,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           trailing: _buildDropdownWidget(
                             _selectedTheme,
                             themeOptions,
-                                (newValue) {
-                              setState(() {
-                                _selectedTheme = newValue!;
-                              });
+                            (newValue) {
+                              if (newValue != null) {
+                                _changeTheme(newValue);
+                              }
                             },
                           ),
                         ),
@@ -341,7 +308,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           trailing: _buildDropdownWidget(
                             currentLanguageDisplay,
                             languageDisplayNames.values.toList(),
-                                (newValue) {
+                            (newValue) {
                               if (newValue != null) {
                                 // Convert display name to language code
                                 final languageCode = displayToLanguageCode[newValue];
@@ -360,7 +327,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           subtitle: "twoFactorDescription",
                           trailing: _buildSwitch(
                             _twoFactorEnabled,
-                                (value) {
+                            (value) {
                               setState(() {
                                 _twoFactorEnabled = value;
                               });
@@ -374,7 +341,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           subtitle: "receivePushNotification",
                           trailing: _buildSwitch(
                             _mobilePushEnabled,
-                                (value) {
+                            (value) {
                               setState(() {
                                 _mobilePushEnabled = value;
                               });
@@ -388,7 +355,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           subtitle: "desktopPushDescription",
                           trailing: _buildSwitch(
                             _desktopPushEnabled,
-                                (value) {
+                            (value) {
                               setState(() {
                                 _desktopPushEnabled = value;
                               });
@@ -402,7 +369,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           subtitle: "receiveEmailNotification",
                           trailing: _buildSwitch(
                             _emailNotificationsEnabled,
-                                (value) {
+                            (value) {
                               setState(() {
                                 _emailNotificationsEnabled = value;
                               });

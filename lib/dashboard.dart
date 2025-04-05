@@ -50,92 +50,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  Widget _buildHeader(AppLocalizations localizations) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final avatarSize = screenWidth * 0.06;
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: screenWidth * 0.04,
-        horizontal: screenWidth * 0.04,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        boxShadow: _isHeaderVisible
-            ? []
-            : [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: avatarSize,
-            backgroundColor: const Color(0xFFFFD6EC),
-            child: Text(
-              "RA",
-              style: TextStyle(
-                color: const Color(0xFFD355A8),
-                fontWeight: FontWeight.bold,
-                fontSize: avatarSize * 0.7,
-              ),
-            ),
-          ),
-          SizedBox(width: screenWidth * 0.03),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Robert Allen",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  localizations.getString('juniorFullStackDeveloper'),
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.03,
-                    color: Colors.grey,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-
-      GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-          );
-        },
-        child: Container(
-          padding: EdgeInsets.all(screenWidth * 0.02),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE5F5E5),
-            borderRadius: BorderRadius.circular(screenWidth * 0.06),
-          ),
-          child: Icon(
-            Icons.notifications_outlined,
-            color: const Color(0xFF2E7D32),
-            size: screenWidth * 0.05,
-          ),
-        ),
-      ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -143,6 +57,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final screenHeight = screenSize.height;
     final localizations = AppLocalizations.of(context);
     final padding = screenWidth * 0.04;
+
+    // Vérifier si on est en mode sombre
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    // Couleurs adaptatives
+    final cardColor = isDarkMode ? const Color(0xFF1E1E1E) : Colors.white;
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final secondaryTextColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;
+    final borderColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
+    final shadowColor = isDarkMode ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.05);
+    final accentColor = const Color(0xFF2E7D32); // Vert pour tous les modes
+    final chartGridColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
 
     filterOptions = [
       localizations.getString('day'),
@@ -195,24 +121,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               localizations.getString('totalEmployee'),
                               "560",
                               screenWidth,
+                              cardColor: cardColor,
+                              textColor: textColor,
+                              secondaryTextColor: secondaryTextColor,
+                              shadowColor: shadowColor,
+                              accentColor: accentColor,
                             ),
                             _buildMetricCard(
                               Icons.calendar_today_outlined,
                               localizations.getString('todayAttendance'),
                               "470",
                               screenWidth,
+                              cardColor: cardColor,
+                              textColor: textColor,
+                              secondaryTextColor: secondaryTextColor,
+                              shadowColor: shadowColor,
+                              accentColor: accentColor,
                             ),
                             _buildMetricCard(
                               Icons.access_time_outlined,
                               localizations.getString('pendingTimeOff'),
                               "5",
                               screenWidth,
+                              cardColor: cardColor,
+                              textColor: textColor,
+                              secondaryTextColor: secondaryTextColor,
+                              shadowColor: shadowColor,
+                              accentColor: accentColor,
                             ),
                             _buildMetricCard(
                               Icons.business_outlined,
                               localizations.getString('totalDepartments'),
                               "20",
                               screenWidth,
+                              cardColor: cardColor,
+                              textColor: textColor,
+                              secondaryTextColor: secondaryTextColor,
+                              shadowColor: shadowColor,
+                              accentColor: accentColor,
                             ),
                           ],
                         ),
@@ -223,11 +169,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Container(
                           padding: EdgeInsets.all(padding),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: cardColor,
                             borderRadius: BorderRadius.circular(screenWidth * 0.06),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withOpacity(0.05),
+                                color: shadowColor,
                                 spreadRadius: 1,
                                 blurRadius: 5,
                                 offset: const Offset(0, 3),
@@ -245,6 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     style: TextStyle(
                                       fontSize: screenWidth * 0.04,
                                       fontWeight: FontWeight.bold,
+                                      color: textColor,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -254,7 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       vertical: screenWidth * 0.015,
                                     ),
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey.shade200),
+                                      border: Border.all(color: borderColor),
                                       borderRadius: BorderRadius.circular(screenWidth * 0.04),
                                     ),
                                     child: DropdownButton<String>(
@@ -262,13 +209,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       icon: Icon(
                                         Icons.keyboard_arrow_down,
                                         size: screenWidth * 0.045,
+                                        color: secondaryTextColor,
                                       ),
-                                      iconEnabledColor: Colors.grey.shade700,
+                                      iconEnabledColor: secondaryTextColor,
                                       style: TextStyle(
                                         fontSize: screenWidth * 0.035,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
+                                        color: textColor,
                                       ),
+                                      dropdownColor: cardColor,
                                       underline: Container(height: 0),
                                       isDense: true,
                                       borderRadius: BorderRadius.circular(screenWidth * 0.03),
@@ -290,7 +239,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               SizedBox(height: screenHeight * 0.03),
                               SizedBox(
                                 height: screenHeight * 0.2,
-                                child: _buildAttendanceChart(screenWidth),
+                                child: _buildAttendanceChart(
+                                    screenWidth,
+                                    textColor: secondaryTextColor,
+                                    gridColor: chartGridColor
+                                ),
                               ),
                             ],
                           ),
@@ -307,6 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               style: TextStyle(
                                 fontSize: screenWidth * 0.04,
                                 fontWeight: FontWeight.bold,
+                                color: textColor,
                               ),
                             ),
                             TextButton(
@@ -316,7 +270,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   Text(
                                     localizations.getString('viewAll'),
                                     style: TextStyle(
-                                      color: Colors.grey,
+                                      color: secondaryTextColor,
                                       fontSize: screenWidth * 0.03,
                                     ),
                                   ),
@@ -324,7 +278,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   Icon(
                                     Icons.arrow_forward,
                                     size: screenWidth * 0.03,
-                                    color: Colors.grey.shade700,
+                                    color: secondaryTextColor,
                                   ),
                                 ],
                               ),
@@ -336,21 +290,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           localizations.getString('updatedServerLogs'),
                           localizations.getString('justNow'),
                           screenWidth,
+                          cardColor: cardColor,
+                          textColor: textColor,
+                          secondaryTextColor: secondaryTextColor,
+                          shadowColor: shadowColor,
+                          accentColor: accentColor,
                         ),
                         _buildEventItem(
                           localizations.getString('sendMailToHRAndAdmin'),
                           "2 ${localizations.getString('minAgo')}",
                           screenWidth,
+                          cardColor: cardColor,
+                          textColor: textColor,
+                          secondaryTextColor: secondaryTextColor,
+                          shadowColor: shadowColor,
+                          accentColor: accentColor,
                         ),
                         _buildEventItem(
                           localizations.getString('backupFilesEOD'),
                           "14:00",
                           screenWidth,
+                          cardColor: cardColor,
+                          textColor: textColor,
+                          secondaryTextColor: secondaryTextColor,
+                          shadowColor: shadowColor,
+                          accentColor: accentColor,
                         ),
                         _buildEventItem(
                           localizations.getString('sendMailToHRAndAdmin'),
                           "17:10",
                           screenWidth,
+                          cardColor: cardColor,
+                          textColor: textColor,
+                          secondaryTextColor: secondaryTextColor,
+                          shadowColor: shadowColor,
+                          accentColor: accentColor,
                         ),
                       ]),
                     ),
@@ -364,7 +338,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildAttendanceChart(double screenWidth) {
+  Widget _buildAttendanceChart(double screenWidth, {required Color textColor, required Color gridColor}) {
     final textSize = screenWidth * 0.025;
     final barWidth = screenWidth * 0.035;
 
@@ -377,14 +351,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              getTitlesWidget: (value, meta) => getBottomTitles(value, meta, textSize),
+              getTitlesWidget: (value, meta) => getBottomTitles(value, meta, textSize, textColor),
               reservedSize: screenWidth * 0.075,
             ),
           ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              getTitlesWidget: (value, meta) => getLeftTitles(value, meta, textSize),
+              getTitlesWidget: (value, meta) => getLeftTitles(value, meta, textSize, textColor),
               reservedSize: screenWidth * 0.075,
               interval: 20,
             ),
@@ -400,9 +374,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           show: true,
           horizontalInterval: 20,
           getDrawingHorizontalLine: (value) {
-            // Show line at y=0 (removed the condition that was hiding it)
             return FlLine(
-              color: Colors.grey.shade200,
+              color: gridColor,
               strokeWidth: 0.8,
             );
           },
@@ -414,19 +387,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         barGroups: getBarGroups(barWidth),
         maxY: 100,
         minY: 0,
+        backgroundColor: Colors.transparent,
       ),
     );
   }
 
-  Widget getLeftTitles(double value, TitleMeta meta, double fontSize) {
+  Widget getLeftTitles(double value, TitleMeta meta, double fontSize, Color textColor) {
     if (value == 0 || value == 20 || value == 40 || value == 60 || value == 80 || value == 100) {
       return SideTitleWidget(
         axisSide: meta.axisSide,
-        space: 8, // Add some space between text and axis
+        space: 8,
         child: Text(
           '${value.toInt()}',
           style: TextStyle(
-            color: Colors.grey.shade600,
+            color: textColor,
             fontSize: fontSize,
           ),
         ),
@@ -475,22 +449,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         x: index,
         barRods: [
           BarChartRodData(
-            toY: 100, // Set the total height to 100%
+            toY: 100,
             width: barWidth,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(4),
             ),
             rodStackItems: [
-              // Present (green) from bottom
               BarChartRodStackItem(
                   0,
                   item['present'].toDouble(),
                   const Color(0xFF388E3C)
               ),
-              // Absent (red) on top
               BarChartRodStackItem(
                   item['present'].toDouble(),
-                  100, // Always go to 100
+                  100,
                   const Color(0xFFF44336)
               ),
             ],
@@ -500,10 +472,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).toList();
   }
 
-  Widget getBottomTitles(double value, TitleMeta meta, double fontSize) {
+  Widget getBottomTitles(double value, TitleMeta meta, double fontSize, Color textColor) {
     final localizations = AppLocalizations.of(context);
 
-    // Use localized keys instead of hardcoded English strings
     Map<String, List<String>> filterTitles = {
       localizations.getString('day'): ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
       localizations.getString('month'): ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
@@ -511,7 +482,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     };
 
     final List<String> titles = filterTitles[selectedFilter]!;
-    // Add null check to prevent errors
     if (value.toInt() >= titles.length || value.toInt() < 0) {
       return const SizedBox.shrink();
     }
@@ -520,15 +490,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Text(
         titles[value.toInt()],
         style: TextStyle(
-          color: Colors.grey.shade600,
+          color: textColor,
           fontSize: fontSize,
         ),
       ),
     );
   }
 
-  Widget _buildMetricCard(IconData icon, String title, String value, double screenWidth) {
-    // Reducing sizes slightly to prevent overflow
+  Widget _buildMetricCard(
+      IconData icon,
+      String title,
+      String value,
+      double screenWidth,
+      {
+        required Color cardColor,
+        required Color textColor,
+        required Color secondaryTextColor,
+        required Color shadowColor,
+        required Color accentColor,
+      }
+      ) {
     final iconSize = screenWidth * 0.04;
     final titleFontSize = screenWidth * 0.028;
     final valueFontSize = screenWidth * 0.04;
@@ -539,11 +520,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         vertical: screenWidth * 0.03,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(screenWidth * 0.04),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
+            color: shadowColor,
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
@@ -555,7 +536,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: EdgeInsets.all(screenWidth * 0.02),
             decoration: BoxDecoration(
-              color: const Color(0xFF2E7D32),
+              color: accentColor,
               borderRadius: BorderRadius.circular(screenWidth * 0.03),
             ),
             child: Icon(
@@ -574,10 +555,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   title,
                   style: TextStyle(
                     fontSize: titleFontSize,
-                    color: Colors.grey.shade600,
+                    color: secondaryTextColor,
                   ),
                   overflow: TextOverflow.ellipsis,
-                  maxLines: 1,  // Added explicit maxLines
+                  maxLines: 1,
                 ),
                 SizedBox(height: screenWidth * 0.008),
                 Text(
@@ -585,6 +566,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: TextStyle(
                     fontSize: valueFontSize,
                     fontWeight: FontWeight.bold,
+                    color: textColor,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -596,7 +578,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildEventItem(String title, String time, double screenWidth) {
+  Widget _buildEventItem(
+      String title,
+      String time,
+      double screenWidth,
+      {
+        required Color cardColor,
+        required Color textColor,
+        required Color secondaryTextColor,
+        required Color shadowColor,
+        required Color accentColor,
+      }
+      ) {
     final localizations = AppLocalizations.of(context);
     final bool isRecent = time == localizations.getString('justNow') ||
         time.contains(localizations.getString('minAgo'));
@@ -608,11 +601,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       margin: EdgeInsets.only(bottom: screenWidth * 0.02),
       padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(screenWidth * 0.03),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
+            color: shadowColor,
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
@@ -628,6 +621,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.w500,
                 fontSize: titleFontSize,
+                color: textColor,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -635,7 +629,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Text(
             time,
             style: TextStyle(
-              color: isRecent ? const Color(0xFF2E7D32) : Colors.grey.shade600,
+              color: isRecent ? accentColor : secondaryTextColor,
               fontSize: timeFontSize,
               fontWeight: isRecent ? FontWeight.bold : FontWeight.normal,
             ),

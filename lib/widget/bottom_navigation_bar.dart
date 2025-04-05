@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
-import 'package:iconify_flutter/icons/material_symbols.dart';
-import 'package:in_out/widget/translate_text.dart';
+import 'package:iconify_flutter/icons/mdi.dart';
+import 'package:iconify_flutter/icons/ic.dart';
+import 'package:iconify_flutter/icons/ph.dart';
+import 'package:iconify_flutter/icons/carbon.dart';
+
+import '../theme/adaptive_colors.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
@@ -16,39 +20,52 @@ class CustomBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final iconSize = screenWidth * 0.06;
+    final Color activeColor = AdaptiveColors.primaryGreen;
+    final Color inactiveColor = AdaptiveColors.secondaryTextColor(context);
 
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
-      selectedItemColor: const Color(0xFF00F60D),
-      unselectedItemColor: Colors.grey,
+      backgroundColor: AdaptiveColors.cardColor(context),
+      selectedItemColor: activeColor,
+      unselectedItemColor: inactiveColor,
       showSelectedLabels: false,
       showUnselectedLabels: false,
       currentIndex: selectedIndex,
       onTap: onItemTapped,
       items: [
         BottomNavigationBarItem(
-          icon: Iconify(MaterialSymbols.home, size: screenWidth * 0.06),
+          icon: Iconify(Mdi.home_outline, size: iconSize, color: inactiveColor),
+          activeIcon: Iconify(Mdi.home, size: iconSize, color: activeColor),
           label: 'home',
           tooltip: 'home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.group_work, size: screenWidth * 0.06),
-          label: 'calendar',
-          tooltip: 'calendar',
+          icon:
+              Iconify(Ic.outline_groups, size: iconSize, color: inactiveColor),
+          activeIcon:
+              Iconify(Ic.baseline_groups, size: iconSize, color: activeColor),
+          label: 'team',
+          tooltip: 'team',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.add_box_outlined, size: screenWidth * 0.06),
-          label: 'add',
-          tooltip: 'add',
+          icon: Iconify(Ph.chart_bar, size: iconSize, color: inactiveColor),
+          activeIcon:
+              Iconify(Ph.chart_bar_fill, size: iconSize, color: activeColor),
+          label: 'reports',
+          tooltip: 'reports',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.message_outlined, size: screenWidth * 0.06),
-          label: 'messages',
-          tooltip: 'messages',
+          icon: Iconify(Carbon.notification,
+              size: iconSize, color: inactiveColor),
+          activeIcon: Iconify(Carbon.notification_filled,
+              size: iconSize, color: activeColor),
+          label: 'notifications',
+          tooltip: 'notifications',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.settings, size: screenWidth * 0.06),
+          icon: Iconify(Mdi.cog_outline, size: iconSize, color: inactiveColor),
+          activeIcon: Iconify(Mdi.cog, size: iconSize, color: activeColor),
           label: 'settings',
           tooltip: 'settings',
         ),

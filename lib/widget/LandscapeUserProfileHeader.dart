@@ -1,105 +1,112 @@
 import 'package:flutter/material.dart';
 import 'package:in_out/NotificationsScreen.dart';
 import 'package:in_out/widget/translate_text.dart';
+import '../theme/adaptive_colors.dart';
 
 class LandscapeUserProfileHeader extends StatelessWidget {
+  final bool isHeaderVisible;
   final VoidCallback? onNotificationTap;
   final int? unreadNotificationsCount;
 
   const LandscapeUserProfileHeader({
     super.key,
+    required this.isHeaderVisible,
     this.onNotificationTap,
     this.unreadNotificationsCount,
   });
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final screenHeight = screenSize.height;
-    final screenWidth = screenSize.width;
-
-    final containerHeight = screenHeight * 0.12;
-    final avatarRadius = screenHeight * 0.035;
-    final horizontalPadding = screenWidth * 0.02;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final avatarSize = screenWidth * 0.03;
 
     return Container(
-      height: containerHeight,
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      decoration: const BoxDecoration(
-        color: Color(0xFFFAFAFA),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 1,
-            offset: Offset(0, 1),
-          ),
-        ],
+      padding: EdgeInsets.symmetric(
+        vertical: screenWidth * 0.02,
+        horizontal: screenWidth * 0.02,
+      ),
+      decoration: BoxDecoration(
+        color: AdaptiveColors.cardColor(context),
+        boxShadow: isHeaderVisible
+            ? []
+            : [
+                BoxShadow(
+                  color: AdaptiveColors.shadowColor(context),
+                  spreadRadius: 1,
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
+                ),
+              ],
       ),
       child: Row(
         children: [
           CircleAvatar(
-            radius: avatarRadius,
+            radius: avatarSize,
             backgroundColor: const Color(0xFFFFD6EC),
             child: Text(
               "RA",
               style: TextStyle(
                 color: const Color(0xFFD355A8),
                 fontWeight: FontWeight.bold,
-                fontSize: avatarRadius * 0.7,
+                fontSize: avatarSize * 0.7,
               ),
             ),
           ),
-          SizedBox(width: screenWidth * 0.02),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Robert Allen",
-                style: TextStyle(
-                  fontSize: screenHeight * 0.025,
-                  fontWeight: FontWeight.w600,
+          SizedBox(width: screenWidth * 0.015),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Robert Allen",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.02,
+                    fontWeight: FontWeight.bold,
+                    color: AdaptiveColors.primaryTextColor(context),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
-              ),
-              TranslateText(
-                "juniorFullStackDeveloper",
-                style: TextStyle(
-                  fontSize: screenHeight * 0.02,
-                  color: Colors.grey,
+                TranslateText(
+                  "juniorFullStackDeveloper",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.015,
+                    color: AdaptiveColors.secondaryTextColor(context),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+              ],
+            ),
           ),
-          const Spacer(),
           GestureDetector(
-            onTap: onNotificationTap ?? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-              );
-            },
+            onTap: onNotificationTap ??
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const NotificationsScreen()),
+                  );
+                },
             child: Stack(
               children: [
                 Container(
-                  padding: EdgeInsets.all(screenHeight * 0.015),
+                  padding: EdgeInsets.all(screenWidth * 0.01),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE5F5E5),
-                    borderRadius: BorderRadius.circular(screenHeight * 0.025),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.03),
                   ),
                   child: Icon(
                     Icons.notifications_outlined,
-                    color: const Color(0xFF2E7D32),
-                    size: screenHeight * 0.035, // Slightly larger icon
+                    color: AdaptiveColors.primaryGreen,
+                    size: screenWidth * 0.025,
                   ),
                 ),
-                if (unreadNotificationsCount != null && unreadNotificationsCount! > 0)
+                if (unreadNotificationsCount != null &&
+                    unreadNotificationsCount! > 0)
                   Positioned(
                     right: 0,
                     top: 0,
                     child: Container(
-                      padding: EdgeInsets.all(screenHeight * 0.005),
+                      padding: EdgeInsets.all(screenWidth * 0.005),
                       decoration: const BoxDecoration(
                         color: Colors.red,
                         shape: BoxShape.circle,
@@ -108,7 +115,7 @@ class LandscapeUserProfileHeader extends StatelessWidget {
                         unreadNotificationsCount.toString(),
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: screenHeight * 0.014,
+                          fontSize: screenWidth * 0.01,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

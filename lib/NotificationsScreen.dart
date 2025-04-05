@@ -7,8 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:in_out/provider/language_provider.dart';
 import 'package:in_out/widget/translate_text.dart';
 import 'package:in_out/widget/bottom_navigation_bar.dart';
-// Import the notification components
-import 'package:in_out/widget/NotificationItem.dart'; // Adjust path as needed
+import 'package:in_out/theme/adaptive_colors.dart';
 
 class NotificationsService {
   static final NotificationsService _instance = NotificationsService._internal();
@@ -21,18 +20,14 @@ class NotificationsService {
 
   List<NotificationModel> get notifications => List.unmodifiable(_notifications);
 
-
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
-
   Future<void> initialize() async {
-
     _addSampleNotifications();
   }
 
   void addNotification(NotificationModel notification) {
     _notifications.add(notification);
-
     notifyListeners();
   }
 
@@ -84,12 +79,10 @@ class NotificationsService {
     notifyListeners();
   }
 
-
   void clearAll() {
     _notifications.clear();
     notifyListeners();
   }
-
 
   final List<Function()> _listeners = [];
 
@@ -219,7 +212,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
 
     // Handle different notification types
-    // You could navigate to different screens based on the notification
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Notification tapped: ${notification.title}')),
     );
@@ -227,107 +219,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   void _handleMarkAllAsRead() {
     _notificationsService.markAllAsRead();
-  }
-
-  Widget _buildHeader() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final avatarSize = screenWidth * 0.06;
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: screenWidth * 0.04,
-        horizontal: screenWidth * 0.04,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        boxShadow: _isHeaderVisible
-            ? []
-            : [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: avatarSize,
-            backgroundColor: const Color(0xFFFFD6EC),
-            child: Text(
-              "RA",
-              style: TextStyle(
-                color: const Color(0xFFD355A8),
-                fontWeight: FontWeight.bold,
-                fontSize: avatarSize * 0.7,
-              ),
-            ),
-          ),
-          SizedBox(width: screenWidth * 0.03),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Robert Allen",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                TranslateText(
-                  "juniorFullStackDeveloper",
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.03,
-                    color: Colors.grey,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          Stack(
-            children: [
-              Container(
-                padding: EdgeInsets.all(screenWidth * 0.02),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE5F5E5),
-                  borderRadius: BorderRadius.circular(screenWidth * 0.06),
-                ),
-                child: Icon(
-                  Icons.notifications_outlined,
-                  color: const Color(0xFF2E7D32),
-                  size: screenWidth * 0.05,
-                ),
-              ),
-              if (_notificationsService.unreadCount > 0)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(screenWidth * 0.01),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      _notificationsService.unreadCount.toString(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: screenWidth * 0.02,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildPageHeader() {
@@ -349,13 +240,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 style: TextStyle(
                   fontSize: screenWidth * 0.05,
                   fontWeight: FontWeight.bold,
+                  color: AdaptiveColors.primaryTextColor(context),
                 ),
               ),
               TranslateText(
                 "allNotifications",
                 style: TextStyle(
                   fontSize: screenWidth * 0.03,
-                  color: Colors.grey.shade600,
+                  color: AdaptiveColors.secondaryTextColor(context),
                 ),
               ),
             ],
@@ -375,7 +267,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           Icon(
             Icons.notifications_off_outlined,
             size: screenWidth * 0.15,
-            color: Colors.grey.shade400,
+            color: AdaptiveColors.isDarkMode(context)
+                ? Colors.grey.shade600
+                : Colors.grey.shade400,
           ),
           SizedBox(height: screenWidth * 0.04),
           TranslateText(
@@ -383,7 +277,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             style: TextStyle(
               fontSize: screenWidth * 0.04,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              color: AdaptiveColors.primaryTextColor(context),
             ),
           ),
           SizedBox(height: screenWidth * 0.02),
@@ -391,7 +285,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             "allCaughtUp",
             style: TextStyle(
               fontSize: screenWidth * 0.035,
-              color: Colors.grey.shade600,
+              color: AdaptiveColors.secondaryTextColor(context),
             ),
           ),
         ],
@@ -431,7 +325,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                   SliverToBoxAdapter(
                     child: Divider(
-                      color: Colors.grey.shade200,
+                      color: AdaptiveColors.dividerColor(context),
                       height: 1,
                     ),
                   ),
