@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/mdi.dart';
 import 'package:iconify_flutter/icons/ic.dart';
-import 'package:iconify_flutter/icons/ph.dart';
 import 'package:iconify_flutter/icons/carbon.dart';
 
 import '../theme/adaptive_colors.dart';
@@ -46,12 +45,22 @@ class CustomSideNavigationBar extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Dashboard (Home)
           _buildNavItem(context, 0, Mdi.home_outline, Mdi.home, iconSize),
+
+          // Employees (Team)
           _buildNavItem(
               context, 1, Ic.outline_groups, Ic.baseline_groups, iconSize),
-          _buildNavItem(context, 2, Ph.chart_bar, Ph.chart_bar_fill, iconSize),
+
+          // Attendance
+          _buildNavItem(context, 2, Mdi.calendar_clock_outline,
+              Mdi.calendar_clock, iconSize),
+
+          // Notifications
           _buildNavItem(context, 3, Carbon.notification,
               Carbon.notification_filled, iconSize),
+
+          // Settings
           _buildNavItem(context, 4, Mdi.cog_outline, Mdi.cog, iconSize),
         ],
       ),

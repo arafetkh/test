@@ -83,7 +83,6 @@ class AdaptiveColors {
     return darkSidebarActive;
   }
 
-
   static BoxDecoration chartBoxDecoration(BuildContext context) {
     return BoxDecoration(
       color: cardColor(context),

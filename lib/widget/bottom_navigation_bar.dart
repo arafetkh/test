@@ -34,12 +34,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
       currentIndex: selectedIndex,
       onTap: onItemTapped,
       items: [
+        // Accueil (Dashboard)
         BottomNavigationBarItem(
           icon: Iconify(Mdi.home_outline, size: iconSize, color: inactiveColor),
           activeIcon: Iconify(Mdi.home, size: iconSize, color: activeColor),
           label: 'home',
           tooltip: 'home',
         ),
+        // Équipe (Employees)
         BottomNavigationBarItem(
           icon:
               Iconify(Ic.outline_groups, size: iconSize, color: inactiveColor),
@@ -48,13 +50,16 @@ class CustomBottomNavigationBar extends StatelessWidget {
           label: 'team',
           tooltip: 'team',
         ),
+        // Présence (Attendance)
         BottomNavigationBarItem(
-          icon: Iconify(Ph.chart_bar, size: iconSize, color: inactiveColor),
+          icon: Iconify(Mdi.calendar_clock_outline,
+              size: iconSize, color: inactiveColor),
           activeIcon:
-              Iconify(Ph.chart_bar_fill, size: iconSize, color: activeColor),
-          label: 'reports',
-          tooltip: 'reports',
+              Iconify(Mdi.calendar_clock, size: iconSize, color: activeColor),
+          label: 'attendance',
+          tooltip: 'attendance',
         ),
+        // Notifications
         BottomNavigationBarItem(
           icon: Iconify(Carbon.notification,
               size: iconSize, color: inactiveColor),
@@ -63,6 +68,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           label: 'notifications',
           tooltip: 'notifications',
         ),
+        // Paramètres
         BottomNavigationBarItem(
           icon: Iconify(Mdi.cog_outline, size: iconSize, color: inactiveColor),
           activeIcon: Iconify(Mdi.cog, size: iconSize, color: activeColor),

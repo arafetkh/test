@@ -29,7 +29,7 @@ class UserProfileHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: AdaptiveColors.cardColor(context),
         boxShadow: isHeaderVisible
-            ? [ ]
+            ? []
             : [
           BoxShadow(
             color: AdaptiveColors.shadowColor(context),

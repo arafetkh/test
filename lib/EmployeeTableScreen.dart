@@ -4,6 +4,7 @@ import 'package:in_out/services/NavigationService.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
 import 'package:in_out/widget/bottom_navigation_bar.dart';
+import 'AddEmployeeScreen.dart';
 import 'data/employees_data.dart';
 import 'widget/employee_table_widgets.dart';
 import 'widget/pagination_widgets.dart';
@@ -400,7 +401,11 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
               searchController: _searchController,
               onSearchChanged: (value) {},
               onAddNewEmployee: () {
-                // Add new employee functionality
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AddEmployeeScreen()),
+                );
               },
               onFilterTap: (context) => _showFilterDialog(context),
             ),

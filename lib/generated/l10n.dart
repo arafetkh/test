@@ -829,6 +829,356 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Check-In Time`
+  String get checkInTime {
+    return Intl.message(
+      'Check-In Time',
+      name: 'checkInTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Status`
+  String get status {
+    return Intl.message(
+      'Status',
+      name: 'status',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Actions`
+  String get actions {
+    return Intl.message(
+      'Actions',
+      name: 'actions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On Time`
+  String get onTime {
+    return Intl.message(
+      'On Time',
+      name: 'onTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Late`
+  String get late {
+    return Intl.message(
+      'Late',
+      name: 'late',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No attendance records found`
+  String get noAttendanceRecords {
+    return Intl.message(
+      'No attendance records found',
+      name: 'noAttendanceRecords',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add Employee`
+  String get addEmployee {
+    return Intl.message(
+      'Add Employee',
+      name: 'addEmployee',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Personal Information`
+  String get personalInformation {
+    return Intl.message(
+      'Personal Information',
+      name: 'personalInformation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Professional Information`
+  String get professionalInformation {
+    return Intl.message(
+      'Professional Information',
+      name: 'professionalInformation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `First Name`
+  String get firstName {
+    return Intl.message(
+      'First Name',
+      name: 'firstName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last Name`
+  String get lastName {
+    return Intl.message(
+      'Last Name',
+      name: 'lastName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mobile Number`
+  String get mobileNumber {
+    return Intl.message(
+      'Mobile Number',
+      name: 'mobileNumber',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email Address`
+  String get emailAddress {
+    return Intl.message(
+      'Email Address',
+      name: 'emailAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Date of Birth`
+  String get dateOfBirth {
+    return Intl.message(
+      'Date of Birth',
+      name: 'dateOfBirth',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Marital Status`
+  String get maritalStatus {
+    return Intl.message(
+      'Marital Status',
+      name: 'maritalStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Gender`
+  String get gender {
+    return Intl.message(
+      'Gender',
+      name: 'gender',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nationality`
+  String get nationality {
+    return Intl.message(
+      'Nationality',
+      name: 'nationality',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Address`
+  String get address {
+    return Intl.message(
+      'Address',
+      name: 'address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `City`
+  String get city {
+    return Intl.message(
+      'City',
+      name: 'city',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `State`
+  String get state {
+    return Intl.message(
+      'State',
+      name: 'state',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `ZIP Code`
+  String get zipCode {
+    return Intl.message(
+      'ZIP Code',
+      name: 'zipCode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Drag & Drop`
+  String get dragAndDrop {
+    return Intl.message(
+      'Drag & Drop',
+      name: 'dragAndDrop',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `or`
+  String get or {
+    return Intl.message(
+      'or',
+      name: 'or',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `choose file`
+  String get chooseFile {
+    return Intl.message(
+      'choose file',
+      name: 'chooseFile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Supported formats: .jpeg, .png, .pdf`
+  String get supportedFormats {
+    return Intl.message(
+      'Supported formats: .jpeg, .png, .pdf',
+      name: 'supportedFormats',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Employee Type`
+  String get employeeType {
+    return Intl.message(
+      'Employee Type',
+      name: 'employeeType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Working Days`
+  String get workingDays {
+    return Intl.message(
+      'Working Days',
+      name: 'workingDays',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Joining Date`
+  String get joiningDate {
+    return Intl.message(
+      'Joining Date',
+      name: 'joiningDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Office Location`
+  String get officeLocation {
+    return Intl.message(
+      'Office Location',
+      name: 'officeLocation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `User Name`
+  String get userName {
+    return Intl.message(
+      'User Name',
+      name: 'userName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancel`
+  String get cancel {
+    return Intl.message(
+      'Cancel',
+      name: 'cancel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Back`
+  String get back {
+    return Intl.message(
+      'Back',
+      name: 'back',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Next`
+  String get next {
+    return Intl.message(
+      'Next',
+      name: 'next',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Apply`
+  String get apply {
+    return Intl.message(
+      'Apply',
+      name: 'apply',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `to upload`
+  String get toUpload {
+    return Intl.message(
+      'to upload',
+      name: 'toUpload',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
