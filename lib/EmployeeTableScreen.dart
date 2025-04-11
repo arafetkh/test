@@ -3,14 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:in_out/services/NavigationService.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
-import 'package:in_out/widget/bottom_navigation_bar.dart';
+
 import 'AddEmployeeScreen.dart';
 import 'data/employees_data.dart';
-import 'widget/employee_table_widgets.dart';
-import 'widget/pagination_widgets.dart';
 import 'localization/app_localizations.dart';
 import 'widget/SearchAndFilterBar.dart';
-
+import 'widget/employee_table_widgets.dart';
+import 'widget/pagination_widgets.dart';
 
 class EmployeeTableScreen extends StatefulWidget {
   const EmployeeTableScreen({super.key});
@@ -124,6 +123,23 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
     });
   }
 
+  // Handle new employee addition
+  void _addNewEmployee(Map<String, dynamic> newEmployee) {
+    setState(() {
+      // The employee is already added to the global employees list
+      // Just update the state to reflect changes
+      _currentPage = 1; // Go back to first page to show the new employee
+    });
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Employee ${newEmployee['name']} added successfully'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
   Set<String> _selectedDepartments = {};
   Set<String> _selectedWorkTypes = {};
   void _showFilterDialog(BuildContext context) {
@@ -146,12 +162,22 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
           'HR',
           'Sales',
           'Business Analyst',
-          'Project Manager'
+          'Project Manager',
+          'Development',
+          'IT',
+          'Finance',
+          'Marketing'
         ];
 
         final techSkills = ['Java', 'Python', 'React JS', 'Account', 'Node JS'];
 
-        final workTypes = ['Office', 'Remote'];
+        final workTypes = [
+          'Office',
+          'Remote',
+          'Full-time',
+          'Part-time',
+          'Contract'
+        ];
 
         return StatefulBuilder(builder: (context, setState) {
           return Dialog(
@@ -375,9 +401,6 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
           _selectedWorkTypes = result['workTypes'];
           _currentPage = 1; // Reset to first page when filters change
         });
-
-        print('Selected departments: ${result['departments']}');
-        print('Selected work types: ${result['workTypes']}');
       }
     });
   }
@@ -404,7 +427,9 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const AddEmployeeScreen()),
+                      builder: (context) => AddEmployeeScreen(
+                            onEmployeeAdded: _addNewEmployee,
+                          )),
                 );
               },
               onFilterTap: (context) => _showFilterDialog(context),

@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:in_out/services/NavigationService.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
 import 'package:in_out/widget/UserProfileHeader.dart';
-import 'package:in_out/widget/bottom_navigation_bar.dart';
+
 import 'NotificationsScreen.dart';
 import 'localization/app_localizations.dart';
 
@@ -35,6 +36,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
   }
 
   @override

@@ -1,15 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:in_out/AttendanceScreen.dart';
-import 'package:in_out/EmployeeTableScreen.dart';
-import 'package:in_out/Login_screens/login_page.dart';
-import 'package:in_out/NotificationsScreen.dart';
-import 'package:in_out/dashboard.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:in_out/SettingsScreen.dart';
-import 'package:in_out/provider/language_provider.dart';
-import 'localization/app_localizations.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:in_out/dashboard.dart';
+import 'package:in_out/provider/language_provider.dart';
+import 'package:provider/provider.dart';
+
+import 'localization/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,7 +60,7 @@ class MyApp extends StatelessWidget {
           ),
           initial: savedThemeMode ?? AdaptiveThemeMode.light,
           builder: (theme, darkTheme) => MaterialApp(
-            title: 'In-Out',
+            title: 'In Out',
             debugShowCheckedModeBanner: false,
             theme: theme,
             darkTheme: darkTheme,
@@ -79,7 +75,7 @@ class MyApp extends StatelessWidget {
               Locale('fr', ''),
             ],
             locale: Locale(languageProvider.currentLanguage),
-            home: const AttendanceScreen(),
+            home: const DashboardScreen(),
           ),
         );
       },

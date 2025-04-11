@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:in_out/services/NavigationService.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/LandscapeUserProfileHeader.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
-import 'package:in_out/widget/bottom_navigation_bar.dart';
 import 'package:in_out/widget/SearchAndFilterBar.dart';
 import 'package:in_out/widget/pagination_widgets.dart';
-import 'package:in_out/widget/translate_text.dart';
-import 'localization/app_localizations.dart';
+
 import 'data/attendance_data.dart';
+import 'localization/app_localizations.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -87,6 +87,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       }
     });
     _mainScrollController.addListener(_scrollListener);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
   }
 
   @override
@@ -111,7 +115,39 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   void _showFilterDialog(BuildContext context) {
-    // Implémentation du dialogue de filtre
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context).getString('selectFilter')),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text(AppLocalizations.of(context)
+                      .getString('filterByMonth')),
+                  onTap: () => _handleFilterChange('Month'),
+                ),
+                ListTile(
+                  title: Text(AppLocalizations.of(context)
+                      .getString('filterByYear')),
+                  onTap: () => _handleFilterChange('Year'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text(AppLocalizations.of(context)
+                  .getString('close')),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -313,19 +349,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 }
 
-// La classe AttendanceRow avec support multilanguage
 class AttendanceRow extends StatelessWidget {
   final Map<String, dynamic> attendance;
   final ScrollController horizontalScrollController;
 
   const AttendanceRow({
-    Key? key,
+    super.key,
     required this.attendance,
     required this.horizontalScrollController,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+
     final screenSize = MediaQuery.of(context).size;
     final screenWidth = screenSize.width;
     final screenHeight = screenSize.height;
@@ -338,7 +374,6 @@ class AttendanceRow extends StatelessWidget {
     final lightBorderColor =
         isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100;
 
-    // Détermine la couleur du statut
     Color statusColor;
     if (attendance['status'] == 'On Time') {
       statusColor = Colors.green;

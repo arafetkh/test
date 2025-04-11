@@ -1,13 +1,14 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:in_out/provider/language_provider.dart';
 import 'package:in_out/services/NavigationService.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
 import 'package:in_out/widget/UserProfileHeader.dart';
 import 'package:in_out/widget/bottom_navigation_bar.dart';
-import 'package:provider/provider.dart';
-import 'package:in_out/provider/language_provider.dart';
 import 'package:in_out/widget/translate_text.dart';
+import 'package:provider/provider.dart';
 
 import 'NotificationsScreen.dart';
 
@@ -35,6 +36,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
     // Initialize theme dropdown based on actual theme mode
     WidgetsBinding.instance.addPostFrameCallback((_) {

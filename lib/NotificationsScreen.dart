@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:in_out/services/NavigationService.dart';
+import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/NotificationItem.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
 import 'package:in_out/widget/UserProfileHeader.dart';
-import 'package:provider/provider.dart';
-import 'package:in_out/provider/language_provider.dart';
-import 'package:in_out/widget/translate_text.dart';
 import 'package:in_out/widget/bottom_navigation_bar.dart';
-import 'package:in_out/theme/adaptive_colors.dart';
+import 'package:in_out/widget/translate_text.dart';
 
 // Gardez la classe NotificationsService telle quelle
 class NotificationsService {
@@ -168,6 +167,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     super.initState();
     _scrollController.addListener(_scrollListener);
     _notificationsService.addListener(_updateNotifications);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     _initializeNotifications();
   }
 

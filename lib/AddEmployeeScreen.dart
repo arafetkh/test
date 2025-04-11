@@ -1,43 +1,104 @@
 import 'package:flutter/material.dart';
+import 'package:in_out/data/employees_data.dart';
+import 'package:in_out/localization/app_localizations.dart';
+import 'package:in_out/provider/language_provider.dart';
+import 'package:in_out/services/NationalityService.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/LandscapeUserProfileHeader.dart';
-import 'package:in_out/localization/app_localizations.dart';
+import 'package:provider/provider.dart';
+// Import our nationality service
 
 class AddEmployeeScreen extends StatefulWidget {
-  const AddEmployeeScreen({super.key});
+  final Function(Map<String, dynamic>)? onEmployeeAdded;
+
+  const AddEmployeeScreen({
+    super.key,
+    this.onEmployeeAdded,
+  });
 
   @override
   State<AddEmployeeScreen> createState() => _AddEmployeeScreenState();
 }
 
 class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
-  // Controllers pour les champs de texte
+  // Controllers for text fields
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _mobileNumberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _employeeIdController = TextEditingController();
+  final TextEditingController _userNameController = TextEditingController();
 
-  // Valeurs sélectionnées pour les dropdown
+  // Selected values for dropdowns
   String? _selectedMaritalStatus;
   String? _selectedGender;
   String? _selectedNationality;
   String? _selectedCity;
   String? _selectedState;
   String? _selectedZipCode;
+  String? _selectedEmployeeType;
+  String? _selectedDepartment;
+  String? _selectedWorkingDays;
+  String? _selectedOfficeLocation;
 
-  // Date de naissance
+  // Birth date and joining date
   DateTime? _dateOfBirth;
+  DateTime? _joiningDate;
 
   bool _isPersonalInfoActive = true;
   bool _isProfessionalInfoActive = false;
   bool _isHeaderVisible = true;
   final ScrollController _scrollController = ScrollController();
 
+  // Form validation
+  final _formKey = GlobalKey<FormState>();
+  bool _formIsValid = false;
+
+  // Nationality lists
+  List<String> _nationalities = [];
+  final _nationalityService = NationalityService();
+  bool _nationalitiesLoaded = false;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+
+    // Initialize default values for dropdowns
+    _selectedEmployeeType = 'Full-time';
+    _selectedDepartment = 'IT';
+    _selectedWorkingDays = 'Monday-Friday';
+    _selectedOfficeLocation = 'Headquarters';
+    _joiningDate = DateTime.now();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Load nationalities in didChangeDependencies instead of initState
+    if (!_nationalitiesLoaded) {
+      _loadNationalities();
+      _nationalitiesLoaded = true;
+    }
+  }
+
+  Future<void> _loadNationalities() async {
+    // Get language from provider
+    final languageProvider =
+        Provider.of<LanguageProvider>(context, listen: false);
+    final String languageCode = languageProvider.currentLanguage;
+
+    // Load nationalities using our service
+    final nationalities =
+        await _nationalityService.getNationalitiesByLanguage(languageCode);
+
+    if (mounted) {
+      setState(() {
+        _nationalities = nationalities;
+      });
+    }
   }
 
   @override
@@ -47,6 +108,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     _mobileNumberController.dispose();
     _emailController.dispose();
     _addressController.dispose();
+    _employeeIdController.dispose();
+    _userNameController.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
@@ -65,18 +128,93 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     });
   }
 
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> _selectDate(BuildContext context, bool isBirthDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _dateOfBirth ?? DateTime.now(),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
+      initialDate: isBirthDate
+          ? (_dateOfBirth ?? DateTime(2000))
+          : (_joiningDate ?? DateTime.now()),
+      firstDate: isBirthDate ? DateTime(1950) : DateTime(2000),
+      lastDate: isBirthDate ? DateTime.now() : DateTime(2100),
     );
-    if (picked != null && picked != _dateOfBirth) {
+
+    if (picked != null) {
       setState(() {
-        _dateOfBirth = picked;
+        if (isBirthDate) {
+          _dateOfBirth = picked;
+        } else {
+          _joiningDate = picked;
+        }
       });
     }
+  }
+
+  void _validateForm() {
+    if (_isPersonalInfoActive) {
+      // Validate personal info
+      _formIsValid = _firstNameController.text.isNotEmpty &&
+          _lastNameController.text.isNotEmpty &&
+          _emailController.text.isNotEmpty;
+    } else {
+      // Validate professional info
+      _formIsValid = _employeeIdController.text.isNotEmpty &&
+          _userNameController.text.isNotEmpty;
+    }
+  }
+
+  void _createEmployee() {
+    // Only proceed if we're on the professional tab and data is valid
+    if (!_isProfessionalInfoActive) {
+      _toggleTab(false);
+      return;
+    }
+
+    // Validate form
+    _validateForm();
+    if (!_formIsValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please complete all required fields')),
+      );
+      return;
+    }
+
+    // Create employee data
+    final String fullName =
+        '${_firstNameController.text} ${_lastNameController.text}';
+    final String initials = _firstNameController.text.isNotEmpty &&
+            _lastNameController.text.isNotEmpty
+        ? '${_firstNameController.text[0]}${_lastNameController.text[0]}'
+        : 'NN';
+
+    final newEmployee = {
+      'name': fullName,
+      'avatar': initials,
+      'avatarColor': Colors.blue.shade100,
+      'textColor': Colors.blue.shade800,
+      'id': _employeeIdController.text,
+      'department': _selectedDepartment ?? 'IT',
+      'designation': _userNameController.text,
+      'type': _selectedEmployeeType ?? 'Full-time',
+    };
+
+    // Call the callback if it exists
+    if (widget.onEmployeeAdded != null) {
+      widget.onEmployeeAdded!(newEmployee);
+    }
+
+    // Add to employee list directly if needed
+    employees.add(newEmployee);
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Employee added successfully'),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    // Navigate back
+    Navigator.pop(context);
   }
 
   @override
@@ -96,7 +234,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               onNotificationTap: () {},
             ),
 
-            // Titre et fil d'Ariane
+            // Title and breadcrumb
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.02,
@@ -114,7 +252,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   ),
                   SizedBox(width: screenWidth * 0.01),
                   Text(
-                    '/ ${localizations.getString('allEmployees')} / ${localizations.getString('addEmployee')}',
+                    '/ ${localizations.getString('employees')} / ${localizations.getString('addEmployee')}',
                     style: TextStyle(
                       fontSize: screenWidth * 0.012,
                       color: AdaptiveColors.secondaryTextColor(context),
@@ -124,7 +262,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               ),
             ),
 
-            // Contenu principal
+            // Main content
             Expanded(
               child: Container(
                 margin: EdgeInsets.all(screenWidth * 0.01),
@@ -142,23 +280,29 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 ),
                 child: Column(
                   children: [
-                    // Onglets Personal/Professional Information
+                    // Tabs for Personal/Professional Information
                     _buildTabs(context, screenWidth, screenHeight),
 
-                    // Formulaire
+                    // Form
                     Expanded(
-                      child: SingleChildScrollView(
-                        controller: _scrollController,
-                        padding: EdgeInsets.all(screenWidth * 0.01),
-                        child: _isPersonalInfoActive
-                            ? _buildPersonalInfoForm(
-                                context, screenWidth, screenHeight)
-                            : _buildProfessionalInfoForm(
-                                context, screenWidth, screenHeight),
+                      child: Form(
+                        key: _formKey,
+                        onChanged: () {
+                          _validateForm();
+                        },
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          padding: EdgeInsets.all(screenWidth * 0.01),
+                          child: _isPersonalInfoActive
+                              ? _buildPersonalInfoForm(
+                                  context, screenWidth, screenHeight)
+                              : _buildProfessionalInfoForm(
+                                  context, screenWidth, screenHeight),
+                        ),
                       ),
                     ),
 
-                    // Boutons d'action en bas
+                    // Action buttons at the bottom
                     _buildActionButtons(context, screenWidth, screenHeight),
                   ],
                 ),
@@ -185,7 +329,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       ),
       child: Row(
         children: [
-          // Tab Personal Information
           Expanded(
             child: InkWell(
               onTap: () => _toggleTab(true),
@@ -232,7 +375,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
             ),
           ),
 
-          // Tab Professional Information
+          // Professional Information Tab
           Expanded(
             child: InkWell(
               onTap: () => _toggleTab(false),
@@ -286,10 +429,11 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   Widget _buildPersonalInfoForm(
       BuildContext context, double screenWidth, double screenHeight) {
     final localizations = AppLocalizations.of(context);
+    final fieldHeight = screenHeight * 0.065; // Consistent field height
 
     return Column(
       children: [
-        // Première rangée: Prénom et Nom
+        // First row: First Name and Last Name
         Row(
           children: [
             Expanded(
@@ -299,6 +443,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 localizations.getString('firstName'),
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
             SizedBox(width: screenWidth * 0.01),
@@ -309,13 +454,14 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 localizations.getString('lastName'),
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
           ],
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // Deuxième rangée: Téléphone et Email
+        // Second row: Mobile Number and Email
         Row(
           children: [
             Expanded(
@@ -325,6 +471,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 localizations.getString('mobileNumber'),
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
             SizedBox(width: screenWidth * 0.01),
@@ -335,13 +482,14 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 localizations.getString('emailAddress'),
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
           ],
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // Troisième rangée: Date de naissance et État civil
+        // Third row: Date of Birth and Marital Status
         Row(
           children: [
             Expanded(
@@ -350,6 +498,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 localizations.getString('dateOfBirth'),
                 screenWidth,
                 screenHeight,
+                isBirthDate: true,
+                fieldHeight: fieldHeight,
               ),
             ),
             SizedBox(width: screenWidth * 0.01),
@@ -366,13 +516,14 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 },
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
           ],
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // Quatrième rangée: Genre et Nationalité
+        // Fourth row: Gender and Nationality
         Row(
           children: [
             Expanded(
@@ -388,6 +539,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 },
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
             SizedBox(width: screenWidth * 0.01),
@@ -395,14 +547,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               child: _buildDropdown(
                 context,
                 localizations.getString('nationality'),
-                [
-                  'American',
-                  'British',
-                  'Canadian',
-                  'French',
-                  'German',
-                  'Other'
-                ],
+                _nationalities.isEmpty ? ['Loading...'] : _nationalities,
                 _selectedNationality,
                 (value) {
                   setState(() {
@@ -411,23 +556,25 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 },
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
           ],
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // Cinquième rangée: Adresse
+        // Fifth row: Address
         _buildTextField(
           context,
           _addressController,
           localizations.getString('address'),
           screenWidth,
           screenHeight,
+          fieldHeight: fieldHeight,
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // Sixième rangée: Ville, État et Code postal
+        // Sixth row: City, State and Zip Code
         Row(
           children: [
             Expanded(
@@ -450,6 +597,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 },
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
             SizedBox(width: screenWidth * 0.01),
@@ -466,6 +614,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 },
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
             SizedBox(width: screenWidth * 0.01),
@@ -482,13 +631,14 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 },
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
           ],
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // Zone de dépôt d'image
+        // Image upload area
         Container(
           height: screenHeight * 0.2,
           decoration: BoxDecoration(
@@ -542,36 +692,39 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   Widget _buildProfessionalInfoForm(
       BuildContext context, double screenWidth, double screenHeight) {
     final localizations = AppLocalizations.of(context);
+    final fieldHeight = screenHeight * 0.065; // Consistent field height
 
     return Column(
       children: [
-        // Première rangée: ID employé et nom d'utilisateur
+        // First row: Employee ID and User Name
         Row(
           children: [
             Expanded(
               child: _buildTextField(
                 context,
-                TextEditingController(),
+                _employeeIdController,
                 localizations.getString('employeeId'),
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
             SizedBox(width: screenWidth * 0.01),
             Expanded(
               child: _buildTextField(
                 context,
-                TextEditingController(),
+                _userNameController,
                 localizations.getString('userName'),
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
           ],
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // Deuxième rangée: Type employé et département
+        // Second row: Employee Type and Department
         Row(
           children: [
             Expanded(
@@ -579,10 +732,15 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 context,
                 localizations.getString('employeeType'),
                 ['Full-time', 'Part-time', 'Contract', 'Remote'],
-                null,
-                (value) {},
+                _selectedEmployeeType,
+                (value) {
+                  setState(() {
+                    _selectedEmployeeType = value;
+                  });
+                },
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
             SizedBox(width: screenWidth * 0.01),
@@ -590,18 +748,31 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               child: _buildDropdown(
                 context,
                 localizations.getString('department'),
-                ['HR', 'IT', 'Finance', 'Marketing', 'Sales', 'Operations'],
-                null,
-                (value) {},
+                [
+                  'HR',
+                  'IT',
+                  'Finance',
+                  'Marketing',
+                  'Sales',
+                  'Design',
+                  'Development'
+                ],
+                _selectedDepartment,
+                (value) {
+                  setState(() {
+                    _selectedDepartment = value;
+                  });
+                },
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
           ],
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // Troisième rangée: Jours de travail et date d'arrivée
+        // Third row: Working Days and Joining Date
         Row(
           children: [
             Expanded(
@@ -609,10 +780,15 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 context,
                 localizations.getString('workingDays'),
                 ['Monday-Friday', 'Monday-Saturday', 'Custom'],
-                null,
-                (value) {},
+                _selectedWorkingDays,
+                (value) {
+                  setState(() {
+                    _selectedWorkingDays = value;
+                  });
+                },
                 screenWidth,
                 screenHeight,
+                fieldHeight: fieldHeight,
               ),
             ),
             SizedBox(width: screenWidth * 0.01),
@@ -622,34 +798,43 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                 localizations.getString('joiningDate'),
                 screenWidth,
                 screenHeight,
+                isBirthDate: false,
+                fieldHeight: fieldHeight,
               ),
             ),
           ],
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // Quatrième rangée: Emplacement du bureau
+        // Fourth row: Office Location
         _buildDropdown(
           context,
           localizations.getString('officeLocation'),
-          ['Headquarters', 'Branch A', 'Branch B', 'Remote'],
-          null,
-          (value) {},
+          ['Office','Remote'],
+          _selectedOfficeLocation,
+          (value) {
+            setState(() {
+              _selectedOfficeLocation = value;
+            });
+          },
           screenWidth,
           screenHeight,
+          fieldHeight: fieldHeight,
         ),
       ],
     );
   }
 
   Widget _buildTextField(
-    BuildContext context,
-    TextEditingController controller,
-    String label,
-    double screenWidth,
-    double screenHeight,
-  ) {
+      BuildContext context,
+      TextEditingController controller,
+      String label,
+      double screenWidth,
+      double screenHeight,
+      {double? fieldHeight}
+      ) {
     return Container(
+      height: fieldHeight,
       decoration: BoxDecoration(
         border: Border.all(
           color: AdaptiveColors.borderColor(context),
@@ -661,11 +846,16 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          floatingLabelBehavior: FloatingLabelBehavior.never,
+          labelStyle: TextStyle(
+            fontSize: screenWidth * 0.01,
+            color: AdaptiveColors.secondaryTextColor(context),
+          ),
+          // Change from never to auto to keep the label visible
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: screenWidth * 0.01,
-            vertical: screenHeight * 0.015,
+            vertical: fieldHeight != null ? fieldHeight / 2 - screenWidth * 0.01 : screenHeight * 0.015,
           ),
         ),
         style: TextStyle(
@@ -676,18 +866,23 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     );
   }
 
-  Widget _buildDateField(
-    BuildContext context,
-    String label,
-    double screenWidth,
-    double screenHeight,
-  ) {
+  Widget _buildDateField(BuildContext context,
+      String label,
+      double screenWidth,
+      double screenHeight,
+      {required bool isBirthDate, double? fieldHeight}) {
+    final DateTime? dateValue = isBirthDate ? _dateOfBirth : _joiningDate;
+    final String displayText = dateValue != null
+        ? '${dateValue.day.toString().padLeft(2, '0')}/${dateValue.month
+        .toString().padLeft(2, '0')}/${dateValue.year}'
+        : label;
+
     return InkWell(
-      onTap: () => _selectDate(context),
+      onTap: () => _selectDate(context, isBirthDate),
       child: Container(
+        height: fieldHeight,
         padding: EdgeInsets.symmetric(
           horizontal: screenWidth * 0.01,
-          vertical: screenHeight * 0.015,
         ),
         decoration: BoxDecoration(
           border: Border.all(
@@ -700,12 +895,10 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              _dateOfBirth != null
-                  ? '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}'
-                  : label,
+              displayText,
               style: TextStyle(
                 fontSize: screenWidth * 0.01,
-                color: _dateOfBirth != null
+                color: dateValue != null
                     ? AdaptiveColors.primaryTextColor(context)
                     : AdaptiveColors.secondaryTextColor(context),
               ),
@@ -721,19 +914,18 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     );
   }
 
-  Widget _buildDropdown(
-    BuildContext context,
-    String label,
-    List<String> items,
-    String? selectedValue,
-    Function(String?) onChanged,
-    double screenWidth,
-    double screenHeight,
-  ) {
+  Widget _buildDropdown(BuildContext context,
+      String label,
+      List<String> items,
+      String? selectedValue,
+      Function(String?) onChanged,
+      double screenWidth,
+      double screenHeight,
+      {double? fieldHeight}) {
     return Container(
+      height: fieldHeight,
       padding: EdgeInsets.symmetric(
         horizontal: screenWidth * 0.01,
-        vertical: selectedValue != null ? screenHeight * 0.005 : 0,
       ),
       decoration: BoxDecoration(
         border: Border.all(
@@ -780,6 +972,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   Widget _buildActionButtons(
       BuildContext context, double screenWidth, double screenHeight) {
     final localizations = AppLocalizations.of(context);
+    final buttonHeight = screenHeight * 0.05; // Consistent button height
 
     return Container(
       padding: EdgeInsets.all(screenWidth * 0.01),
@@ -794,7 +987,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // Bouton Annuler/Retour
+          // Cancel/Back button
           OutlinedButton(
             onPressed: () {
               if (_isProfessionalInfoActive) {
@@ -804,10 +997,10 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               }
             },
             style: OutlinedButton.styleFrom(
+              minimumSize: Size(screenWidth * 0.08, buttonHeight),
               side: BorderSide(color: AdaptiveColors.borderColor(context)),
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.015,
-                vertical: screenHeight * 0.01,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(screenWidth * 0.003),
@@ -825,23 +1018,23 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           ),
           SizedBox(width: screenWidth * 0.01),
 
-          // Bouton Next/Apply
+          // Next/Apply button
           ElevatedButton(
             onPressed: () {
               if (_isPersonalInfoActive) {
-                // Passer à l'onglet information professionnelle
+                // Move to professional information tab
                 _toggleTab(false);
               } else {
-                // Soumettre le formulaire
-                Navigator.pop(context);
+                // Create and save employee
+                _createEmployee();
               }
             },
             style: ElevatedButton.styleFrom(
+              minimumSize: Size(screenWidth * 0.08, buttonHeight),
               backgroundColor: const Color(0xFF2E7D32),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.015,
-                vertical: screenHeight * 0.01,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(screenWidth * 0.003),
