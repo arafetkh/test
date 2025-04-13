@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/mdi.dart';
 import 'package:iconify_flutter/icons/ic.dart';
-import 'package:iconify_flutter/icons/ph.dart';
 import 'package:iconify_flutter/icons/carbon.dart';
 
 import '../theme/adaptive_colors.dart';
@@ -44,9 +43,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
         // Équipe (Employees)
         BottomNavigationBarItem(
           icon:
-              Iconify(Ic.outline_groups, size: iconSize, color: inactiveColor),
+          Iconify(Ic.outline_groups, size: iconSize, color: inactiveColor),
           activeIcon:
-              Iconify(Ic.baseline_groups, size: iconSize, color: activeColor),
+          Iconify(Ic.baseline_groups, size: iconSize, color: activeColor),
           label: 'team',
           tooltip: 'team',
         ),
@@ -55,7 +54,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           icon: Iconify(Mdi.calendar_clock_outline,
               size: iconSize, color: inactiveColor),
           activeIcon:
-              Iconify(Mdi.calendar_clock, size: iconSize, color: activeColor),
+          Iconify(Mdi.calendar_clock, size: iconSize, color: activeColor),
           label: 'attendance',
           tooltip: 'attendance',
         ),
@@ -74,6 +73,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
           activeIcon: Iconify(Mdi.cog, size: iconSize, color: activeColor),
           label: 'settings',
           tooltip: 'settings',
+        ),
+        // Jours fériés (Holidays) - Nouveau
+        BottomNavigationBarItem(
+          icon: Iconify(Mdi.calendar_star_outline,
+              size: iconSize, color: inactiveColor),
+          activeIcon: Iconify(Mdi.calendar_star,
+              size: iconSize, color: activeColor),
+          label: 'holidays',
+          tooltip: 'holidays',
         ),
       ],
     );

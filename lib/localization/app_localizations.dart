@@ -240,6 +240,62 @@ class AppLocalizations {
         return apply;
       case "toUpload":
         return toUpload;
+      case "holidays":
+        return holidays;
+      case "holidaysList":
+        return holidaysList;
+      case "noHolidays":
+        return noHolidays;
+      case "addHoliday":
+        return addHoliday;
+      case "holidayName":
+        return holidayName;
+      case "holidayDate":
+        return holidayDate;
+      case "enterHolidayName":
+        return enterHolidayName;
+      case "enterDescription":
+        return enterDescription;
+      case "description":
+        return description;
+      case "holidayType":
+        return holidayType;
+      case "recurringYearly":
+        return recurringYearly;
+      case "holidayNameRequired":
+        return holidayNameRequired;
+      case "holidayAddedSuccessfully":
+        return holidayAddedSuccessfully;
+      case "holidayDeletedSuccessfully":
+        return holidayDeletedSuccessfully;
+      case "confirmDelete":
+        return confirmDelete;
+      case "deleteHolidayConfirmation":
+        return deleteHolidayConfirmation;
+      case "recurring":
+        return recurring;
+      case "today":
+        return today;
+      case "date":
+        return date;
+      case "yearlyRecurring":
+        return yearlyRecurring;
+      case "firstOccurrence":
+        return firstOccurrence;
+      case "holidayInfo":
+        return holidayInfo;
+      case "holidayDetails":
+        return holidayDetails;
+      case "publicHolidayInfo":
+        return publicHolidayInfo;
+      case "companyHolidayInfo":
+        return companyHolidayInfo;
+      case "pleaseFillRequiredFields":
+        return pleaseFillRequiredFields;
+      case "upcoming":
+        return upcoming;
+      case "pastHolidays":
+        return pastHolidays;
       default:
         return key;
     }
@@ -482,6 +538,60 @@ class AppLocalizations {
 
   String get twoFactorAuth =>
       Intl.message('Two-factor Authentication', name: 'twoFactorAuth');
+
+  //holidays
+  String get holidays => Intl.message('Holidays', name: 'holidays');
+  String get holidaysList =>
+      Intl.message('Holidays List', name: 'holidaysList');
+  String get noHolidays =>
+      Intl.message('No holidays found for this period', name: 'noHolidays');
+  String get addHoliday => Intl.message('Add Holiday', name: 'addHoliday');
+  String get holidayName => Intl.message('Holiday Name', name: 'holidayName');
+  String get holidayDate => Intl.message('Holiday Date', name: 'holidayDate');
+  String get enterHolidayName =>
+      Intl.message('Enter holiday name', name: 'enterHolidayName');
+  String get enterDescription =>
+      Intl.message('Enter description (optional)', name: 'enterDescription');
+  String get description => Intl.message('Description', name: 'description');
+  String get holidayType => Intl.message('Holiday Type', name: 'holidayType');
+  String get recurringYearly =>
+      Intl.message('Recurring yearly', name: 'recurringYearly');
+  String get holidayNameRequired =>
+      Intl.message('Holiday name is required', name: 'holidayNameRequired');
+  String get holidayAddedSuccessfully =>
+      Intl.message('Holiday added successfully',
+          name: 'holidayAddedSuccessfully');
+  String get holidayDeletedSuccessfully =>
+      Intl.message('Holiday deleted successfully',
+          name: 'holidayDeletedSuccessfully');
+  String get confirmDelete =>
+      Intl.message('Confirm Delete', name: 'confirmDelete');
+  String get deleteHolidayConfirmation =>
+      Intl.message('Are you sure you want to delete this holiday?',
+          name: 'deleteHolidayConfirmation');
+  String get recurring => Intl.message('Recurring', name: 'recurring');
+  String get today => Intl.message('Today', name: 'today');
+  String get date => Intl.message('Date', name: 'date');
+  String get yearlyRecurring =>
+      Intl.message('Yearly Recurring Holiday', name: 'yearlyRecurring');
+  String get firstOccurrence =>
+      Intl.message('First Occurrence', name: 'firstOccurrence');
+  String get holidayInfo =>
+      Intl.message('Holiday Information', name: 'holidayInfo');
+  String get holidayDetails =>
+      Intl.message('Holiday Details', name: 'holidayDetails');
+  String get publicHolidayInfo => Intl.message(
+      'This is a public holiday. All employees are entitled to a day off with regular pay. If you need to work on this day, please contact HR for overtime approval.',
+      name: 'publicHolidayInfo');
+  String get companyHolidayInfo => Intl.message(
+      'This is a company holiday. Regular employees are entitled to a day off. Specific departments may have different arrangements. Please check with your manager.',
+      name: 'companyHolidayInfo');
+  String get pleaseFillRequiredFields =>
+      Intl.message('Please fill in all required fields',
+          name: 'pleaseFillRequiredFields');
+  String get upcoming => Intl.message('Upcoming', name: 'upcoming');
+  String get pastHolidays =>
+      Intl.message('Past Holidays', name: 'pastHolidays');
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

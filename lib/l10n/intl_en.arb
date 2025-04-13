@@ -42,6 +42,9 @@
   "messages": "Messages",
   "menu": "Menu",
 
+
+
+
   "employees": "Employees",
   "employeeName": "Employee Name",
   "employeeId": "Employee ID",
@@ -114,5 +117,40 @@
   "back": "Back",
   "next": "Next",
   "apply": "Apply",
-  "toUpload": "to upload"
+  "toUpload": "to upload",
+  "employeeProfile": "Employee Profile",
+  "profile": "Profile",
+  "requestLeave": "Request Leave",
+  "duration": "Duration",
+
+
+
+  "holidays": "Holidays",
+  "holidaysList": "Holidays List",
+  "noHolidays": "No holidays found for this period",
+  "addHoliday": "Add Holiday",
+  "holidayName": "Holiday Name",
+  "holidayDate": "Holiday Date",
+  "enterHolidayName": "Enter holiday name",
+  "enterDescription": "Enter description (optional)",
+  "description": "Description",
+  "holidayType": "Holiday Type",
+  "recurringYearly": "Recurring yearly",
+  "holidayNameRequired": "Holiday name is required",
+  "holidayAddedSuccessfully": "Holiday added successfully",
+  "holidayDeletedSuccessfully": "Holiday deleted successfully",
+  "confirmDelete": "Confirm Delete",
+  "deleteHolidayConfirmation": "Are you sure you want to delete this holiday?",
+  "recurring": "Recurring",
+  "today": "Today",
+  "date": "Date",
+  "yearlyRecurring": "Yearly Recurring Holiday",
+  "firstOccurrence": "First Occurrence",
+  "holidayInfo": "Holiday Information",
+  "holidayDetails": "Holiday Details",
+  "publicHolidayInfo": "This is a public holiday. All employees are entitled to a day off with regular pay. If you need to work on this day, please contact HR for overtime approval.",
+  "companyHolidayInfo": "This is a company holiday. Regular employees are entitled to a day off. Specific departments may have different arrangements. Please check with your manager.",
+  "pleaseFillRequiredFields": "Please fill in all required fields",
+  "upcoming": "Upcoming",
+  "pastHolidays": "Past Holidays"
 }

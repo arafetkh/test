@@ -62,6 +62,10 @@ class CustomSideNavigationBar extends StatelessWidget {
 
           // Settings
           _buildNavItem(context, 4, Mdi.cog_outline, Mdi.cog, iconSize),
+
+          // Holidays - New item
+          _buildNavItem(context, 5, Mdi.calendar_star_outline,
+              Mdi.calendar_star, iconSize),
         ],
       ),
     );
@@ -81,10 +85,10 @@ class CustomSideNavigationBar extends StatelessWidget {
         decoration: BoxDecoration(
           border: isSelected
               ? Border(
-                  left: BorderSide(
-                  color: AdaptiveColors.primaryGreen,
-                  width: MediaQuery.of(context).size.width * 0.003,
-                ))
+              left: BorderSide(
+                color: AdaptiveColors.primaryGreen,
+                width: MediaQuery.of(context).size.width * 0.003,
+              ))
               : null,
         ),
         child: IconButton(

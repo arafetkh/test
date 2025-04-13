@@ -31,6 +31,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Active Employees"),
         "add": MessageLookupByLibrary.simpleMessage("Add"),
         "addEmployee": MessageLookupByLibrary.simpleMessage("Add Employee"),
+        "addHoliday": MessageLookupByLibrary.simpleMessage("Add Holiday"),
         "addNewEmployee":
             MessageLookupByLibrary.simpleMessage("Add New Employee"),
         "address": MessageLookupByLibrary.simpleMessage("Address"),
@@ -49,20 +50,28 @@ class MessageLookup extends MessageLookupByLibrary {
         "chooseFile": MessageLookupByLibrary.simpleMessage("choose file"),
         "city": MessageLookupByLibrary.simpleMessage("City"),
         "clearFilters": MessageLookupByLibrary.simpleMessage("Clear Filters"),
+        "companyHolidayInfo": MessageLookupByLibrary.simpleMessage(
+            "This is a company holiday. Regular employees are entitled to a day off. Specific departments may have different arrangements. Please check with your manager."),
+        "confirmDelete": MessageLookupByLibrary.simpleMessage("Confirm Delete"),
         "contract": MessageLookupByLibrary.simpleMessage("Contract"),
         "customizeTheme": MessageLookupByLibrary.simpleMessage(
             "Customize how your theme looks on your device"),
         "dark": MessageLookupByLibrary.simpleMessage("Dark"),
+        "date": MessageLookupByLibrary.simpleMessage("Date"),
         "dateOfBirth": MessageLookupByLibrary.simpleMessage("Date of Birth"),
         "day": MessageLookupByLibrary.simpleMessage("Day"),
         "delete": MessageLookupByLibrary.simpleMessage("Delete"),
+        "deleteHolidayConfirmation": MessageLookupByLibrary.simpleMessage(
+            "Are you sure you want to delete this holiday?"),
         "department": MessageLookupByLibrary.simpleMessage("Department"),
+        "description": MessageLookupByLibrary.simpleMessage("Description"),
         "designation": MessageLookupByLibrary.simpleMessage("Designation"),
         "desktopNotification":
             MessageLookupByLibrary.simpleMessage("Desktop Notification"),
         "desktopPushDescription": MessageLookupByLibrary.simpleMessage(
             "Receive push notification in desktop"),
         "dragAndDrop": MessageLookupByLibrary.simpleMessage("Drag & Drop"),
+        "duration": MessageLookupByLibrary.simpleMessage("Duration"),
         "edit": MessageLookupByLibrary.simpleMessage("Edit"),
         "ellipsis": MessageLookupByLibrary.simpleMessage("..."),
         "emailAddress": MessageLookupByLibrary.simpleMessage("Email Address"),
@@ -70,14 +79,37 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Email Notifications"),
         "employeeId": MessageLookupByLibrary.simpleMessage("Employee ID"),
         "employeeName": MessageLookupByLibrary.simpleMessage("Employee Name"),
+        "employeeProfile":
+            MessageLookupByLibrary.simpleMessage("Employee Profile"),
         "employeeType": MessageLookupByLibrary.simpleMessage("Employee Type"),
         "employees": MessageLookupByLibrary.simpleMessage("Employees"),
         "english": MessageLookupByLibrary.simpleMessage("English"),
+        "enterDescription": MessageLookupByLibrary.simpleMessage(
+            "Enter description (optional)"),
+        "enterHolidayName":
+            MessageLookupByLibrary.simpleMessage("Enter holiday name"),
         "filter": MessageLookupByLibrary.simpleMessage("Filter"),
         "firstName": MessageLookupByLibrary.simpleMessage("First Name"),
+        "firstOccurrence":
+            MessageLookupByLibrary.simpleMessage("First Occurrence"),
         "french": MessageLookupByLibrary.simpleMessage("French"),
         "fullTime": MessageLookupByLibrary.simpleMessage("Full-time"),
         "gender": MessageLookupByLibrary.simpleMessage("Gender"),
+        "holidayAddedSuccessfully":
+            MessageLookupByLibrary.simpleMessage("Holiday added successfully"),
+        "holidayDate": MessageLookupByLibrary.simpleMessage("Holiday Date"),
+        "holidayDeletedSuccessfully": MessageLookupByLibrary.simpleMessage(
+            "Holiday deleted successfully"),
+        "holidayDetails":
+            MessageLookupByLibrary.simpleMessage("Holiday Details"),
+        "holidayInfo":
+            MessageLookupByLibrary.simpleMessage("Holiday Information"),
+        "holidayName": MessageLookupByLibrary.simpleMessage("Holiday Name"),
+        "holidayNameRequired":
+            MessageLookupByLibrary.simpleMessage("Holiday name is required"),
+        "holidayType": MessageLookupByLibrary.simpleMessage("Holiday Type"),
+        "holidays": MessageLookupByLibrary.simpleMessage("Holidays"),
+        "holidaysList": MessageLookupByLibrary.simpleMessage("Holidays List"),
         "home": MessageLookupByLibrary.simpleMessage("Home"),
         "inactive": MessageLookupByLibrary.simpleMessage("Inactive"),
         "itemsPerPage": MessageLookupByLibrary.simpleMessage("Items per page"),
@@ -104,6 +136,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("No attendance records found"),
         "noEmployeesFound":
             MessageLookupByLibrary.simpleMessage("No employees found"),
+        "noHolidays": MessageLookupByLibrary.simpleMessage(
+            "No holidays found for this period"),
         "officeLocation":
             MessageLookupByLibrary.simpleMessage("Office Location"),
         "onTime": MessageLookupByLibrary.simpleMessage("On Time"),
@@ -112,13 +146,19 @@ class MessageLookup extends MessageLookupByLibrary {
         "pageOf": m0,
         "pagination": MessageLookupByLibrary.simpleMessage("Pagination"),
         "partTime": MessageLookupByLibrary.simpleMessage("Part-time"),
+        "pastHolidays": MessageLookupByLibrary.simpleMessage("Past Holidays"),
         "pendingTimeOff":
             MessageLookupByLibrary.simpleMessage("Pending Time Off"),
         "personalInformation":
             MessageLookupByLibrary.simpleMessage("Personal Information"),
+        "pleaseFillRequiredFields": MessageLookupByLibrary.simpleMessage(
+            "Please fill in all required fields"),
         "previousPage": MessageLookupByLibrary.simpleMessage("Previous"),
         "professionalInformation":
             MessageLookupByLibrary.simpleMessage("Professional Information"),
+        "profile": MessageLookupByLibrary.simpleMessage("Profile"),
+        "publicHolidayInfo": MessageLookupByLibrary.simpleMessage(
+            "This is a public holiday. All employees are entitled to a day off with regular pay. If you need to work on this day, please contact HR for overtime approval."),
         "receiveEmailNotification":
             MessageLookupByLibrary.simpleMessage("Receive email notification"),
         "receivePushNotification":
@@ -127,7 +167,11 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Recent Activities"),
         "recentEvents": MessageLookupByLibrary.simpleMessage("Recent Events"),
         "records": MessageLookupByLibrary.simpleMessage("records"),
+        "recurring": MessageLookupByLibrary.simpleMessage("Recurring"),
+        "recurringYearly":
+            MessageLookupByLibrary.simpleMessage("Recurring yearly"),
         "remote": MessageLookupByLibrary.simpleMessage("Remote"),
+        "requestLeave": MessageLookupByLibrary.simpleMessage("Request Leave"),
         "robertAllen": MessageLookupByLibrary.simpleMessage("Robert Allen"),
         "search": MessageLookupByLibrary.simpleMessage("Search"),
         "selectDepartment":
@@ -148,6 +192,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "system": MessageLookupByLibrary.simpleMessage("System"),
         "to": MessageLookupByLibrary.simpleMessage("to"),
         "toUpload": MessageLookupByLibrary.simpleMessage("to upload"),
+        "today": MessageLookupByLibrary.simpleMessage("Today"),
         "todayAttendance":
             MessageLookupByLibrary.simpleMessage("Today Attendance"),
         "totalDepartments":
@@ -160,6 +205,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "twoFactorDescription": MessageLookupByLibrary.simpleMessage(
             "Keep your account secure by enabling 2FA via mail"),
         "type": MessageLookupByLibrary.simpleMessage("Type"),
+        "upcoming": MessageLookupByLibrary.simpleMessage("Upcoming"),
         "updatedServerLogs":
             MessageLookupByLibrary.simpleMessage("Updated Server Logs"),
         "userName": MessageLookupByLibrary.simpleMessage("User Name"),
@@ -167,6 +213,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "viewAll": MessageLookupByLibrary.simpleMessage("View All"),
         "workingDays": MessageLookupByLibrary.simpleMessage("Working Days"),
         "year": MessageLookupByLibrary.simpleMessage("Year"),
+        "yearlyRecurring":
+            MessageLookupByLibrary.simpleMessage("Yearly Recurring Holiday"),
         "zipCode": MessageLookupByLibrary.simpleMessage("ZIP Code")
       };
 }

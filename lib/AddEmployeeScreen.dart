@@ -810,7 +810,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         _buildDropdown(
           context,
           localizations.getString('officeLocation'),
-          ['Office','Remote'],
+          ['Office', 'Remote'],
           _selectedOfficeLocation,
           (value) {
             setState(() {
@@ -825,14 +825,11 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     );
   }
 
-  Widget _buildTextField(
-      BuildContext context,
-      TextEditingController controller,
+  Widget _buildTextField(BuildContext context, TextEditingController controller,
       String label,
       double screenWidth,
       double screenHeight,
-      {double? fieldHeight}
-      ) {
+      {double? fieldHeight}) {
     return Container(
       height: fieldHeight,
       decoration: BoxDecoration(
@@ -855,7 +852,9 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: screenWidth * 0.01,
-            vertical: fieldHeight != null ? fieldHeight / 2 - screenWidth * 0.01 : screenHeight * 0.015,
+            vertical: fieldHeight != null
+                ? fieldHeight / 2 - screenWidth * 0.01
+                : screenHeight * 0.015,
           ),
         ),
         style: TextStyle(

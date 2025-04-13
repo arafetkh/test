@@ -1179,6 +1179,326 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Employee Profile`
+  String get employeeProfile {
+    return Intl.message(
+      'Employee Profile',
+      name: 'employeeProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Profile`
+  String get profile {
+    return Intl.message(
+      'Profile',
+      name: 'profile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Request Leave`
+  String get requestLeave {
+    return Intl.message(
+      'Request Leave',
+      name: 'requestLeave',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Duration`
+  String get duration {
+    return Intl.message(
+      'Duration',
+      name: 'duration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holidays`
+  String get holidays {
+    return Intl.message(
+      'Holidays',
+      name: 'holidays',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holidays List`
+  String get holidaysList {
+    return Intl.message(
+      'Holidays List',
+      name: 'holidaysList',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No holidays found for this period`
+  String get noHolidays {
+    return Intl.message(
+      'No holidays found for this period',
+      name: 'noHolidays',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add Holiday`
+  String get addHoliday {
+    return Intl.message(
+      'Add Holiday',
+      name: 'addHoliday',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holiday Name`
+  String get holidayName {
+    return Intl.message(
+      'Holiday Name',
+      name: 'holidayName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holiday Date`
+  String get holidayDate {
+    return Intl.message(
+      'Holiday Date',
+      name: 'holidayDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter holiday name`
+  String get enterHolidayName {
+    return Intl.message(
+      'Enter holiday name',
+      name: 'enterHolidayName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter description (optional)`
+  String get enterDescription {
+    return Intl.message(
+      'Enter description (optional)',
+      name: 'enterDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Description`
+  String get description {
+    return Intl.message(
+      'Description',
+      name: 'description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holiday Type`
+  String get holidayType {
+    return Intl.message(
+      'Holiday Type',
+      name: 'holidayType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recurring yearly`
+  String get recurringYearly {
+    return Intl.message(
+      'Recurring yearly',
+      name: 'recurringYearly',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holiday name is required`
+  String get holidayNameRequired {
+    return Intl.message(
+      'Holiday name is required',
+      name: 'holidayNameRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holiday added successfully`
+  String get holidayAddedSuccessfully {
+    return Intl.message(
+      'Holiday added successfully',
+      name: 'holidayAddedSuccessfully',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holiday deleted successfully`
+  String get holidayDeletedSuccessfully {
+    return Intl.message(
+      'Holiday deleted successfully',
+      name: 'holidayDeletedSuccessfully',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm Delete`
+  String get confirmDelete {
+    return Intl.message(
+      'Confirm Delete',
+      name: 'confirmDelete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure you want to delete this holiday?`
+  String get deleteHolidayConfirmation {
+    return Intl.message(
+      'Are you sure you want to delete this holiday?',
+      name: 'deleteHolidayConfirmation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recurring`
+  String get recurring {
+    return Intl.message(
+      'Recurring',
+      name: 'recurring',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Today`
+  String get today {
+    return Intl.message(
+      'Today',
+      name: 'today',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Date`
+  String get date {
+    return Intl.message(
+      'Date',
+      name: 'date',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Yearly Recurring Holiday`
+  String get yearlyRecurring {
+    return Intl.message(
+      'Yearly Recurring Holiday',
+      name: 'yearlyRecurring',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `First Occurrence`
+  String get firstOccurrence {
+    return Intl.message(
+      'First Occurrence',
+      name: 'firstOccurrence',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holiday Information`
+  String get holidayInfo {
+    return Intl.message(
+      'Holiday Information',
+      name: 'holidayInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Holiday Details`
+  String get holidayDetails {
+    return Intl.message(
+      'Holiday Details',
+      name: 'holidayDetails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is a public holiday. All employees are entitled to a day off with regular pay. If you need to work on this day, please contact HR for overtime approval.`
+  String get publicHolidayInfo {
+    return Intl.message(
+      'This is a public holiday. All employees are entitled to a day off with regular pay. If you need to work on this day, please contact HR for overtime approval.',
+      name: 'publicHolidayInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This is a company holiday. Regular employees are entitled to a day off. Specific departments may have different arrangements. Please check with your manager.`
+  String get companyHolidayInfo {
+    return Intl.message(
+      'This is a company holiday. Regular employees are entitled to a day off. Specific departments may have different arrangements. Please check with your manager.',
+      name: 'companyHolidayInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please fill in all required fields`
+  String get pleaseFillRequiredFields {
+    return Intl.message(
+      'Please fill in all required fields',
+      name: 'pleaseFillRequiredFields',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upcoming`
+  String get upcoming {
+    return Intl.message(
+      'Upcoming',
+      name: 'upcoming',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Past Holidays`
+  String get pastHolidays {
+    return Intl.message(
+      'Past Holidays',
+      name: 'pastHolidays',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
