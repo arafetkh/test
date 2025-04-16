@@ -122,6 +122,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "late": MessageLookupByLibrary.simpleMessage("Late"),
         "light": MessageLookupByLibrary.simpleMessage("Light"),
         "maritalStatus": MessageLookupByLibrary.simpleMessage("Marital Status"),
+        "members": MessageLookupByLibrary.simpleMessage("Members"),
         "menu": MessageLookupByLibrary.simpleMessage("Menu"),
         "messages": MessageLookupByLibrary.simpleMessage("Messages"),
         "minAgo": MessageLookupByLibrary.simpleMessage("min ago"),
@@ -134,6 +135,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "nextPage": MessageLookupByLibrary.simpleMessage("Next"),
         "noAttendanceRecords":
             MessageLookupByLibrary.simpleMessage("No attendance records found"),
+        "noDepartmentsFound":
+            MessageLookupByLibrary.simpleMessage("No departments found"),
         "noEmployeesFound":
             MessageLookupByLibrary.simpleMessage("No employees found"),
         "noHolidays": MessageLookupByLibrary.simpleMessage(

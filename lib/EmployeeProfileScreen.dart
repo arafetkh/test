@@ -6,9 +6,9 @@ class EmployeeProfileScreen extends StatefulWidget {
   final Map<String, dynamic> employee;
 
   const EmployeeProfileScreen({
-    Key? key,
+    super.key,
     required this.employee,
-  }) : super(key: key);
+  });
 
   @override
   State<EmployeeProfileScreen> createState() => _EmployeeProfileScreenState();
@@ -19,12 +19,15 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
   bool _isHeaderVisible = true;
+  late Color _statusColor;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _scrollController.addListener(_scrollListener);
+    _statusColor =
+        widget.employee['type'] == 'Remote' ? Colors.blue : Colors.green;
   }
 
   @override
@@ -36,223 +39,333 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
   }
 
   void _scrollListener() {
-    setState(() {
-      _isHeaderVisible = _scrollController.offset <= 0;
-    });
+    final newHeaderVisible = _scrollController.offset <= 50;
+    if (_isHeaderVisible != newHeaderVisible) {
+      setState(() {
+        _isHeaderVisible = newHeaderVisible;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
+    final size = MediaQuery.of(context).size;
+    final screenWidth = size.width;
+    final screenHeight = size.height; // Get screen height
+
+    final titleFontSize = screenHeight * 0.022;
+    final subtitleFontSize = screenHeight * 0.016;
+    final smallFontSize = screenHeight * 0.014;
 
     return Scaffold(
       backgroundColor: AdaptiveColors.backgroundColor(context),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon:
-              const Icon(Icons.arrow_back_ios, color: Colors.black54, size: 18),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          localizations.getString('employeeProfile'),
-          style: TextStyle(
-            color: AdaptiveColors.primaryTextColor(context),
-            fontSize: 16,
-            fontWeight: FontWeight.normal,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined,
-                color: AdaptiveColors.primaryGreen, size: 20),
-            onPressed: () {
-              // Handle edit profile
-            },
-            tooltip: localizations.getString('edit'),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Compact Employee Header
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12.0,
-                vertical: 8.0,
-              ),
-              decoration: BoxDecoration(
-                color: AdaptiveColors.cardColor(context),
-                boxShadow: [
-                  BoxShadow(
-                    color: AdaptiveColors.shadowColor(context),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Avatar (small)
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: _getAvatarColor(widget.employee['name']),
-                    child: Text(
-                      _getInitials(widget.employee['name']),
-                      style: TextStyle(
-                        color: widget.employee['textColor'] ?? Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-
-                  // Employee info (compact)
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Name
-                        Text(
-                          widget.employee['name'],
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AdaptiveColors.primaryTextColor(context),
-                          ),
-                        ),
-
-                        // Job title
-                        Text(
-                          widget.employee['designation'],
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AdaptiveColors.secondaryTextColor(context),
-                          ),
-                        ),
-
-                        // Email with icon
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.email_outlined,
-                              size: 12,
-                              color: AdaptiveColors.primaryGreen,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                "${widget.employee['name'].toString().toLowerCase().replaceAll(' ', '.')}@example.com",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AdaptiveColors.secondaryTextColor(
-                                      context),
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Main Tabs - Very compact
-            Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: AdaptiveColors.cardColor(context),
-                border: Border(
-                  bottom: BorderSide(
-                    color: AdaptiveColors.borderColor(context),
-                    width: 1,
+      body: NotificationListener<ScrollNotification>(
+    // Add this NotificationListener
+    onNotification: (ScrollNotification scrollInfo) {
+    if (scrollInfo is ScrollUpdateNotification) {
+    _scrollListener();
+    }
+    return true;
+    },
+    child:NestedScrollView(
+        controller: _scrollController,
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              backgroundColor: AdaptiveColors.cardColor(context),
+              pinned: true,
+              floating: false, // Change from true to false
+              snap: false,
+              expandedHeight: 120, // Reduce from 160 to 120
+              elevation: _isHeaderVisible ? 0 : 4,
+              automaticallyImplyLeading: false,
+              title: AnimatedOpacity(
+                opacity: _isHeaderVisible ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  widget.employee['name'],
+                  style: TextStyle(
+                    color: AdaptiveColors.primaryTextColor(context),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              child: TabBar(
-                controller: _tabController,
-                labelColor: AdaptiveColors.primaryGreen,
-                unselectedLabelColor:
-                    AdaptiveColors.secondaryTextColor(context),
-                indicatorColor: AdaptiveColors.primaryGreen,
-                labelStyle: const TextStyle(fontSize: 12),
-                padding: EdgeInsets.zero,
-                indicatorPadding: EdgeInsets.zero,
-                tabs: [
-                  Tab(
-                    height: 40,
-                    icon: Icon(Icons.person_outline, size: 16),
-                    text: localizations.getString('profile'),
+              leading: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios,
+                  color: AdaptiveColors.primaryTextColor(context),
+                  size: 18,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    Icons.edit_outlined,
+                    color: AdaptiveColors.primaryGreen,
+                    size: 20,
                   ),
-                  Tab(
-                    height: 40,
-                    icon: Icon(Icons.calendar_today_outlined, size: 16),
-                    text: localizations.getString('attendance'),
+                  onPressed: () {
+                    // Handle edit profile
+                  },
+                  tooltip: localizations.getString('edit'),
+                ),
+              ],
+              flexibleSpace: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  // Calculate the top padding based on the constraints
+                  final top = constraints.biggest.height > 80 ? 60.0 : 0.0;
+
+                  return FlexibleSpaceBar(
+                    background: _isHeaderVisible
+                        ? Container(
+                            padding: const EdgeInsets.fromLTRB(16, 70, 16, 0),
+                            decoration: BoxDecoration(
+                              color: AdaptiveColors.cardColor(context),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    // Employee Avatar
+                                    Hero(
+                                      tag: 'avatar-${widget.employee['id']}',
+                                      child: CircleAvatar(
+                                        radius: 35,
+                                        backgroundColor: _getAvatarColor(
+                                            widget.employee['name']),
+                                        child: Text(
+                                          _getInitials(widget.employee['name']),
+                                          style: TextStyle(
+                                            color:
+                                                widget.employee['textColor'] ??
+                                                    Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            widget.employee['name'],
+                                            style: TextStyle(
+                                              fontSize: screenHeight * 0.022,
+                                              fontWeight: FontWeight.bold,
+                                              color: AdaptiveColors
+                                                  .primaryTextColor(context),
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.work_outline,
+                                                size: 14,
+                                                color:
+                                                    AdaptiveColors.primaryGreen,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                widget.employee['designation'],
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: AdaptiveColors
+                                                      .secondaryTextColor(
+                                                          context),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.email_outlined,
+                                                size: 14,
+                                                color:
+                                                    AdaptiveColors.primaryGreen,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  "${widget.employee['name'].toString().toLowerCase().replaceAll(' ', '.')}@example.com",
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: AdaptiveColors
+                                                        .secondaryTextColor(
+                                                            context),
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                // Work Status
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: _statusColor.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            widget.employee['type'] == 'Remote'
+                                                ? Icons.computer
+                                                : Icons.business,
+                                            size: 14,
+                                            color: _statusColor,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            widget.employee['type'],
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: _statusColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.purple.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.work,
+                                            size: 14,
+                                            color: Colors.purple,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            widget.employee['department'],
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.purple,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
+                        : Container(color: AdaptiveColors.cardColor(context)),
+                  );
+                },
+              ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(42),
+                child: Container(
+                  color: AdaptiveColors.cardColor(context),
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: AdaptiveColors.primaryGreen,
+                    unselectedLabelColor:
+                        AdaptiveColors.secondaryTextColor(context),
+                    indicatorColor: AdaptiveColors.primaryGreen,
+                    indicatorWeight: 3,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    tabs: [
+                      Tab(
+                        icon: const Icon(Icons.person_outline, size: 18),
+                        text: localizations.getString('profile'),
+                      ),
+                      Tab(
+                        icon:
+                            const Icon(Icons.calendar_today_outlined, size: 18),
+                        text: localizations.getString('attendance'),
+                      ),
+                      Tab(
+                        icon: const Icon(Icons.event_note_outlined, size: 18),
+                        text: localizations.getString('leave'),
+                      ),
+                    ],
                   ),
-                  Tab(
-                    height: 40,
-                    icon: Icon(Icons.event_note_outlined, size: 16),
-                    text: localizations.getString('leave'),
-                  ),
-                ],
+                ),
               ),
             ),
+          ];
+        },
+        body: TabBarView(
+          controller: _tabController,
+          physics: const ClampingScrollPhysics(),
+          children: [
+            // Profile tab content
+            _buildProfileTab(context),
 
-            // Tab content
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // Profile tab content
-                  _buildProfileTab(context),
+            // Attendance tab content
+            _buildAttendanceTab(context),
 
-                  // Attendance tab content
-                  _buildAttendanceTab(context),
-
-                  // Leave tab content
-                  _buildLeaveTab(context),
-                ],
-              ),
-            ),
+            // Leave tab content
+            _buildLeaveTab(context),
           ],
         ),
       ),
+      )
     );
   }
 
   Widget _buildProfileTab(BuildContext context) {
     final localizations = AppLocalizations.of(context);
+    final isDarkMode = AdaptiveColors.isDarkMode(context);
 
     return DefaultTabController(
       length: 2,
       child: Column(
         children: [
-          // Personal/Professional tabs - Very compact
+          // Personal/Professional tabs
           Container(
-            height: 40,
-            color: AdaptiveColors.cardColor(context),
+            height: 42,
+            decoration: BoxDecoration(
+              color: AdaptiveColors.cardColor(context),
+              border: Border(
+                bottom: BorderSide(
+                  color: AdaptiveColors.borderColor(context),
+                  width: 1,
+                ),
+              ),
+            ),
             child: TabBar(
               labelColor: AdaptiveColors.primaryGreen,
               unselectedLabelColor: AdaptiveColors.secondaryTextColor(context),
               indicatorColor: AdaptiveColors.primaryGreen,
-              labelStyle: const TextStyle(fontSize: 12),
-              padding: EdgeInsets.zero,
-              indicatorPadding: EdgeInsets.zero,
+              indicatorWeight: 3,
+              indicatorSize: TabBarIndicatorSize.tab,
               tabs: [
                 Tab(
-                  height: 40,
                   text: localizations.getString('personalInformation'),
                 ),
                 Tab(
-                  height: 40,
                   text: localizations.getString('professionalInformation'),
                 ),
               ],
@@ -264,220 +377,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
             child: TabBarView(
               children: [
                 // Personal Information
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    children: [
-                      // First/Last Name row
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('firstName'),
-                              widget.employee['name'].toString().split(' ')[0],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('lastName'),
-                              widget.employee['name']
-                                          .toString()
-                                          .split(' ')
-                                          .length >
-                                      1
-                                  ? widget.employee['name']
-                                      .toString()
-                                      .split(' ')[1]
-                                  : "",
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Mobile/Email row
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('mobileNumber'),
-                              "(702) 555-0122", // Sample data
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('emailAddress'),
-                              "${widget.employee['name'].toString().toLowerCase().replaceAll(' ', '.')}@example.com",
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Other personal info fields
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('dateOfBirth'),
-                              "July 14, 1995", // Sample data
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('maritalStatus'),
-                              "Married", // Sample data
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // More personal info
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('gender'),
-                              "Female", // Sample data
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('nationality'),
-                              "American", // Sample data
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      _buildInfoField(
-                        context,
-                        localizations.getString('address'),
-                        "2464 Royal Ln, Mesa, New Jersey", // Sample data
-                      ),
-                      const SizedBox(height: 12),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('city'),
-                              "California", // Sample data
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('state'),
-                              "United State", // Sample data
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('zipCode'),
-                              "35624", // Sample data
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                _buildPersonalInformation(context),
 
                 // Professional Information
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('employeeId'),
-                              widget.employee['id'],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('userName'),
-                              widget.employee['name']
-                                  .toString()
-                                  .toLowerCase()
-                                  .replaceAll(' ', '_'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('type'),
-                              widget.employee['type'],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('department'),
-                              widget.employee['department'],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('workingDays'),
-                              "5 Days", // Sample data
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildInfoField(
-                              context,
-                              localizations.getString('joiningDate'),
-                              "July 10, 2022", // Sample data
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInfoField(
-                        context,
-                        localizations.getString('officeLocation'),
-                        "2464 Royal Ln, Mesa, New Jersey", // Sample data
-                      ),
-                    ],
-                  ),
-                ),
+                _buildProfessionalInformation(context),
               ],
             ),
           ),
@@ -486,10 +389,323 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
     );
   }
 
+  Widget _buildPersonalInformation(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    final isDarkMode = AdaptiveColors.isDarkMode(context);
+
+    return SingleChildScrollView(
+      primary: true,
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(12.0),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 0,
+        color: AdaptiveColors.cardColor(context),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // First/Last Name row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('firstName'),
+                      widget.employee['name'].toString().split(' ')[0],
+                      Icons.person_outline,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('lastName'),
+                      widget.employee['name'].toString().split(' ').length > 1
+                          ? widget.employee['name'].toString().split(' ')[1]
+                          : "",
+                      Icons.person_outline,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Mobile/Email row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('mobileNumber'),
+                      "(702) 555-0122", // Sample data
+                      Icons.phone_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('emailAddress'),
+                      "${widget.employee['name'].toString().toLowerCase().replaceAll(' ', '.')}@example.com",
+                      Icons.email_outlined,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Other personal info fields
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('dateOfBirth'),
+                      "July 14, 1995", // Sample data
+                      Icons.cake_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('maritalStatus'),
+                      "Married", // Sample data
+                      Icons.favorite_border,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // More personal info
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('gender'),
+                      "Female", // Sample data
+                      Icons.person_outline,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('nationality'),
+                      "American", // Sample data
+                      Icons.flag_outlined,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              _buildInfoField(
+                context,
+                localizations.getString('address'),
+                "2464 Royal Ln, Mesa, New Jersey", // Sample data
+                Icons.location_on_outlined,
+              ),
+              const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('city'),
+                      "California", // Sample data
+                      Icons.location_city_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('state'),
+                      "United State", // Sample data
+                      Icons.map_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('zipCode'),
+                      "35624", // Sample data
+                      Icons.pin_outlined,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfessionalInformation(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    final isDarkMode = AdaptiveColors.isDarkMode(context);
+
+    return SingleChildScrollView(
+      primary: true,
+      padding: const EdgeInsets.all(12.0),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 0,
+        color: AdaptiveColors.cardColor(context),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('employeeId'),
+                      widget.employee['id'],
+                      Icons.badge_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('userName'),
+                      widget.employee['name']
+                          .toString()
+                          .toLowerCase()
+                          .replaceAll(' ', '_'),
+                      Icons.account_circle_outlined,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('type'),
+                      widget.employee['type'],
+                      Icons.business_center_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('department'),
+                      widget.employee['department'],
+                      Icons.domain_outlined,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('workingDays'),
+                      "5 Days",
+                      Icons.calendar_today_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('joiningDate'),
+                      "July 10, 2022",
+                      Icons.date_range_outlined,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _buildInfoField(
+                context,
+                localizations.getString('officeLocation'),
+                "2464 Royal Ln, Mesa, New Jersey", // Sample data
+                Icons.location_on_outlined,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoField(
+      BuildContext context, String label, String value, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: AdaptiveColors.secondaryTextColor(context),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          decoration: BoxDecoration(
+            color: AdaptiveColors.isDarkMode(context)
+                ? Colors.grey.shade800.withOpacity(0.3)
+                : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: AdaptiveColors.borderColor(context),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: AdaptiveColors.primaryGreen,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AdaptiveColors.primaryTextColor(context),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildAttendanceTab(BuildContext context) {
     final localizations = AppLocalizations.of(context);
 
-    // Sample attendance data
+    // Sample attendance data - refined to match web version
     final attendanceData = [
       {
         'date': 'July 01, 2023',
@@ -516,6 +732,22 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
         'status': 'On Time',
       },
       {
+        'date': 'July 06, 2023',
+        'checkIn': '09:28 AM',
+        'checkOut': '07:00 PM',
+        'break': '00:30 Min',
+        'workingHours': '09:02 Hrs',
+        'status': 'On Time',
+      },
+      {
+        'date': 'July 07, 2023',
+        'checkIn': '09:30 AM',
+        'checkOut': '07:00 PM',
+        'break': '00:15 Min',
+        'workingHours': '09:15 Hrs',
+        'status': 'On Time',
+      },
+      {
         'date': 'July 08, 2023',
         'checkIn': '09:52 AM',
         'checkOut': '07:00 PM',
@@ -523,129 +755,197 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
         'workingHours': '08:23 Hrs',
         'status': 'Late',
       },
+      {
+        'date': 'July 09, 2023',
+        'checkIn': '09:10 AM',
+        'checkOut': '07:00 PM',
+        'break': '00:30 Min',
+        'workingHours': '09:20 Hrs',
+        'status': 'On Time',
+      }
     ];
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    localizations.getString('date'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AdaptiveColors.primaryTextColor(context),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    localizations.getString('checkInTime'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AdaptiveColors.primaryTextColor(context),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    localizations.getString('status'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AdaptiveColors.primaryTextColor(context),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Divider(color: AdaptiveColors.borderColor(context)),
-
-          // Attendance rows
-          ...attendanceData
-              .map((attendance) => _buildAttendanceRow(context, attendance))
-              .toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAttendanceRow(
-      BuildContext context, Map<String, dynamic> attendance) {
-    final isLate = attendance['status'] == 'Late';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12.0,
-        vertical: 8.0,
-      ),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: AdaptiveColors.borderColor(context),
-            width: 0.5,
-          ),
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              attendance['date'],
-              style: TextStyle(
-                color: AdaptiveColors.primaryTextColor(context),
-                fontSize: 12,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              attendance['checkIn'],
-              style: TextStyle(
-                color: AdaptiveColors.primaryTextColor(context),
-                fontSize: 12,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 6,
-                vertical: 2,
-              ),
+        elevation: 0,
+        color: AdaptiveColors.cardColor(context),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
-                color: isLate
-                    ? Colors.red.withOpacity(0.1)
-                    : Colors.green.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                attendance['status'],
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isLate ? Colors.red : Colors.green,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10,
+                border: Border(
+                  bottom: BorderSide(
+                    color: AdaptiveColors.borderColor(context),
+                    width: 1,
+                  ),
                 ),
               ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      localizations.getString('date'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AdaptiveColors.primaryTextColor(context),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      localizations.getString('checkInTime'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AdaptiveColors.primaryTextColor(context),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      'Break',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AdaptiveColors.primaryTextColor(context),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      'Work Hours',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AdaptiveColors.primaryTextColor(context),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      localizations.getString('status'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AdaptiveColors.primaryTextColor(context),
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+
+            // Attendance list
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: attendanceData.length,
+                itemBuilder: (context, index) {
+                  final attendance = attendanceData[index];
+                  final isLate = attendance['status'] == 'Late';
+
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 12.0,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: AdaptiveColors.borderColor(context),
+                          width: 0.5,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            attendance['date']!,
+                            style: TextStyle(
+                              color: AdaptiveColors.primaryTextColor(context),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            attendance['checkIn']!,
+                            style: TextStyle(
+                              color: AdaptiveColors.primaryTextColor(context),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            attendance['break']!,
+                            style: TextStyle(
+                              color: AdaptiveColors.primaryTextColor(context),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            attendance['workingHours']!,
+                            style: TextStyle(
+                              color: AdaptiveColors.primaryTextColor(context),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isLate
+                                    ? Colors.red.withOpacity(0.1)
+                                    : Colors.green.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                attendance['status']!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: isLate ? Colors.red : Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -653,7 +953,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
   Widget _buildLeaveTab(BuildContext context) {
     final localizations = AppLocalizations.of(context);
 
-    // Sample leave data
+    // Sample leave data - refined to match web version
     final leaveData = [
       {
         'date': 'July 01, 2023',
@@ -676,208 +976,224 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
         'manager': 'Mark Willians',
         'status': 'Approved',
       },
+      {
+        'date': 'Feb 01, 2023',
+        'duration': 'Feb 02 - Feb 10',
+        'days': '8 Days',
+        'manager': 'Mark Willians',
+        'status': 'Approved',
+      },
+      {
+        'date': 'Jan 01, 2023',
+        'duration': 'Jan 16 - Jan 19',
+        'days': '3 Days',
+        'manager': 'Mark Willians',
+        'status': 'Reject',
+      },
     ];
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        children: [
-          // Add new leave request button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Handle leave request
-              },
-              icon: const Icon(Icons.add, size: 16),
-              label: Text(
-                localizations.getString('requestLeave'),
-                style: const TextStyle(fontSize: 12),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AdaptiveColors.primaryGreen,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                minimumSize: const Size(double.infinity, 36),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    localizations.getString('date'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AdaptiveColors.primaryTextColor(context),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    localizations.getString('duration'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AdaptiveColors.primaryTextColor(context),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    localizations.getString('status'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AdaptiveColors.primaryTextColor(context),
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Divider(color: AdaptiveColors.borderColor(context)),
-
-          // Leave rows
-          ...leaveData.map((leave) => _buildLeaveRow(context, leave)).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLeaveRow(BuildContext context, Map<String, dynamic> leave) {
-    Color statusColor;
-    switch (leave['status']) {
-      case 'Approved':
-        statusColor = Colors.green;
-        break;
-      case 'Pending':
-        statusColor = Colors.orange;
-        break;
-      case 'Reject':
-        statusColor = Colors.red;
-        break;
-      default:
-        statusColor = Colors.grey;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12.0,
-        vertical: 8.0,
-      ),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: AdaptiveColors.borderColor(context),
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              leave['date'],
-              style: TextStyle(
-                color: AdaptiveColors.primaryTextColor(context),
-                fontSize: 12,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  leave['duration'],
-                  style: TextStyle(
-                    color: AdaptiveColors.primaryTextColor(context),
-                    fontSize: 12,
-                  ),
-                ),
-                Text(
-                  leave['days'],
-                  style: TextStyle(
-                    color: AdaptiveColors.secondaryTextColor(context),
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 6,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                leave['status'],
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: statusColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoField(BuildContext context, String label, String value) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: AdaptiveColors.secondaryTextColor(context),
+        // Add new leave request button
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // Handle leave request
+            },
+            icon: const Icon(Icons.add, size: 16),
+            label: Text(
+              localizations.getString('requestLeave'),
+              style: const TextStyle(fontSize: 14),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AdaptiveColors.primaryGreen,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              minimumSize: const Size(double.infinity, 46),
+            ),
           ),
         ),
-        const SizedBox(height: 4),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 8,
-          ),
-          decoration: BoxDecoration(
-            color: AdaptiveColors.isDarkMode(context)
-                ? Colors.grey.shade800.withOpacity(0.3)
-                : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 12,
-              color: AdaptiveColors.primaryTextColor(context),
+
+        // Leave list in a card
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 12.0),
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+              color: AdaptiveColors.cardColor(context),
+              child: Column(
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: AdaptiveColors.borderColor(context),
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            localizations.getString('date'),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AdaptiveColors.primaryTextColor(context),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            localizations.getString('duration'),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AdaptiveColors.primaryTextColor(context),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            'Days',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AdaptiveColors.primaryTextColor(context),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            localizations.getString('status'),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AdaptiveColors.primaryTextColor(context),
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Leave list
+                  Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: leaveData.length,
+                      itemBuilder: (context, index) {
+                        final leave = leaveData[index];
+                        Color statusColor;
+                        switch (leave['status']) {
+                          case 'Approved':
+                            statusColor = Colors.green;
+                            break;
+                          case 'Pending':
+                            statusColor = Colors.orange;
+                            break;
+                          case 'Reject':
+                            statusColor = Colors.red;
+                            break;
+                          default:
+                            statusColor = Colors.grey;
+                        }
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 12.0,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: AdaptiveColors.borderColor(context),
+                                width: 0.5,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  leave['date']!,
+                                  style: TextStyle(
+                                    color: AdaptiveColors.primaryTextColor(
+                                        context),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  leave['duration']!,
+                                  style: TextStyle(
+                                    color: AdaptiveColors.primaryTextColor(
+                                        context),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Text(
+                                  leave['days']!,
+                                  style: TextStyle(
+                                    color: AdaptiveColors.primaryTextColor(
+                                        context),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      leave['status']!,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: statusColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

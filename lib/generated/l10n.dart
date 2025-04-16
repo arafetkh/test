@@ -1499,6 +1499,26 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Members`
+  String get members {
+    return Intl.message(
+      'Members',
+      name: 'members',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No departments found`
+  String get noDepartmentsFound {
+    return Intl.message(
+      'No departments found',
+      name: 'noDepartmentsFound',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

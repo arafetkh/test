@@ -152,5 +152,8 @@
   "companyHolidayInfo": "This is a company holiday. Regular employees are entitled to a day off. Specific departments may have different arrangements. Please check with your manager.",
   "pleaseFillRequiredFields": "Please fill in all required fields",
   "upcoming": "Upcoming",
-  "pastHolidays": "Past Holidays"
+  "pastHolidays": "Past Holidays",
+
+  "members": "Members",
+  "noDepartmentsFound": "No departments found"
 }

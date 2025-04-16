@@ -296,10 +296,19 @@ class AppLocalizations {
         return upcoming;
       case "pastHolidays":
         return pastHolidays;
+      case "members":
+        return members;
+      case "noDepartmentsFound":
+        return noDepartmentsFound;
+
       default:
         return key;
     }
   }
+  String get noDepartmentsFound =>
+      Intl.message('No departments found', name: 'noDepartmentsFound');
+  String get members =>
+      Intl.message('Members', name: 'members');
 
   String get addEmployee => Intl.message('Add Employee', name: 'addEmployee');
 

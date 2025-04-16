@@ -48,7 +48,7 @@ class CustomSideNavigationBar extends StatelessWidget {
           // Dashboard (Home)
           _buildNavItem(context, 0, Mdi.home_outline, Mdi.home, iconSize),
 
-          // Employees (Team)
+          // Departments (Renamed from Employees/Team)
           _buildNavItem(
               context, 1, Ic.outline_groups, Ic.baseline_groups, iconSize),
 
@@ -57,22 +57,22 @@ class CustomSideNavigationBar extends StatelessWidget {
               Mdi.calendar_clock, iconSize),
 
           // Notifications
-          _buildNavItem(context, 3, Carbon.notification,
-              Carbon.notification_filled, iconSize),
+          _buildNavItem(context, 3, Ic.outline_groups,
+              Ic.baseline_groups, iconSize),
 
-          // Settings
-          _buildNavItem(context, 4, Mdi.cog_outline, Mdi.cog, iconSize),
-
-          // Holidays - New item
-          _buildNavItem(context, 5, Mdi.calendar_star_outline,
+          // Holidays
+          _buildNavItem(context, 4, Mdi.calendar_star_outline,
               Mdi.calendar_star, iconSize),
+          // Settings
+          _buildNavItem(context, 5, Mdi.cog_outline, Mdi.cog, iconSize),
         ],
       ),
     );
   }
 
   Widget _buildNavItem(BuildContext context, int index, String iconData,
-      String activeIconData, double iconSize) {
+      String activeIconData, double iconSize)
+  {
     final isSelected = selectedIndex == index;
     final screenHeight = MediaQuery.of(context).size.height;
     final color = isSelected
@@ -85,10 +85,10 @@ class CustomSideNavigationBar extends StatelessWidget {
         decoration: BoxDecoration(
           border: isSelected
               ? Border(
-              left: BorderSide(
-                color: AdaptiveColors.primaryGreen,
-                width: MediaQuery.of(context).size.width * 0.003,
-              ))
+                  left: BorderSide(
+                  color: AdaptiveColors.primaryGreen,
+                  width: MediaQuery.of(context).size.width * 0.003,
+                ))
               : null,
         ),
         child: IconButton(

@@ -29,8 +29,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   List<Map<String, dynamic>> get _filteredAttendances {
     List<Map<String, dynamic>> filtered = attendances;
-
-    // Appliquer le filtre de recherche
     if (_searchQuery.isNotEmpty) {
       filtered = filtered
           .where((attendance) =>
@@ -97,6 +95,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     _searchController.dispose();
     _mainScrollController.removeListener(_scrollListener);
     _mainScrollController.dispose();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     super.dispose();
   }
 

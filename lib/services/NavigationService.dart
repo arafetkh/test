@@ -2,39 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:in_out/dashboard.dart';
 import 'package:in_out/EmployeeTableScreen.dart';
 import 'package:in_out/AttendanceScreen.dart';
-import 'package:in_out/NotificationsScreen.dart';
 import 'package:in_out/SettingsScreen.dart';
-import 'package:in_out/holidayscreen.dart';
+import '../DepartmentsScreen.dart';
+import '../HolidayScreen.dart';
 
 class NavigationService {
   static void navigateToScreen(BuildContext context, int index) {
     final Widget screen;
 
     switch (index) {
-      case 0:
       // Dashboard
+      case 0:
         screen = const DashboardScreen();
         break;
-      case 1:
       // Employees
+      case 1:
         screen = const EmployeeTableScreen();
         break;
-      case 2:
       // Attendance
+      case 2:
         screen = const AttendanceScreen();
         break;
+      // Departments
       case 3:
-      // Notifications
-        screen = const NotificationsScreen();
+        screen = const DepartmentsScreen();
         break;
+      // Holidays
       case 4:
-      // Settings
-        screen = const SettingsScreen();
-        break;
-      case 5:
-      // Holidays - New screen
         screen = const HolidaysScreen();
         break;
+      // Settings
+      case 5:
+        screen = const SettingsScreen();
+        break;
+
       default:
         screen = const DashboardScreen();
     }

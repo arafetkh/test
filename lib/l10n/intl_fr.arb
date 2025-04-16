@@ -149,6 +149,8 @@
   "companyHolidayInfo": "C'est un jour férié d'entreprise. Les employés réguliers ont droit à un jour de congé. Certains départements peuvent avoir des arrangements différents. Veuillez consulter votre responsable.",
   "pleaseFillRequiredFields": "Veuillez remplir tous les champs obligatoires",
   "upcoming": "À venir",
-  "pastHolidays": "Jours fériés passés"
+  "pastHolidays": "Jours fériés passés",
 
+  "members": "Membres",
+  "noDepartmentsFound": "Aucun département trouvé"
 }
