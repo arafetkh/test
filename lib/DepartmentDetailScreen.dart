@@ -79,7 +79,7 @@ class _DepartmentDetailScreenState extends State<DepartmentDetailScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => EmployeeProfileScreen(
-          employee: completeEmployee,
+          employeeId: int.parse(employee['id']),
         ),
       ),
     );

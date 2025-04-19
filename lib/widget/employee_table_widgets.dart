@@ -363,7 +363,7 @@ class EmployeeTableView extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => EmployeeProfileScreen(
-          employee: employee,
+          employeeId: int.parse(employee['id']),
         ),
       ),
     );

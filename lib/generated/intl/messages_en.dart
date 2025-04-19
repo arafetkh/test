@@ -30,6 +30,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "activeEmployees":
             MessageLookupByLibrary.simpleMessage("Active Employees"),
         "add": MessageLookupByLibrary.simpleMessage("Add"),
+        "addDepartment": MessageLookupByLibrary.simpleMessage("Add Department"),
         "addEmployee": MessageLookupByLibrary.simpleMessage("Add Employee"),
         "addHoliday": MessageLookupByLibrary.simpleMessage("Add Holiday"),
         "addNewEmployee":
@@ -64,6 +65,12 @@ class MessageLookup extends MessageLookupByLibrary {
         "deleteHolidayConfirmation": MessageLookupByLibrary.simpleMessage(
             "Are you sure you want to delete this holiday?"),
         "department": MessageLookupByLibrary.simpleMessage("Department"),
+        "departmentAddedSuccessfully": MessageLookupByLibrary.simpleMessage(
+            "Department added successfully"),
+        "departmentName":
+            MessageLookupByLibrary.simpleMessage("Department Name"),
+        "departmentNameRequired":
+            MessageLookupByLibrary.simpleMessage("Department name is required"),
         "description": MessageLookupByLibrary.simpleMessage("Description"),
         "designation": MessageLookupByLibrary.simpleMessage("Designation"),
         "desktopNotification":
@@ -84,6 +91,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "employeeType": MessageLookupByLibrary.simpleMessage("Employee Type"),
         "employees": MessageLookupByLibrary.simpleMessage("Employees"),
         "english": MessageLookupByLibrary.simpleMessage("English"),
+        "enterDepartmentName":
+            MessageLookupByLibrary.simpleMessage("Enter department name"),
         "enterDescription": MessageLookupByLibrary.simpleMessage(
             "Enter description (optional)"),
         "enterHolidayName":

@@ -4,7 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:in_out/dashboard.dart';
 import 'package:in_out/provider/language_provider.dart';
 import 'package:provider/provider.dart';
-
+import 'auth/auth_wrapper.dart';
 import 'localization/app_localizations.dart';
 
 void main() async {
@@ -75,7 +75,7 @@ class MyApp extends StatelessWidget {
               Locale('fr', ''),
             ],
             locale: Locale(languageProvider.currentLanguage),
-            home: const DashboardScreen(),
+            home: const AuthWrapper(),
           ),
         );
       },

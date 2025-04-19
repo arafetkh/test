@@ -24,6 +24,8 @@ class PaginationFooter extends StatelessWidget {
     final screenWidth = screenSize.width;
     final screenHeight = screenSize.height;
     final localizations = AppLocalizations.of(context);
+
+    // Calculate start and end of displayed items
     final start = filteredEmployeesCount == 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1;
     final end = (currentPage * itemsPerPage) > filteredEmployeesCount
         ? filteredEmployeesCount
@@ -31,7 +33,7 @@ class PaginationFooter extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        vertical: screenHeight * 0.018, // Reduced padding
+        vertical: screenHeight * 0.018,
         horizontal: screenWidth * 0.015,
       ),
       decoration: BoxDecoration(
@@ -46,7 +48,7 @@ class PaginationFooter extends StatelessWidget {
             '${localizations.getString('showing')} $start ${localizations.getString('to')} $end ${localizations.getString('outOf')} $filteredEmployeesCount ${localizations.getString('records')}',
             style: TextStyle(
               color: AdaptiveColors.secondaryTextColor(context),
-              fontSize: screenHeight * 0.02, // Slightly smaller text
+              fontSize: screenHeight * 0.02,
             ),
           ),
           Row(
@@ -81,7 +83,9 @@ class PaginationFooter extends StatelessWidget {
     List<Widget> pageNumbers = [];
     List<int> pagesToShow = [];
 
+    // Logic for which page numbers to show
     if (totalPages <= 5) {
+      // Show all pages if there are 5 or fewer
       pagesToShow = List.generate(totalPages, (i) => i + 1);
     } else {
       // Always include first page
@@ -135,8 +139,8 @@ class PaginationFooter extends StatelessWidget {
             child: InkWell(
               onTap: () => onPageChanged(pagesToShow[i]),
               child: Container(
-                width: screenHeight * 0.045, // Reduced width
-                height: screenHeight * 0.045, // Reduced height
+                width: screenHeight * 0.045,
+                height: screenHeight * 0.045,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: currentPage == pagesToShow[i]
@@ -156,7 +160,7 @@ class PaginationFooter extends StatelessWidget {
                         ? Colors.white
                         : AdaptiveColors.primaryTextColor(context),
                     fontWeight: currentPage == pagesToShow[i] ? FontWeight.bold : FontWeight.normal,
-                    fontSize: screenHeight * 0.02, // Smaller text
+                    fontSize: screenHeight * 0.02,
                   ),
                 ),
               ),
@@ -178,8 +182,8 @@ class PaginationFooter extends StatelessWidget {
       child: InkWell(
         onTap: onPressed,
         child: Container(
-          width: screenHeight * 0.045, // Reduced width
-          height: screenHeight * 0.045, // Reduced height
+          width: screenHeight * 0.045,
+          height: screenHeight * 0.045,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: Colors.transparent,
@@ -190,7 +194,7 @@ class PaginationFooter extends StatelessWidget {
           ),
           child: Icon(
             icon,
-            size: screenHeight * 0.022, // Smaller icon
+            size: screenHeight * 0.022,
             color: onPressed == null
                 ? AdaptiveColors.tertiaryTextColor(context)
                 : AdaptiveColors.primaryTextColor(context),

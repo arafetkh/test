@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:in_out/DepartmentDetailScreen.dart';
 import 'package:in_out/NotificationsScreen.dart';
 import 'package:in_out/services/NavigationService.dart';
@@ -7,6 +9,8 @@ import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
 import 'package:in_out/widget/UserProfileHeader.dart';
 import 'package:in_out/widget/bottom_navigation_bar.dart';
+import 'package:in_out/auth/global.dart';
+import 'add_department_screen.dart';
 import 'localization/app_localizations.dart';
 
 class DepartmentsScreen extends StatefulWidget {
@@ -17,88 +21,16 @@ class DepartmentsScreen extends StatefulWidget {
 }
 
 class _DepartmentsScreenState extends State<DepartmentsScreen> {
-  int _selectedIndex = 1; // Index for departments/employees in the navigation
+  int _selectedIndex = 3; // Index for departments in the navigation
   bool _isHeaderVisible = true;
   final ScrollController _scrollController = ScrollController();
   late TextEditingController _searchController;
   String _searchQuery = '';
 
-  // Sample departments data
-  final List<Map<String, dynamic>> _departments = [
-    {
-      'name': 'Design Department',
-      'members': 20,
-      'employees': [
-        {'name': 'Dianne Russell', 'position': 'Lead UI/UX Designer', 'avatar': 'DR'},
-        {'name': 'Arlene McCoy', 'position': 'Sr. UI/UX Designer', 'avatar': 'AM'},
-        {'name': 'Cody Fisher', 'position': 'Sr. UI/UX Designer', 'avatar': 'CF'},
-        {'name': 'Theresa Webb', 'position': 'UI/UX Designer', 'avatar': 'TW'},
-        {'name': 'Ronald Richards', 'position': 'UI/UX Designer', 'avatar': 'RR'},
-      ]
-    },
-    {
-      'name': 'Sales Department',
-      'members': 14,
-      'employees': [
-        {'name': 'Darrell Steward', 'position': 'Sr. Sales Manager', 'avatar': 'DS'},
-        {'name': 'Kristin Watson', 'position': 'Sr. Sales Manager', 'avatar': 'KW'},
-        {'name': 'Courtney Henry', 'position': 'BDM', 'avatar': 'CH'},
-        {'name': 'Kathryn Murphy', 'position': 'BDE', 'avatar': 'KM'},
-        {'name': 'Albert Flores', 'position': 'Sales', 'avatar': 'AF'},
-      ]
-    },
-    {
-      'name': 'Project Manager Department',
-      'members': 18,
-      'employees': [
-        {'name': 'Leslie Alexander', 'position': 'Sr. Project Manager', 'avatar': 'LA'},
-        {'name': 'Ronald Richards', 'position': 'Sr. Project Manager', 'avatar': 'RR'},
-        {'name': 'Savannah Nguyen', 'position': 'Project Manager', 'avatar': 'SN'},
-        {'name': 'Eleanor Pena', 'position': 'Project Manager', 'avatar': 'EP'},
-        {'name': 'Esther Howard', 'position': 'Project Manager', 'avatar': 'EH'},
-      ]
-    },
-    {
-      'name': 'Marketing Department',
-      'members': 10,
-      'employees': [
-        {'name': 'Wade Warren', 'position': 'Sr. Marketing Manager', 'avatar': 'WW'},
-        {'name': 'Brooklyn Simmons', 'position': 'Sr. Marketing Manager', 'avatar': 'BS'},
-        {'name': 'Kristin Watson', 'position': 'Marketing Coordinator', 'avatar': 'KW'},
-        {'name': 'Jacob Jones', 'position': 'Marketing Coordinator', 'avatar': 'JJ'},
-        {'name': 'Cody Fisher', 'position': 'Marketing', 'avatar': 'CF'},
-      ]
-    },
-    {
-      'name': 'Development Department',
-      'members': 25,
-      'employees': [
-        {'name': 'Marvin McKinney', 'position': 'Sr. Developer', 'avatar': 'MM'},
-        {'name': 'Jacob Jones', 'position': 'React Developer', 'avatar': 'JJ'},
-        {'name': 'Devon Lane', 'position': 'Full Stack Developer', 'avatar': 'DL'},
-        {'name': 'Floyd Miles', 'position': 'PHP Developer', 'avatar': 'FM'},
-        {'name': 'Kathryn Murphy', 'position': 'React JS Developer', 'avatar': 'KM'},
-      ]
-    },
-    {
-      'name': 'Human Resources',
-      'members': 8,
-      'employees': [
-        {'name': 'Kristin Watson', 'position': 'HR Executive', 'avatar': 'KW'},
-        {'name': 'Brooklyn Simmons', 'position': 'HR Manager', 'avatar': 'BS'},
-        {'name': 'Eleanor Pena', 'position': 'HR Assistant', 'avatar': 'EP'},
-      ]
-    },
-  ];
-
-  List<Map<String, dynamic>> get _filteredDepartments {
-    if (_searchQuery.isEmpty) {
-      return _departments;
-    }
-
-    return _departments.where((department) =>
-        department['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
-  }
+  // State variables for departments
+  List<Map<String, dynamic>> _departments = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
 
   @override
   void initState() {
@@ -116,6 +48,76 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+
+    // Fetch departments from API
+    _fetchDepartments();
+  }
+
+  // Fetch departments from API
+  Future<void> _fetchDepartments() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse("${Global.baseUrl}/configuration/department-management"),
+        headers: Global.headers,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+
+        // Process the departments - only keep dynamic ones
+        List<Map<String, dynamic>> departments = [];
+
+        for (var dept in data) {
+          // Convert each department to a Map
+          Map<String, dynamic> department = {
+            'name': dept['name'],
+            'key': dept['key'],
+            'attributes': dept['attributes'] ?? {},
+            'members': (dept['attributes'] != null && dept['attributes']['users'] != null)
+                ? dept['attributes']['users'].length
+                : 0,
+            'employees': dept['attributes'] != null && dept['attributes']['users'] != null
+                ? dept['attributes']['users'].map<Map<String, dynamic>>((user) => {
+              'name': "${user['firstName']} ${user['lastName']}",
+              'position': 'Employee', // Default position if not available
+              'avatar': user['firstName'][0] + user['lastName'][0],
+            }).toList()
+                : [],
+          };
+
+          departments.add(department);
+        }
+
+        setState(() {
+          _departments = departments;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load departments: ${response.statusCode}';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error: ${e.toString()}';
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> get _filteredDepartments {
+    if (_searchQuery.isEmpty) {
+      return _departments;
+    }
+
+    return _departments.where((department) =>
+        department['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
   }
 
   @override
@@ -148,10 +150,19 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
       MaterialPageRoute(
         builder: (context) => DepartmentDetailScreen(
           departmentName: department['name'],
-          employees: department['employees'],
+          employees: department['employees'] ?? [],
         ),
       ),
     );
+  }
+
+  // Function to handle adding a new department
+  void _addNewDepartment(Map<String, dynamic> newDepartment) {
+    setState(() {
+      _departments.add(newDepartment);
+    });
+    // Refresh departments list from API after adding
+    _fetchDepartments();
   }
 
   @override
@@ -185,7 +196,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: localizations.getString('search'),
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: AdaptiveColors.cardColor(context),
                   border: OutlineInputBorder(
@@ -204,13 +215,14 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
               ),
             ),
 
-            // Department title
+            // Department title with Add button
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.04,
                 vertical: screenWidth * 0.02,
               ),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     localizations.getString('departments'),
@@ -220,13 +232,54 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                       color: AdaptiveColors.primaryTextColor(context),
                     ),
                   ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddDepartmentScreen(
+                            onDepartmentAdded: _addNewDepartment,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.add, size: screenWidth * 0.04),
+                    label: Text(
+                      localizations.getString('addDepartment'),
+                      style: TextStyle(fontSize: screenWidth * 0.035),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade800,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.03,
+                        vertical: screenHeight * 0.01,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
 
-            // Departments list
+            // Departments list or loading indicator
             Expanded(
-              child: _filteredDepartments.isEmpty
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _errorMessage.isNotEmpty
+                  ? Center(
+                child: Text(
+                  _errorMessage,
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: screenWidth * 0.04,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+                  : _filteredDepartments.isEmpty
                   ? Center(
                 child: Text(
                   localizations.getString('noDepartmentsFound'),

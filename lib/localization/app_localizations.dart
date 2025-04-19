@@ -300,11 +300,26 @@ class AppLocalizations {
         return members;
       case "noDepartmentsFound":
         return noDepartmentsFound;
-
+      case "departmentName":
+        return departmentName;
+      case "enterDepartmentName":
+        return enterDepartmentName;
+      case "departmentNameRequired":
+        return departmentNameRequired;
+      case "departmentAddedSuccessfully":
+        return departmentAddedSuccessfully;
+        case "addDepartment":
+        return addDepartment;
       default:
         return key;
     }
   }
+
+  String get addDepartment => Intl.message('Add Department', name: 'addDepartment');
+  String get departmentName => Intl.message('Department Name', name: 'departmentName');
+  String get enterDepartmentName => Intl.message('Enter department name', name: 'enterDepartmentName');
+  String get departmentNameRequired => Intl.message('Department name is required', name: 'departmentNameRequired');
+  String get departmentAddedSuccessfully => Intl.message('Department added successfully', name: 'departmentAddedSuccessfully');
   String get noDepartmentsFound =>
       Intl.message('No departments found', name: 'noDepartmentsFound');
   String get members =>

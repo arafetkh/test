@@ -1519,6 +1519,56 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Add Department`
+  String get addDepartment {
+    return Intl.message(
+      'Add Department',
+      name: 'addDepartment',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Department Name`
+  String get departmentName {
+    return Intl.message(
+      'Department Name',
+      name: 'departmentName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter department name`
+  String get enterDepartmentName {
+    return Intl.message(
+      'Enter department name',
+      name: 'enterDepartmentName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Department name is required`
+  String get departmentNameRequired {
+    return Intl.message(
+      'Department name is required',
+      name: 'departmentNameRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Department added successfully`
+  String get departmentAddedSuccessfully {
+    return Intl.message(
+      'Department added successfully',
+      name: 'departmentAddedSuccessfully',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:in_out/localization/app_localizations.dart';
+import 'package:in_out/services/employee_service.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 
 class EmployeeProfileScreen extends StatefulWidget {
-  final Map<String, dynamic> employee;
+  final int employeeId;
 
   const EmployeeProfileScreen({
     super.key,
-    required this.employee,
+    required this.employeeId,
   });
 
   @override
@@ -19,15 +20,96 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
   bool _isHeaderVisible = true;
+  bool _isLoading = true;
+  Map<String, dynamic>? _employeeData;
+  String _errorMessage = '';
   late Color _statusColor;
+  Map<String, dynamic> _employeeMap = {};
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _scrollController.addListener(_scrollListener);
-    _statusColor =
-        widget.employee['type'] == 'Remote' ? Colors.blue : Colors.green;
+    _statusColor = Colors.green;
+    _loadEmployeeDetails();
+  }
+
+  Future<void> _loadEmployeeDetails() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final result = await EmployeeService.getEmployeeById(widget.employeeId);
+
+      if (result["success"]) {
+        // Store the raw data
+        _employeeData = result["employee"];
+
+        // Print for debugging
+        print("Employee data received: $_employeeData");
+
+        setState(() {
+          // Create a safe map with fallbacks for all possible null values
+          _employeeMap = {
+            'id': _employeeData?['id']?.toString() ?? 'N/A',
+            'name': '${_employeeData?['firstName'] ?? ''} ${_employeeData?['lastName'] ?? ''}'.trim(),
+            'firstName': _employeeData?['firstName'] ?? '',
+            'lastName': _employeeData?['lastName'] ?? '',
+            'username': _employeeData?['username'] ?? '',
+            'email': _employeeData?['email'] ?? '',
+            'phoneNumber': _employeeData?['phoneNumber'] ?? 'N/A',
+            'avatar': _employeeData?['firstName'] != null && _employeeData?['firstName'].isNotEmpty &&
+                _employeeData?['lastName'] != null && _employeeData?['lastName'].isNotEmpty
+                ? '${_employeeData!['firstName'][0]}${_employeeData!['lastName'][0]}'
+                : 'NA',
+            'avatarColor': Colors.blue.shade100,
+            'textColor': Colors.blue.shade800,
+            'department': _employeeData?['designation'] != null && _employeeData!['designation'].contains(' ')
+                ? _employeeData!['designation'].split(' ').last
+                : 'Department',
+            'designation': _employeeData?['designation'] ?? 'N/A',
+            'type': _employeeData?['type'] ?? 'OFFICE',
+            'birthDate': _employeeData?['birthDate'] ?? 'N/A',
+            'recruitmentDate': _employeeData?['recruitmentDate'] ?? 'N/A',
+            'gender': _employeeData?['gender'] ?? 'N/A',
+            'martialStatus': _employeeData?['martialStatus'] ?? 'SINGLE',
+            'address': 'N/A',
+            'city': 'N/A',
+            'state': 'N/A',
+            'zipCode': 'N/A',
+            'nationality': 'American',
+            'workingDays': '5 Days',
+            'officeLocation': 'Office Location',
+          };
+
+          // Set the status color based on employee type
+          final type = _employeeData?['type'] ?? '';
+          if (type == 'REMOTE') {
+            _statusColor = Colors.blue;
+          } else if (type == 'HYBRID') {
+            _statusColor = Colors.orange;
+          } else {
+            _statusColor = Colors.green;
+          }
+
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = result["message"];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Exception in _loadEmployeeDetails: $e");
+      setState(() {
+        _errorMessage = "Error: $e";
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -52,292 +134,351 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
     final localizations = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
     final screenWidth = size.width;
-    final screenHeight = size.height; // Get screen height
+    final screenHeight = size.height;
 
-    final titleFontSize = screenHeight * 0.022;
-    final subtitleFontSize = screenHeight * 0.016;
-    final smallFontSize = screenHeight * 0.014;
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(localizations.getString('employeeProfile')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_errorMessage.isNotEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(localizations.getString('employeeProfile')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Error: $_errorMessage',
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  _loadEmployeeDetails();
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_employeeMap.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(localizations.getString('employeeProfile')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        body: Center(
+          child: Text(localizations.getString('employeeNotFound') ?? 'Employee not found'),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AdaptiveColors.backgroundColor(context),
       body: NotificationListener<ScrollNotification>(
-    // Add this NotificationListener
-    onNotification: (ScrollNotification scrollInfo) {
-    if (scrollInfo is ScrollUpdateNotification) {
-    _scrollListener();
-    }
-    return true;
-    },
-    child:NestedScrollView(
-        controller: _scrollController,
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              backgroundColor: AdaptiveColors.cardColor(context),
-              pinned: true,
-              floating: false, // Change from true to false
-              snap: false,
-              expandedHeight: 120, // Reduce from 160 to 120
-              elevation: _isHeaderVisible ? 0 : 4,
-              automaticallyImplyLeading: false,
-              title: AnimatedOpacity(
-                opacity: _isHeaderVisible ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 200),
-                child: Text(
-                  widget.employee['name'],
-                  style: TextStyle(
-                    color: AdaptiveColors.primaryTextColor(context),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+        onNotification: (ScrollNotification scrollInfo) {
+          if (scrollInfo is ScrollUpdateNotification) {
+            _scrollListener();
+          }
+          return true;
+        },
+        child: NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                backgroundColor: AdaptiveColors.cardColor(context),
+                pinned: true,
+                floating: false,
+                snap: false,
+                expandedHeight: 120,
+                elevation: _isHeaderVisible ? 0 : 4,
+                automaticallyImplyLeading: false,
+                title: AnimatedOpacity(
+                  opacity: _isHeaderVisible ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    _employeeMap['name'] ?? '',
+                    style: TextStyle(
+                      color: AdaptiveColors.primaryTextColor(context),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-              leading: IconButton(
-                icon: Icon(
-                  Icons.arrow_back_ios,
-                  color: AdaptiveColors.primaryTextColor(context),
-                  size: 18,
-                ),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              actions: [
-                IconButton(
+                leading: IconButton(
                   icon: Icon(
-                    Icons.edit_outlined,
-                    color: AdaptiveColors.primaryGreen,
-                    size: 20,
+                    Icons.arrow_back_ios,
+                    color: AdaptiveColors.primaryTextColor(context),
+                    size: 18,
                   ),
-                  onPressed: () {
-                    // Handle edit profile
-                  },
-                  tooltip: localizations.getString('edit'),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
-              ],
-              flexibleSpace: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  // Calculate the top padding based on the constraints
-                  final top = constraints.biggest.height > 80 ? 60.0 : 0.0;
+                actions: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      color: AdaptiveColors.primaryGreen,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      // Handle edit profile
+                    },
+                    tooltip: localizations.getString('edit'),
+                  ),
+                ],
+                flexibleSpace: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final top = constraints.biggest.height > 80 ? 60.0 : 0.0;
 
-                  return FlexibleSpaceBar(
-                    background: _isHeaderVisible
-                        ? Container(
-                            padding: const EdgeInsets.fromLTRB(16, 70, 16, 0),
-                            decoration: BoxDecoration(
-                              color: AdaptiveColors.cardColor(context),
-                            ),
-                            child: Column(
+                    return FlexibleSpaceBar(
+                      background: _isHeaderVisible
+                          ? Container(
+                        padding: const EdgeInsets.fromLTRB(16, 70, 16, 0),
+                        decoration: BoxDecoration(
+                          color: AdaptiveColors.cardColor(context),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
                               children: [
-                                Row(
-                                  children: [
-                                    // Employee Avatar
-                                    Hero(
-                                      tag: 'avatar-${widget.employee['id']}',
-                                      child: CircleAvatar(
-                                        radius: 35,
-                                        backgroundColor: _getAvatarColor(
-                                            widget.employee['name']),
-                                        child: Text(
-                                          _getInitials(widget.employee['name']),
-                                          style: TextStyle(
-                                            color:
-                                                widget.employee['textColor'] ??
-                                                    Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                      ),
+                                // Employee Avatar
+                                CircleAvatar(
+                                  radius: 35,
+                                  backgroundColor: _getAvatarColor(
+                                      _employeeMap['name'] ?? ''),
+                                  child: Text(
+                                    _employeeMap['avatar'] ?? 'NA',
+                                    style: TextStyle(
+                                      color:
+                                      _employeeMap['textColor'] ??
+                                          Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
                                     ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            widget.employee['name'],
-                                            style: TextStyle(
-                                              fontSize: screenHeight * 0.022,
-                                              fontWeight: FontWeight.bold,
-                                              color: AdaptiveColors
-                                                  .primaryTextColor(context),
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.work_outline,
-                                                size: 14,
-                                                color:
-                                                    AdaptiveColors.primaryGreen,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                widget.employee['designation'],
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: AdaptiveColors
-                                                      .secondaryTextColor(
-                                                          context),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.email_outlined,
-                                                size: 14,
-                                                color:
-                                                    AdaptiveColors.primaryGreen,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Expanded(
-                                                child: Text(
-                                                  "${widget.employee['name'].toString().toLowerCase().replaceAll(' ', '.')}@example.com",
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: AdaptiveColors
-                                                        .secondaryTextColor(
-                                                            context),
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                                const SizedBox(height: 16),
-                                // Work Status
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: _statusColor.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(16),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _employeeMap['name'] ?? '',
+                                        style: TextStyle(
+                                          fontSize: screenHeight * 0.022,
+                                          fontWeight: FontWeight.bold,
+                                          color: AdaptiveColors
+                                              .primaryTextColor(context),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      child: Row(
+                                      const SizedBox(height: 4),
+                                      Row(
                                         children: [
                                           Icon(
-                                            widget.employee['type'] == 'Remote'
-                                                ? Icons.computer
-                                                : Icons.business,
+                                            Icons.work_outline,
                                             size: 14,
-                                            color: _statusColor,
+                                            color:
+                                            AdaptiveColors.primaryGreen,
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            widget.employee['type'],
+                                            _employeeMap['designation'] ?? '',
                                             style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: _statusColor,
+                                              fontSize: 14,
+                                              color: AdaptiveColors
+                                                  .secondaryTextColor(
+                                                  context),
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: Colors.purple.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Row(
+                                      const SizedBox(height: 4),
+                                      Row(
                                         children: [
-                                          const Icon(
-                                            Icons.work,
+                                          Icon(
+                                            Icons.email_outlined,
                                             size: 14,
-                                            color: Colors.purple,
+                                            color:
+                                            AdaptiveColors.primaryGreen,
                                           ),
                                           const SizedBox(width: 4),
-                                          Text(
-                                            widget.employee['department'],
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.purple,
+                                          Expanded(
+                                            child: Text(
+                                              _employeeMap['email'] ??
+                                                  "${_employeeMap['name']?.toString().toLowerCase().replaceAll(' ', '.')}@example.com",
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: AdaptiveColors
+                                                    .secondaryTextColor(
+                                                    context),
+                                              ),
+                                              overflow:
+                                              TextOverflow.ellipsis,
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
-                          )
-                        : Container(color: AdaptiveColors.cardColor(context)),
-                  );
-                },
-              ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(42),
-                child: Container(
-                  color: AdaptiveColors.cardColor(context),
-                  child: TabBar(
-                    controller: _tabController,
-                    labelColor: AdaptiveColors.primaryGreen,
-                    unselectedLabelColor:
-                        AdaptiveColors.secondaryTextColor(context),
-                    indicatorColor: AdaptiveColors.primaryGreen,
-                    indicatorWeight: 3,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    tabs: [
-                      Tab(
-                        icon: const Icon(Icons.person_outline, size: 18),
-                        text: localizations.getString('profile'),
-                      ),
-                      Tab(
-                        icon:
-                            const Icon(Icons.calendar_today_outlined, size: 18),
-                        text: localizations.getString('attendance'),
-                      ),
-                      Tab(
-                        icon: const Icon(Icons.event_note_outlined, size: 18),
-                        text: localizations.getString('leave'),
-                      ),
-                    ],
+                            const SizedBox(height: 16),
+                            // Work Status
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: _statusColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        _employeeMap['type'] == 'REMOTE'
+                                            ? Icons.computer
+                                            : Icons.business,
+                                        size: 14,
+                                        color: _statusColor,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _employeeMap['type'] ?? 'OFFICE',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: _statusColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.purple.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.work,
+                                        size: 14,
+                                        color: Colors.purple,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _employeeMap['department'] ?? 'Department',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.purple,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(color: AdaptiveColors.cardColor(context)),
+                    );
+                  },
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(42),
+                  child: Container(
+                    color: AdaptiveColors.cardColor(context),
+                    child: TabBar(
+                      controller: _tabController,
+                      labelColor: AdaptiveColors.primaryGreen,
+                      unselectedLabelColor:
+                      AdaptiveColors.secondaryTextColor(context),
+                      indicatorColor: AdaptiveColors.primaryGreen,
+                      indicatorWeight: 3,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      tabs: [
+                        Tab(
+                          icon: const Icon(Icons.person_outline, size: 18),
+                          text: localizations.getString('profile'),
+                        ),
+                        Tab(
+                          icon:
+                          const Icon(Icons.calendar_today_outlined, size: 18),
+                          text: localizations.getString('attendance'),
+                        ),
+                        Tab(
+                          icon: const Icon(Icons.event_note_outlined, size: 18),
+                          text: localizations.getString('leave'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          physics: const ClampingScrollPhysics(),
-          children: [
-            // Profile tab content
-            _buildProfileTab(context),
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            physics: const ClampingScrollPhysics(),
+            children: [
+              // Profile tab content
+              _buildProfileTab(context),
 
-            // Attendance tab content
-            _buildAttendanceTab(context),
+              // Attendance tab content
+              _buildAttendanceTab(context),
 
-            // Leave tab content
-            _buildLeaveTab(context),
-          ],
+              // Leave tab content
+              _buildLeaveTab(context),
+            ],
+          ),
         ),
       ),
-      )
     );
   }
 
   Widget _buildProfileTab(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-    final isDarkMode = AdaptiveColors.isDarkMode(context);
 
     return DefaultTabController(
       length: 2,
@@ -391,7 +532,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
 
   Widget _buildPersonalInformation(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-    final isDarkMode = AdaptiveColors.isDarkMode(context);
 
     return SingleChildScrollView(
       primary: true,
@@ -415,7 +555,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('firstName'),
-                      widget.employee['name'].toString().split(' ')[0],
+                      _employeeMap['firstName'] ?? '',
                       Icons.person_outline,
                     ),
                   ),
@@ -424,9 +564,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('lastName'),
-                      widget.employee['name'].toString().split(' ').length > 1
-                          ? widget.employee['name'].toString().split(' ')[1]
-                          : "",
+                      _employeeMap['lastName'] ?? '',
                       Icons.person_outline,
                     ),
                   ),
@@ -441,7 +579,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('mobileNumber'),
-                      "(702) 555-0122", // Sample data
+                      _employeeMap['phoneNumber'] ?? '',
                       Icons.phone_outlined,
                     ),
                   ),
@@ -450,7 +588,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('emailAddress'),
-                      "${widget.employee['name'].toString().toLowerCase().replaceAll(' ', '.')}@example.com",
+                      _employeeMap['email'] ?? '',
                       Icons.email_outlined,
                     ),
                   ),
@@ -465,7 +603,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('dateOfBirth'),
-                      "July 14, 1995", // Sample data
+                      _employeeMap['birthDate'] ?? '',
                       Icons.cake_outlined,
                     ),
                   ),
@@ -474,7 +612,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('maritalStatus'),
-                      "Married", // Sample data
+                      _employeeMap['martialStatus'] ?? '',
                       Icons.favorite_border,
                     ),
                   ),
@@ -489,7 +627,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('gender'),
-                      "Female", // Sample data
+                      _employeeMap['gender'] ?? '',
                       Icons.person_outline,
                     ),
                   ),
@@ -498,7 +636,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('nationality'),
-                      "American", // Sample data
+                      _employeeMap['nationality'] ?? '',
                       Icons.flag_outlined,
                     ),
                   ),
@@ -509,7 +647,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
               _buildInfoField(
                 context,
                 localizations.getString('address'),
-                "2464 Royal Ln, Mesa, New Jersey", // Sample data
+                _employeeMap['address'] ?? '',
                 Icons.location_on_outlined,
               ),
               const SizedBox(height: 24),
@@ -520,7 +658,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('city'),
-                      "California", // Sample data
+                      _employeeMap['city'] ?? '',
                       Icons.location_city_outlined,
                     ),
                   ),
@@ -529,7 +667,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('state'),
-                      "United State", // Sample data
+                      _employeeMap['state'] ?? '',
                       Icons.map_outlined,
                     ),
                   ),
@@ -538,7 +676,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('zipCode'),
-                      "35624", // Sample data
+                      _employeeMap['zipCode'] ?? '',
                       Icons.pin_outlined,
                     ),
                   ),
@@ -553,7 +691,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
 
   Widget _buildProfessionalInformation(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-    final isDarkMode = AdaptiveColors.isDarkMode(context);
 
     return SingleChildScrollView(
       primary: true,
@@ -575,7 +712,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('employeeId'),
-                      widget.employee['id'],
+                      _employeeMap['id'] ?? '',
                       Icons.badge_outlined,
                     ),
                   ),
@@ -584,10 +721,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('userName'),
-                      widget.employee['name']
-                          .toString()
-                          .toLowerCase()
-                          .replaceAll(' ', '_'),
+                      _employeeMap['username'] ?? '',
                       Icons.account_circle_outlined,
                     ),
                   ),
@@ -600,7 +734,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('type'),
-                      widget.employee['type'],
+                      _employeeMap['type'] ?? '',
                       Icons.business_center_outlined,
                     ),
                   ),
@@ -609,7 +743,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('department'),
-                      widget.employee['department'],
+                      _employeeMap['department'] ?? '',
                       Icons.domain_outlined,
                     ),
                   ),
@@ -622,7 +756,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('workingDays'),
-                      "5 Days",
+                      _employeeMap['workingDays'] ?? '',
                       Icons.calendar_today_outlined,
                     ),
                   ),
@@ -631,7 +765,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('joiningDate'),
-                      "July 10, 2022",
+                      _employeeMap['recruitmentDate'] ?? '',
                       Icons.date_range_outlined,
                     ),
                   ),
@@ -641,7 +775,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
               _buildInfoField(
                 context,
                 localizations.getString('officeLocation'),
-                "2464 Royal Ln, Mesa, New Jersey", // Sample data
+                _employeeMap['officeLocation'] ?? '',
                 Icons.location_on_outlined,
               ),
             ],
@@ -651,8 +785,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
     );
   }
 
-  Widget _buildInfoField(
-      BuildContext context, String label, String value, IconData icon) {
+  Widget _buildInfoField(BuildContext context, String label, String value, IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -705,7 +838,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
   Widget _buildAttendanceTab(BuildContext context) {
     final localizations = AppLocalizations.of(context);
 
-    // Sample attendance data - refined to match web version
+    // Sample attendance data
     final attendanceData = [
       {
         'date': 'July 01, 2023',
@@ -1202,30 +1335,32 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
   }
 
   String _getInitials(String name) {
-    // If employee already has an avatar defined, use it
-    if (widget.employee.containsKey('avatar') &&
-        widget.employee['avatar'] is String) {
-      return widget.employee['avatar'];
+    if (name.isEmpty) {
+      return 'NA';
     }
 
-    // Otherwise, compute from name
+    // Split by space to get name parts
     List<String> nameParts = name.split(' ');
+
     if (nameParts.length > 1) {
-      return nameParts[0][0] + nameParts[1][0];
-    } else if (nameParts.isNotEmpty) {
+      // If we have at least first and last name
+      String firstInitial = nameParts[0].isNotEmpty ? nameParts[0][0] : '';
+      String lastInitial = nameParts[1].isNotEmpty ? nameParts[1][0] : '';
+      return '$firstInitial$lastInitial';
+    } else if (nameParts.isNotEmpty && nameParts[0].isNotEmpty) {
+      // If we only have one name part
       return nameParts[0][0];
     }
-    return '';
+
+    return 'NA';
   }
 
   Color _getAvatarColor(String name) {
-    // If employee already has an avatarColor defined, use it
-    if (widget.employee.containsKey('avatarColor') &&
-        widget.employee['avatarColor'] is Color) {
-      return widget.employee['avatarColor'];
+    if (name.isEmpty) {
+      return Colors.grey;
     }
 
-    // Otherwise, compute a color
+    // List of pastel colors for avatars
     final colors = [
       Colors.blue.shade100,
       Colors.red.shade100,
@@ -1236,6 +1371,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
       Colors.teal.shade100,
     ];
 
+    // Generate a consistent index based on the name
     int hashCode = name.hashCode;
     return colors[hashCode.abs() % colors.length];
   }

@@ -152,5 +152,12 @@
   "pastHolidays": "Jours fériés passés",
 
   "members": "Membres",
-  "noDepartmentsFound": "Aucun département trouvé"
+  "noDepartmentsFound": "Aucun département trouvé",
+
+
+  "addDepartment": "Ajouter un département",
+  "departmentName": "Nom du département",
+  "enterDepartmentName": "Entrez le nom du département",
+  "departmentNameRequired": "Le nom du département est requis",
+  "departmentAddedSuccessfully": "Département ajouté avec succès"
 }

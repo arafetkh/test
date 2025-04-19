@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/mdi.dart';
 import 'package:iconify_flutter/icons/ic.dart';
-import 'package:iconify_flutter/icons/carbon.dart';
-
 import '../theme/adaptive_colors.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {

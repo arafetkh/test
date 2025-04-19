@@ -155,5 +155,12 @@
   "pastHolidays": "Past Holidays",
 
   "members": "Members",
-  "noDepartmentsFound": "No departments found"
+  "noDepartmentsFound": "No departments found",
+
+
+  "addDepartment": "Add Department",
+  "departmentName": "Department Name",
+  "enterDepartmentName": "Enter department name",
+  "departmentNameRequired": "Department name is required",
+  "departmentAddedSuccessfully": "Department added successfully"
 }

@@ -9,9 +9,10 @@ import 'package:in_out/widget/UserProfileHeader.dart';
 import 'package:in_out/widget/bottom_navigation_bar.dart';
 import 'package:in_out/widget/translate_text.dart';
 import 'package:provider/provider.dart';
-
+import 'package:in_out/auth/auth_service.dart';
+import 'package:in_out/Login_screens/login_page.dart';
+import 'package:in_out/localization/app_localizations.dart';
 import 'NotificationsScreen.dart';
-
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -99,6 +100,89 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     NavigationService.navigateToScreen(context, index);
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final screenHeight = screenSize.height;
+    final localizations = AppLocalizations.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.04,
+        vertical: screenHeight * 0.02,
+      ),
+      child: ElevatedButton.icon(
+        onPressed: () async {
+          // Show confirmation dialog
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Logout Confirmation'),
+                content: Text('Are you sure you want to logout?'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      // Close the dialog
+                      Navigator.of(context).pop();
+
+                      // Show loading indicator
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        },
+                      );
+
+                      // Perform logout
+                      await AuthService.logout();
+
+                      // Close loading indicator
+                      Navigator.of(context).pop();
+
+                      // Navigate to login page
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                            (route) => false,
+                      );
+                    },
+                    child: Text(
+                      'Logout',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        icon: Icon(
+          Icons.logout,
+          color: Colors.white,
+        ),
+        label: Text('Logout'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildSettingsHeader(String titleKey, String subtitleKey) {
@@ -381,6 +465,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             },
                           ),
                         ),
+                        _buildLogoutButton(context),
+
                       ]),
                     ),
                   ),

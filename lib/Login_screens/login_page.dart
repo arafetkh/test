@@ -3,8 +3,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/material_symbols.dart';
 import '../../auth/login_auth.dart';
+import '../auth/auth_service.dart';
+import '../dashboard.dart';
 import 'forgot_password.dart';
-
+import 'package:in_out/localization/app_localizations.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -37,7 +39,8 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
 
-    final result = await LoginAuth.login(email, password);
+    // Call the AuthService login method
+    final result = await AuthService.login(email, password);
 
     setState(() => _isLoading = false);
 
@@ -46,8 +49,14 @@ class _LoginPageState extends State<LoginPage> {
         _hasError = false;
         _errorMessage = '';
       });
-      // Show success in SnackBar if needed
+      // Show success message
       _showSuccess("Connexion réussie !");
+
+      // Navigate to dashboard
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      );
     } else {
       setState(() {
         _hasError = true;
