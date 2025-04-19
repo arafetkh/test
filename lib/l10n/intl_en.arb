@@ -162,5 +162,16 @@
   "departmentName": "Department Name",
   "enterDepartmentName": "Enter department name",
   "departmentNameRequired": "Department name is required",
-  "departmentAddedSuccessfully": "Department added successfully"
+  "departmentAddedSuccessfully": "Department added successfully",
+
+
+  "primaryColor": "Primary Color",
+  "choosePrimaryColor": "Choose your primary app color",
+  "secondaryColor": "Secondary Color",
+  "chooseSecondaryColor": "Choose your secondary app color",
+  "selectPrimaryColor": "Select Primary Color",
+  "selectSecondaryColor": "Select Secondary Color",
+  "colorPreview": "Color Preview",
+  "primaryColorSample": "Primary Color",
+  "secondaryColorSample": "Accent Color"
 }

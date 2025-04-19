@@ -49,8 +49,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
         "checkInTime": MessageLookupByLibrary.simpleMessage("Check-In Time"),
         "chooseFile": MessageLookupByLibrary.simpleMessage("choose file"),
+        "choosePrimaryColor": MessageLookupByLibrary.simpleMessage(
+            "Choose your primary app color"),
+        "chooseSecondaryColor": MessageLookupByLibrary.simpleMessage(
+            "Choose your secondary app color"),
         "city": MessageLookupByLibrary.simpleMessage("City"),
         "clearFilters": MessageLookupByLibrary.simpleMessage("Clear Filters"),
+        "colorPreview": MessageLookupByLibrary.simpleMessage("Color Preview"),
         "companyHolidayInfo": MessageLookupByLibrary.simpleMessage(
             "This is a company holiday. Regular employees are entitled to a day off. Specific departments may have different arrangements. Please check with your manager."),
         "confirmDelete": MessageLookupByLibrary.simpleMessage("Confirm Delete"),
@@ -166,6 +171,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "pleaseFillRequiredFields": MessageLookupByLibrary.simpleMessage(
             "Please fill in all required fields"),
         "previousPage": MessageLookupByLibrary.simpleMessage("Previous"),
+        "primaryColor": MessageLookupByLibrary.simpleMessage("Primary Color"),
+        "primaryColorSample":
+            MessageLookupByLibrary.simpleMessage("Primary Color"),
         "professionalInformation":
             MessageLookupByLibrary.simpleMessage("Professional Information"),
         "profile": MessageLookupByLibrary.simpleMessage("Profile"),
@@ -186,12 +194,20 @@ class MessageLookup extends MessageLookupByLibrary {
         "requestLeave": MessageLookupByLibrary.simpleMessage("Request Leave"),
         "robertAllen": MessageLookupByLibrary.simpleMessage("Robert Allen"),
         "search": MessageLookupByLibrary.simpleMessage("Search"),
+        "secondaryColor":
+            MessageLookupByLibrary.simpleMessage("Secondary Color"),
+        "secondaryColorSample":
+            MessageLookupByLibrary.simpleMessage("Accent Color"),
         "selectDepartment":
             MessageLookupByLibrary.simpleMessage("Select Department"),
         "selectDesignation":
             MessageLookupByLibrary.simpleMessage("Select Designation"),
         "selectLanguage":
             MessageLookupByLibrary.simpleMessage("Select your language"),
+        "selectPrimaryColor":
+            MessageLookupByLibrary.simpleMessage("Select Primary Color"),
+        "selectSecondaryColor":
+            MessageLookupByLibrary.simpleMessage("Select Secondary Color"),
         "selectType": MessageLookupByLibrary.simpleMessage("Select Type"),
         "sendMailToHrAndAdmin":
             MessageLookupByLibrary.simpleMessage("Send Mail to HR and Admin"),

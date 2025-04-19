@@ -39,8 +39,8 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
 
-    // Call the AuthService login method
-    final result = await AuthService.login(email, password);
+    // Call the AuthService login method with context
+    final result = await AuthService.login(email, password, context);
 
     setState(() => _isLoading = false);
 
@@ -64,7 +64,6 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
-
   void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.green),

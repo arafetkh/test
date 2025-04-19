@@ -1,8 +1,9 @@
-// lib/auth/auth_wrapper.dart
-
+// lib/auth/auth_wrapper.dart (update)
 import 'package:flutter/material.dart';
 import 'package:in_out/Login_screens/login_page.dart';
 import 'package:in_out/dashboard.dart';
+import 'package:in_out/provider/user_settings_provider.dart';
+import 'package:provider/provider.dart';
 import 'auth_service.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -25,6 +26,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Future<void> _checkAuthStatus() async {
     // Check if user is logged in
     final isLoggedIn = await AuthService.isLoggedIn();
+
+    if (isLoggedIn) {
+      // Initialize user settings
+      final userId = await AuthService.getCurrentUserId();
+      if (userId != null) {
+        final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
+        await userSettingsProvider.setCurrentUser(userId);
+      }
+    }
 
     setState(() {
       _isAuthenticated = isLoggedIn;

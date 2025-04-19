@@ -1569,6 +1569,96 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Primary Color`
+  String get primaryColor {
+    return Intl.message(
+      'Primary Color',
+      name: 'primaryColor',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose your primary app color`
+  String get choosePrimaryColor {
+    return Intl.message(
+      'Choose your primary app color',
+      name: 'choosePrimaryColor',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Secondary Color`
+  String get secondaryColor {
+    return Intl.message(
+      'Secondary Color',
+      name: 'secondaryColor',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose your secondary app color`
+  String get chooseSecondaryColor {
+    return Intl.message(
+      'Choose your secondary app color',
+      name: 'chooseSecondaryColor',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Primary Color`
+  String get selectPrimaryColor {
+    return Intl.message(
+      'Select Primary Color',
+      name: 'selectPrimaryColor',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Secondary Color`
+  String get selectSecondaryColor {
+    return Intl.message(
+      'Select Secondary Color',
+      name: 'selectSecondaryColor',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Color Preview`
+  String get colorPreview {
+    return Intl.message(
+      'Color Preview',
+      name: 'colorPreview',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Primary Color`
+  String get primaryColorSample {
+    return Intl.message(
+      'Primary Color',
+      name: 'primaryColorSample',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Accent Color`
+  String get secondaryColorSample {
+    return Intl.message(
+      'Accent Color',
+      name: 'secondaryColorSample',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

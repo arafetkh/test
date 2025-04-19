@@ -1,7 +1,9 @@
+// lib/SettingsScreen.dart (update)
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_out/provider/language_provider.dart';
+import 'package:in_out/provider/user_settings_provider.dart';
 import 'package:in_out/services/NavigationService.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:in_out/widget/ResponsiveNavigationScaffold.dart';
@@ -12,7 +14,9 @@ import 'package:provider/provider.dart';
 import 'package:in_out/auth/auth_service.dart';
 import 'package:in_out/Login_screens/login_page.dart';
 import 'package:in_out/localization/app_localizations.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'NotificationsScreen.dart';
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -30,9 +34,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _desktopPushEnabled = true;
   bool _emailNotificationsEnabled = true;
 
-  String _selectedTheme = 'light';
-  List<String> themeOptions = ['light', 'dark', 'system'];
-
   @override
   void initState() {
     super.initState();
@@ -41,28 +42,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-
-    // Initialize theme dropdown based on actual theme mode
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeThemeSelection();
-    });
-  }
-
-  void _initializeThemeSelection() {
-    final adaptiveTheme = AdaptiveTheme.of(context);
-    if (adaptiveTheme.mode == AdaptiveThemeMode.dark) {
-      setState(() {
-        _selectedTheme = 'dark';
-      });
-    } else if (adaptiveTheme.mode == AdaptiveThemeMode.light) {
-      setState(() {
-        _selectedTheme = 'light';
-      });
-    } else {
-      setState(() {
-        _selectedTheme = 'system';
-      });
-    }
   }
 
   @override
@@ -78,10 +57,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  void _changeTheme(String themeMode) {
-    setState(() {
-      _selectedTheme = themeMode;
-    });
+  void _changeTheme(String themeMode, BuildContext context) {
+    final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
+    userSettingsProvider.changeThemeMode(themeMode);
 
     if (themeMode == 'light') {
       AdaptiveTheme.of(context).setLight();
@@ -100,6 +78,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     NavigationService.navigateToScreen(context, index);
+  }
+
+  void _showColorPicker(BuildContext context, bool isPrimary) {
+    final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
+    final settings = userSettingsProvider.currentSettings;
+    Color pickerColor = isPrimary ? settings.primaryColor : settings.secondaryColor;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            isPrimary
+                ? AppLocalizations.of(context).getString('selectPrimaryColor')
+                : AppLocalizations.of(context).getString('selectSecondaryColor'),
+          ),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: pickerColor,
+              onColorChanged: (Color color) {
+                pickerColor = color;
+              },
+              pickerAreaHeightPercent: 0.8,
+              enableAlpha: false,
+              displayThumbColor: true,
+              paletteType: PaletteType.hsvWithHue,
+              labelTypes: const [ColorLabelType.rgb, ColorLabelType.hex],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(AppLocalizations.of(context).getString('cancel')),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(AppLocalizations.of(context).getString('apply')),
+              onPressed: () {
+                if (isPrimary) {
+                  userSettingsProvider.changePrimaryColor(pickerColor);
+                } else {
+                  userSettingsProvider.changeSecondaryColor(pickerColor);
+                }
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildLogoutButton(BuildContext context) {
@@ -147,7 +176,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
 
                       // Perform logout
-                      await AuthService.logout();
+                      await AuthService.logout(context);
 
                       // Close loading indicator
                       Navigator.of(context).pop();
@@ -264,6 +293,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildColorPreview(Color color, VoidCallback onTap) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: screenWidth * 0.1,
+        height: screenWidth * 0.1,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AdaptiveColors.borderColor(context),
+            width: 2,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDropdownWidget(String value, List<String> options, Function(String?) onChanged) {
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -326,9 +375,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final padding = screenWidth * 0.04;
-
-    // Get the language provider
-    final languageProvider = Provider.of<LanguageProvider>(context);
+    final userSettingsProvider = Provider.of<UserSettingsProvider>(context);
+    final settings = userSettingsProvider.currentSettings;
 
     final Map<String, String> languageDisplayNames = {
       'en': 'english',
@@ -339,14 +387,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'english': 'en',
       'french': 'fr',
     };
-    // Get current language for dropdown
-    String currentLanguageDisplay = languageDisplayNames[languageProvider.currentLanguage] ?? 'english';
+
+    // Get current theme mode
+    String currentThemeMode = settings.themeMode;
+
+    // Get current language
+    String currentLanguageDisplay = languageDisplayNames[settings.language] ?? 'english';
 
     return ResponsiveNavigationScaffold(
-      selectedIndex: 4,
-      onItemTapped: (index) {
-        NavigationService.navigateToScreen(context, index);
-      },
+        selectedIndex: 4,
+        onItemTapped: (index) {
+      NavigationService.navigateToScreen(context, index);
+    },
+      // Continuation of lib/SettingsScreen.dart (update)
       body: SafeArea(
         child: Column(
           children: [
@@ -380,13 +433,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           title: "appearance",
                           subtitle: "customizeTheme",
                           trailing: _buildDropdownWidget(
-                            _selectedTheme,
-                            themeOptions,
-                            (newValue) {
+                            currentThemeMode,
+                            ['light', 'dark', 'system'],
+                                (newValue) {
                               if (newValue != null) {
-                                _changeTheme(newValue);
+                                _changeTheme(newValue, context);
                               }
                             },
+                          ),
+                        ),
+
+                        // Primary Color Setting
+                        _buildSettingItem(
+                          title: "primaryColor",
+                          subtitle: "selectPrimaryColorDesc",
+                          trailing: _buildColorPreview(
+                            settings.primaryColor,
+                                () => _showColorPicker(context, true),
+                          ),
+                        ),
+
+                        // Secondary Color Setting
+                        _buildSettingItem(
+                          title: "secondaryColor",
+                          subtitle: "selectSecondaryColorDesc",
+                          trailing: _buildColorPreview(
+                            settings.secondaryColor,
+                                () => _showColorPicker(context, false),
                           ),
                         ),
 
@@ -397,13 +470,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           trailing: _buildDropdownWidget(
                             currentLanguageDisplay,
                             languageDisplayNames.values.toList(),
-                            (newValue) {
+                                (newValue) {
                               if (newValue != null) {
                                 // Convert display name to language code
                                 final languageCode = displayToLanguageCode[newValue];
                                 if (languageCode != null) {
                                   // Change app language
-                                  languageProvider.changeLanguage(languageCode);
+                                  userSettingsProvider.changeLanguage(languageCode);
                                 }
                               }
                             },
@@ -416,7 +489,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           subtitle: "twoFactorDescription",
                           trailing: _buildSwitch(
                             _twoFactorEnabled,
-                            (value) {
+                                (value) {
                               setState(() {
                                 _twoFactorEnabled = value;
                               });
@@ -430,7 +503,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           subtitle: "receivePushNotification",
                           trailing: _buildSwitch(
                             _mobilePushEnabled,
-                            (value) {
+                                (value) {
                               setState(() {
                                 _mobilePushEnabled = value;
                               });
@@ -444,7 +517,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           subtitle: "desktopPushDescription",
                           trailing: _buildSwitch(
                             _desktopPushEnabled,
-                            (value) {
+                                (value) {
                               setState(() {
                                 _desktopPushEnabled = value;
                               });
@@ -458,7 +531,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           subtitle: "receiveEmailNotification",
                           trailing: _buildSwitch(
                             _emailNotificationsEnabled,
-                            (value) {
+                                (value) {
                               setState(() {
                                 _emailNotificationsEnabled = value;
                               });
@@ -476,7 +549,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
-
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,

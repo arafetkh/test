@@ -1,5 +1,3 @@
-// lib/auth/global.dart
-
 class Global {
   // Your actual backend URL
   static const String baseUrl = "http://148.113.42.38:8081";

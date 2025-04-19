@@ -159,5 +159,16 @@
   "departmentName": "Nom du département",
   "enterDepartmentName": "Entrez le nom du département",
   "departmentNameRequired": "Le nom du département est requis",
-  "departmentAddedSuccessfully": "Département ajouté avec succès"
+  "departmentAddedSuccessfully": "Département ajouté avec succès",
+
+
+  "primaryColor": "Couleur Principale",
+  "choosePrimaryColor": "Choisissez votre couleur principale",
+  "secondaryColor": "Couleur Secondaire",
+  "chooseSecondaryColor": "Choisissez votre couleur secondaire",
+  "selectPrimaryColor": "Sélectionner la Couleur Principale",
+  "selectSecondaryColor": "Sélectionner la Couleur Secondaire",
+  "colorPreview": "Aperçu des Couleurs",
+  "primaryColorSample": "Couleur Principale",
+  "secondaryColorSample": "Couleur d'Accent"
 }

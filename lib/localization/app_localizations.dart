@@ -310,10 +310,39 @@ class AppLocalizations {
         return departmentAddedSuccessfully;
         case "addDepartment":
         return addDepartment;
+      case "primaryColor":
+        return primaryColor;
+      case "choosePrimaryColor":
+        return choosePrimaryColor;
+      case "secondaryColor":
+        return secondaryColor;
+      case "chooseSecondaryColor":
+        return chooseSecondaryColor;
+      case "selectPrimaryColor":
+        return selectPrimaryColor;
+      case "selectSecondaryColor":
+        return selectSecondaryColor;
+      case "colorPreview":
+        return colorPreview;
+      case "primaryColorSample":
+        return primaryColorSample;
+      case "secondaryColorSample":
+        return secondaryColorSample;
+
       default:
         return key;
     }
   }
+
+  String get primaryColor => Intl.message('Primary Color', name: 'primaryColor');
+  String get choosePrimaryColor => Intl.message('Choose your primary app color', name: 'choosePrimaryColor');
+  String get secondaryColor => Intl.message('Secondary Color', name: 'secondaryColor');
+  String get chooseSecondaryColor => Intl.message('Choose your secondary app color', name: 'chooseSecondaryColor');
+  String get selectPrimaryColor => Intl.message('Select Primary Color', name: 'selectPrimaryColor');
+  String get selectSecondaryColor => Intl.message('Select Secondary Color', name: 'selectSecondaryColor');
+  String get colorPreview => Intl.message('Color Preview', name: 'colorPreview');
+  String get primaryColorSample => Intl.message('Primary Color', name: 'primaryColorSample');
+  String get secondaryColorSample => Intl.message('Accent Color', name: 'secondaryColorSample');
 
   String get addDepartment => Intl.message('Add Department', name: 'addDepartment');
   String get departmentName => Intl.message('Department Name', name: 'departmentName');

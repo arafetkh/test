@@ -1,12 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../provider/color_provider.dart';
 
 class AdaptiveColors {
   static bool isDarkMode(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark;
   }
 
-  // Couleurs fixes
+  // Get the primary color from the ColorProvider or fallback to default
+  static Color getPrimaryColor(BuildContext context) {
+    try {
+      // Try to get the custom color from provider
+      return Provider.of<ColorProvider>(context, listen: false).primaryColor;
+    } catch (e) {
+      // Fallback to default if provider isn't available
+      return primaryGreen;
+    }
+  }
+
+  // Get secondary color from ColorProvider or fallback to default
+  static Color getAccentColor(BuildContext context) {
+    try {
+      return Provider.of<ColorProvider>(context, listen: false).secondaryColor;
+    } catch (e) {
+      return const Color(0xFFFF7240);
+    }
+  }
+
+  // Keep the original constant for backward compatibility
   static const Color primaryGreen = Color(0xFF2E7D32);
+
   static const Color presentColor = Color(0xFF388E3C);
   static const Color absentColor = Color(0xFFF44336);
   static const Color onTimeColor = Color(0xFF4CAF50);
@@ -60,7 +83,8 @@ class AdaptiveColors {
 
 
   static Color iconBackgroundColor(BuildContext context) {
-    return primaryGreen;
+    // Use the primary color method, not the constant
+    return getPrimaryColor(context);
   }
 
   static Color dropdownBackgroundColor(BuildContext context) {
@@ -80,6 +104,7 @@ class AdaptiveColors {
   }
 
   static Color sidebarActiveColor() {
+    // Keep the original static method signature for compatibility
     return darkSidebarActive;
   }
 
