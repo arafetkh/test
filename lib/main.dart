@@ -45,6 +45,20 @@ class MyApp extends StatelessWidget {
         final lightTheme = ThemeData(
           brightness: Brightness.light,
           primarySwatch: _createMaterialColor(settings.primaryColor),
+          colorScheme: ColorScheme.light(
+            primary: settings.primaryColor,
+            secondary: settings.secondaryColor,
+          ),
+          buttonTheme: ButtonThemeData(
+            buttonColor: settings.primaryColor,
+            textTheme: ButtonTextTheme.primary,
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: settings.primaryColor,
+              foregroundColor: Colors.white,
+            ),
+          ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
             fillColor: Colors.white,
@@ -52,14 +66,32 @@ class MyApp extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: settings.primaryColor),
+            ),
           ),
         );
 
         final darkTheme = ThemeData(
           brightness: Brightness.dark,
           primarySwatch: _createMaterialColor(settings.primaryColor),
+          colorScheme: ColorScheme.dark(
+            primary: settings.primaryColor,
+            secondary: settings.secondaryColor,
+          ),
           cardColor: const Color(0xFF1E1E1E),
           scaffoldBackgroundColor: const Color(0xFF121212),
+          buttonTheme: ButtonThemeData(
+            buttonColor: settings.primaryColor,
+            textTheme: ButtonTextTheme.primary,
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: settings.primaryColor,
+              foregroundColor: Colors.white,
+            ),
+          ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
             fillColor: const Color(0xFF2C2C2C),
@@ -67,9 +99,12 @@ class MyApp extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: settings.primaryColor),
+            ),
           ),
         );
-
         // Determine theme mode from user settings
         AdaptiveThemeMode initialThemeMode;
         switch (settings.themeMode) {

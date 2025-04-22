@@ -18,8 +18,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final iconSize = screenWidth * 0.06;
-    const Color activeColor = AdaptiveColors.primaryGreen;
-    final Color inactiveColor = AdaptiveColors.secondaryTextColor(context);
+    final activeColor = AdaptiveColors.getPrimaryColor(context);
+    final inactiveColor = AdaptiveColors.secondaryTextColor(context);
 
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,

@@ -1,52 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../provider/color_provider.dart';
+import '../provider/user_settings_provider.dart';
 
 class AdaptiveColors {
   static bool isDarkMode(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark;
   }
 
-  // Get the primary color from the ColorProvider or fallback to default
+  // Get the primary color consistently using UserSettingsProvider
   static Color getPrimaryColor(BuildContext context) {
     try {
-      // Try to get the custom color from provider
-      return Provider.of<ColorProvider>(context, listen: false).primaryColor;
+      final userSettings = Provider.of<UserSettingsProvider>(context, listen: false).currentSettings;
+      return userSettings.primaryColor;
     } catch (e) {
       // Fallback to default if provider isn't available
-      return primaryGreen;
+      return const Color(0xFF2E7D32); // Default green color
     }
   }
 
-  // Get secondary color from ColorProvider or fallback to default
-  static Color getAccentColor(BuildContext context) {
+  // Get secondary color consistently using UserSettingsProvider
+  static Color getSecondaryColor(BuildContext context) {
     try {
-      return Provider.of<ColorProvider>(context, listen: false).secondaryColor;
+      final userSettings = Provider.of<UserSettingsProvider>(context, listen: false).currentSettings;
+      return userSettings.secondaryColor;
     } catch (e) {
-      return const Color(0xFFFF7240);
+      return const Color(0xFFFF7240); // Default orange color
     }
   }
 
-  // Keep the original constant for backward compatibility
+  // Legacy method for compatibility
   static const Color primaryGreen = Color(0xFF2E7D32);
 
-  static const Color presentColor = Color(0xFF388E3C);
-  static const Color absentColor = Color(0xFFF44336);
-  static const Color onTimeColor = Color(0xFF4CAF50);
-  static const Color lateColor = Color(0xFFF44336);
+  // Update these colors to use the dynamic theme colors
+  static Color presentColor(BuildContext context) => getPrimaryColor(context);
+  static Color absentColor(BuildContext context) => const Color(0xFFF44336);
+  static Color onTimeColor(BuildContext context) => getPrimaryColor(context);
+  static Color lateColor(BuildContext context) => const Color(0xFFF44336);
 
-  // Couleurs spécifiques au dark mode
+  // Dark mode colors
   static const Color darkBackground = Color(0xFF121212);
   static const Color darkCardColor = Color(0xFF1E1E1E);
   static const Color darkBorderColor = Color(0xFF333333);
-  static const Color darkSidebarActive = Color(0xFF1EAE78); // Couleur de surlignage du menu actif (sidebar)
 
-  // Couleurs pour le mode clair
+  // Light mode colors
   static const Color lightBackground = Color(0xFFF8F9FA);
   static const Color lightCardColor = Colors.white;
   static const Color lightBorderColor = Color(0xFFE0E0E0);
 
-  // Interface adaptative
+  // Dynamic colors based on theme
   static Color cardColor(BuildContext context) {
     return isDarkMode(context) ? darkCardColor : lightCardColor;
   }
@@ -81,40 +82,41 @@ class AdaptiveColors {
     return isDarkMode(context) ? darkBorderColor : lightBorderColor;
   }
 
-
-  static Color iconBackgroundColor(BuildContext context) {
-    // Use the primary color method, not the constant
+  // Use the primary color for accent elements
+  static Color accentColor(BuildContext context) {
     return getPrimaryColor(context);
+  }
+
+  // Use secondary color for specific highlights
+  static Color highlightColor(BuildContext context) {
+    return getSecondaryColor(context);
   }
 
   static Color dropdownBackgroundColor(BuildContext context) {
     return isDarkMode(context) ? const Color(0xFF262626) : Colors.white;
   }
 
-  static Color statusColor(bool isOnTime) {
-    return isOnTime ? onTimeColor : lateColor;
+  static Color statusColor(bool isOnTime, BuildContext context) {
+    return isOnTime ? onTimeColor(context) : lateColor(context);
   }
 
   static Color positiveIndicatorColor(BuildContext context) {
-    return Color(0xFF4CAF50);
+    return getPrimaryColor(context);
   }
 
   static Color negativeIndicatorColor(BuildContext context) {
     return Color(0xFFF44336);
   }
 
-  static Color sidebarActiveColor() {
-    // Keep the original static method signature for compatibility
-    return darkSidebarActive;
+  static Color buttonColor(BuildContext context) {
+    return getPrimaryColor(context);
   }
 
-  static BoxDecoration chartBoxDecoration(BuildContext context) {
-    return BoxDecoration(
-      color: cardColor(context),
-      borderRadius: BorderRadius.circular(8),
-    );
+  static Color dividerColor(BuildContext context) {
+    return isDarkMode(context) ? Colors.grey.shade800 : Colors.grey.shade200;
   }
 
+  // Return consistent themed decorations
   static BoxDecoration cardBoxDecoration(BuildContext context) {
     return BoxDecoration(
       color: cardColor(context),
@@ -129,38 +131,25 @@ class AdaptiveColors {
       ],
     );
   }
-  static Color dividerColor(BuildContext context) {
-    return isDarkMode(context) ? Colors.grey.shade800 : Colors.grey.shade200;
+
+  // Button styles using primary color
+  static ButtonStyle primaryButtonStyle(BuildContext context) {
+    return ElevatedButton.styleFrom(
+      backgroundColor: getPrimaryColor(context),
+      foregroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
   }
 
-  // Décoration pour les indicateurs de tendance avec flèches
-  static Widget buildTrendIndicator(bool isPositive, String percentage, BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: isPositive
-            ? positiveIndicatorColor(context).withOpacity(0.1)
-            : negativeIndicatorColor(context).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-            size: 12,
-            color: isPositive ? positiveIndicatorColor(context) : negativeIndicatorColor(context),
-          ),
-          const SizedBox(width: 2),
-          Text(
-            percentage,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: isPositive ? positiveIndicatorColor(context) : negativeIndicatorColor(context),
-            ),
-          ),
-        ],
+  // Secondary button style using secondary color
+  static ButtonStyle secondaryButtonStyle(BuildContext context) {
+    return ElevatedButton.styleFrom(
+      backgroundColor: getSecondaryColor(context),
+      foregroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
       ),
     );
   }

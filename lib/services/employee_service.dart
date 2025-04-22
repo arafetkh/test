@@ -21,6 +21,7 @@ class EmployeeService {
         final List<Employee> employees =
             content.map<Employee>((item) => Employee.fromJson(item)).toList();
 
+
         return {
           "success": true,
           "employees": employees,
@@ -93,25 +94,41 @@ class EmployeeService {
 
   // Create a new employee
   static Future<Map<String, dynamic>> createEmployee(Employee employee) async {
-    // URL de l'API correcte
     final Uri url = Uri.parse("${Global.baseUrl}/secure/users-management");
 
     try {
-      // Préparer les en-têtes avec le token d'authentification
-      Map<String, String> headers = {
-        ...Global.headers,
-        // Assurez-vous que votre service d'authentification ajoute le token JWT
-        'Authorization': 'Bearer ${Global.authToken}'
+      final Map<String, dynamic> employeeData = {
+        'email': employee.email,
+        'username': employee.username,
+        'phoneNumber': employee.phoneNumber,
+        'firstName': employee.firstName,
+        'lastName': employee.lastName,
+        'password': employee.password,
+        'gender': employee.gender,
+        'martialStatus': employee.martialStatus,
+        'birthDate': employee.birthDate,
+        'recruitmentDate': employee.recruitmentDate,
+        'role': employee.role,
+        'type': employee.type,
+        'companyId': employee.companyId,
+        'designation': employee.designation,
+        'attributes': {},
+        'enabled': true
       };
+
+      print("Sending modified employee data: ${jsonEncode(employeeData)}");
 
       final response = await http.post(
         url,
-        headers: headers,
-        body: jsonEncode(employee.toJson()),
+        headers: Global.headers,
+        body: jsonEncode(employeeData),
       );
 
-      final responseData = jsonDecode(response.body);
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
 
+      final responseData = jsonDecode(response.body);
+      print("Using auth token: ${Global.authToken ?? 'No token found'}");
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {
           "success": true,
@@ -125,9 +142,11 @@ class EmployeeService {
         };
       }
     } catch (e) {
+      print("Error creating employee: $e");
       return {"success": false, "message": "Cannot connect to server: $e"};
     }
   }
+
 
   // Get employee by ID
   static Future<Map<String, dynamic>> getEmployeeById(int employeeId) async {

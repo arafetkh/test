@@ -213,7 +213,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       type: _selectedType,
       companyId: _companyIdController.text.isEmpty ? null : _companyIdController.text,
       designation: _designationController.text,
-      attributes: [],
+      attributes: {},
       enabled: true,
     );
 

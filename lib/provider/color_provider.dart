@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:in_out/provider/user_settings_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ColorProvider with ChangeNotifier {
@@ -47,5 +49,14 @@ class ColorProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(SECONDARY_COLOR_KEY, color.value);
     notifyListeners();
+  }
+  void syncWithUserSettings(BuildContext context) {
+    final userSettings = Provider.of<UserSettingsProvider>(context, listen: false).currentSettings;
+    if (_primaryColor != userSettings.primaryColor ||
+        _secondaryColor != userSettings.secondaryColor) {
+      _primaryColor = userSettings.primaryColor;
+      _secondaryColor = userSettings.secondaryColor;
+      notifyListeners();
+    }
   }
 }

@@ -17,7 +17,7 @@ class Employee {
   final String type;
   final String martialStatus; //
   final String? companyId;
-  final List<dynamic> attributes; // Ajouté pour correspondre à l'API
+  final Map<String, dynamic> attributes;
   final bool enabled;
   final String? address;
   final String? city;
@@ -43,7 +43,7 @@ class Employee {
     required this.type,
     required this.martialStatus,
     this.companyId,
-    this.attributes = const [], // Valeur par défaut de liste vide
+    this.attributes = const {},// Valeur par défaut de liste vide
     this.enabled = true,
     this.address,
     this.city,
@@ -56,20 +56,20 @@ class Employee {
 
   Map<String, dynamic> toJson() {
     return {
-      'username': username,
       'email': email,
+      'username': username,
       'phoneNumber': phoneNumber,
       'firstName': firstName,
       'lastName': lastName,
       'password': password,
-      'role': role,
+      'gender': gender,
+      'martialStatus': martialStatus, // Attention, la clé pourrait être "maritalStatus" dans l'API
       'birthDate': birthDate,
       'recruitmentDate': recruitmentDate,
-      'designation': designation,
-      'gender': gender,
+      'role': role,
       'type': type,
-      'maritalStatus': martialStatus,
       'companyId': companyId,
+      'designation': designation,
       'attributes': attributes,
       'enabled': enabled,
     };

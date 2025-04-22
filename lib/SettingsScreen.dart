@@ -117,11 +117,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             TextButton(
               child: Text(AppLocalizations.of(context).getString('apply')),
               onPressed: () {
+                // Apply changes to both providers
                 if (isPrimary) {
                   userSettingsProvider.changePrimaryColor(pickerColor);
                 } else {
                   userSettingsProvider.changeSecondaryColor(pickerColor);
                 }
+
+                // Rebuild the entire app to apply color changes
                 Navigator.of(context).pop();
               },
             ),
@@ -197,11 +200,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           );
         },
-        icon: Icon(
+        icon: const Icon(
           Icons.logout,
           color: Colors.white,
         ),
-        label: Text('Logout'),
+        label: const Text('Logout'),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.red,
           foregroundColor: Colors.white,
