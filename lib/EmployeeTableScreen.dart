@@ -10,6 +10,7 @@ import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
 import 'package:in_out/auth/global.dart';
 
 import 'AddEmployeeScreen.dart';
+import 'EditEmployeeScreen.dart';
 import 'NotificationsScreen.dart';
 import 'localization/app_localizations.dart';
 import 'models/employee_model.dart';
@@ -901,13 +902,56 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
             ),
             padding: EdgeInsets.zero,
             color: AdaptiveColors.cardColor(context),
+            // Find this code in TwoDimensionalEmployeeTable
+// Update the PopupMenuButton's onSelected handler
             onSelected: (String result) {
               if (result == 'view') {
                 onViewEmployee(employee);
               } else if (result == 'edit') {
-                // Implémenter la fonctionnalité d'édition
+                // Navigate to edit employee screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditEmployeeScreen(
+                      employeeData: employee,
+                      onEmployeeUpdated: () {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(AppLocalizations.of(context).getString('employeeUpdatedSuccessfully')),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                );
               } else if (result == 'delete') {
-                // Implémenter la fonctionnalité de suppression
+                // Handle delete action
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text(AppLocalizations.of(context).getString('confirmDelete')),
+                      content: Text(AppLocalizations.of(context).getString('areYouSureDelete')),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text(AppLocalizations.of(context).getString('cancel')),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text(AppLocalizations.of(context).getString('delete')),
+                        ),
+                      ],
+                    );
+                  },
+                );
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[

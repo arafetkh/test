@@ -1,10 +1,9 @@
 // lib/models/employee_model.dart
-
-// lib/models/employee_model.dart
 class Employee {
   final String? id;
   final String username;
   final String email;
+  final String? personalEmail;
   final String phoneNumber;
   final String firstName;
   final String lastName;
@@ -15,22 +14,17 @@ class Employee {
   final String designation;
   final String gender;
   final String type;
-  final String martialStatus; //
+  final String maritalStatus; // Corrected field name
   final String? companyId;
-  final Map<String, dynamic> attributes;
-  final bool enabled;
   final String? address;
-  final String? city;
-  final String? state;
-  final String? zipCode;
-  final String? nationality;
-  final String? workingDays;
-  final String? officeLocation;
+  final Map<String, dynamic> attributes;
+  final bool active; // Changed from enabled to active
 
   Employee({
     this.id,
     required this.username,
     required this.email,
+    this.personalEmail,
     required this.phoneNumber,
     required this.firstName,
     required this.lastName,
@@ -41,96 +35,85 @@ class Employee {
     required this.designation,
     required this.gender,
     required this.type,
-    required this.martialStatus,
+    required this.maritalStatus,
     this.companyId,
-    this.attributes = const {},// Valeur par défaut de liste vide
-    this.enabled = true,
     this.address,
-    this.city,
-    this.state,
-    this.zipCode,
-    this.nationality,
-    this.workingDays,
-    this.officeLocation,
+    this.attributes = const {},
+    this.active = true,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'email': email,
+      'personalEmail': personalEmail,
       'username': username,
       'phoneNumber': phoneNumber,
       'firstName': firstName,
       'lastName': lastName,
       'password': password,
       'gender': gender,
-      'martialStatus': martialStatus, // Attention, la clé pourrait être "maritalStatus" dans l'API
+      'maritalStatus': maritalStatus,
       'birthDate': birthDate,
       'recruitmentDate': recruitmentDate,
       'role': role,
       'type': type,
       'companyId': companyId,
       'designation': designation,
+      'address': address,
       'attributes': attributes,
-      'enabled': enabled,
+      'active': active,
     };
   }
 
   factory Employee.fromJson(Map<String, dynamic> json) {
     return Employee(
       id: json['id']?.toString(),
-      username: json['username'],
-      email: json['email'],
-      phoneNumber: json['phoneNumber'],
-      firstName: json['firstName'],
-      lastName: json['lastName'],
+      username: json['username'] ?? '',
+      email: json['email'] ?? '',
+      personalEmail: json['personalEmail'],
+      phoneNumber: json['phoneNumber'] ?? '',
+      firstName: json['firstName'] ?? '',
+      lastName: json['lastName'] ?? '',
       password: json['password'] ?? '',
-      role: json['role'],
+      role: json['role'] ?? 'USER',
       birthDate: json['birthDate'],
       recruitmentDate: json['recruitmentDate'],
-      designation: json['designation'],
-      gender: json['gender'],
-      type: json['type'],
-      martialStatus: json['maritalStatus'],
+      designation: json['designation'] ?? '',
+      gender: json['gender'] ?? 'MALE',
+      type: json['type'] ?? 'OFFICE',
+      maritalStatus: json['maritalStatus'] ?? 'SINGLE',
       companyId: json['companyId'],
-      attributes: json['attributes'] ?? [],
-      enabled: json['enabled'] ?? true,
-      address: null,
-      city: null,
-      state: null,
-      zipCode: null,
-      nationality: null,
-      workingDays: null,
-      officeLocation: null,
+      address: json['address'],
+      attributes: json['attributes'] ?? {},
+      active: json['active'] ?? true,
     );
   }
-  // Méthode pour créer une version complète pour EmployeeProfileScreen
+
+  // Method to create a version for EmployeeProfileScreen
   Map<String, dynamic> toProfileFormat() {
     return {
       'id': id.toString(),
       'name': '$firstName $lastName',
-      'avatar': '${firstName[0]}${lastName[0]}',
+      'avatar': '${firstName.isNotEmpty ? firstName[0] : ''}${lastName.isNotEmpty ? lastName[0] : ''}',
       'avatarColor': null,
       'textColor': null,
       'department': 'N/A',
       'designation': designation,
       'type': type,
       'email': email,
+      'personalEmail': personalEmail,
       'phoneNumber': phoneNumber,
       'birthDate': birthDate,
       'recruitmentDate': recruitmentDate,
       'gender': gender,
-      'maritalStatus': martialStatus,
+      'maritalStatus': maritalStatus,
       'username': username,
       'companyId': companyId,
       'address': address,
-      'city': city,
-      'state': state,
-      'zipCode': zipCode,
-      'nationality': nationality,
-      'workingDays': workingDays,
-      'officeLocation': officeLocation,
+      'active': active,
     };
   }
+
   String get fullName => '$firstName $lastName';
 
   String get initials {

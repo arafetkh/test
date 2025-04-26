@@ -19,7 +19,7 @@ class EmployeeService {
         final Map<String, dynamic> responseData = json.decode(response.body);
         final List<dynamic> content = responseData['content'] ?? [];
         final List<Employee> employees =
-            content.map<Employee>((item) => Employee.fromJson(item)).toList();
+        content.map<Employee>((item) => Employee.fromJson(item)).toList();
 
 
         return {
@@ -64,7 +64,7 @@ class EmployeeService {
         final List<dynamic> content = responseData['content'] ?? [];
 
         final List<Employee> employees =
-            content.map<Employee>((item) => Employee.fromJson(item)).toList();
+        content.map<Employee>((item) => Employee.fromJson(item)).toList();
 
         return {
           "success": true,
@@ -97,24 +97,31 @@ class EmployeeService {
     final Uri url = Uri.parse("${Global.baseUrl}/secure/users-management");
 
     try {
+      // Create payload with updated fields
       final Map<String, dynamic> employeeData = {
         'email': employee.email,
-        'username': employee.username,
+        'personalEmail': employee.personalEmail,
         'phoneNumber': employee.phoneNumber,
         'firstName': employee.firstName,
         'lastName': employee.lastName,
         'password': employee.password,
         'gender': employee.gender,
-        'martialStatus': employee.martialStatus,
+        'maritalStatus': employee.maritalStatus, // Corrected field name
         'birthDate': employee.birthDate,
         'recruitmentDate': employee.recruitmentDate,
         'role': employee.role,
         'type': employee.type,
         'companyId': employee.companyId,
         'designation': employee.designation,
+        'address': employee.address,
         'attributes': {},
-        'enabled': true
+        'active': true // Default to active
       };
+
+      // If username is provided, include it (though backend should generate one)
+      if (employee.username.isNotEmpty) {
+        employeeData['username'] = employee.username;
+      }
 
       print("Sending modified employee data: ${jsonEncode(employeeData)}");
 
@@ -129,6 +136,7 @@ class EmployeeService {
 
       final responseData = jsonDecode(response.body);
       print("Using auth token: ${Global.authToken ?? 'No token found'}");
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {
           "success": true,
@@ -146,7 +154,6 @@ class EmployeeService {
       return {"success": false, "message": "Cannot connect to server: $e"};
     }
   }
-
 
   // Get employee by ID
   static Future<Map<String, dynamic>> getEmployeeById(int employeeId) async {
@@ -205,13 +212,33 @@ class EmployeeService {
   // Update an employee
   static Future<Map<String, dynamic>> updateEmployee(Employee employee) async {
     final Uri url =
-        Uri.parse("${Global.baseUrl}/secure/users-management/${employee.id}");
+    Uri.parse("${Global.baseUrl}/secure/users-management/${employee.id}");
 
     try {
+      // Create payload with updated fields for update operation
+      // Note: username is removed from update payload as per requirements
+      final Map<String, dynamic> updateData = {
+        'email': employee.email,
+        'personalEmail': employee.personalEmail,
+        'phoneNumber': employee.phoneNumber,
+        'firstName': employee.firstName,
+        'lastName': employee.lastName,
+        'gender': employee.gender,
+        'maritalStatus': employee.maritalStatus,
+        'birthDate': employee.birthDate,
+        'recruitmentDate': employee.recruitmentDate,
+        'role': employee.role,
+        'type': employee.type,
+        'companyId': employee.companyId,
+        'designation': employee.designation,
+        'address': employee.address, // Added address field
+        'active': employee.active
+      };
+
       final response = await http.put(
         url,
         headers: Global.headers,
-        body: jsonEncode(employee.toJson()),
+        body: jsonEncode(updateData),
       );
 
       if (response.statusCode == 200) {

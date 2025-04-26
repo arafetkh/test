@@ -69,11 +69,17 @@ class _LoginPageState extends State<LoginPage> {
       SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
-
   void _toggleRememberMe() {
     setState(() {
       _rememberMe = !_rememberMe;
     });
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -372,10 +378,5 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+
 }

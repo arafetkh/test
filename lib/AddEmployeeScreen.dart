@@ -11,7 +11,6 @@ import 'package:intl/intl.dart';
 
 class AddEmployeeScreen extends StatefulWidget {
   final Function(Employee)? onEmployeeAdded;
-
   const AddEmployeeScreen({
     super.key,
     this.onEmployeeAdded,
@@ -22,11 +21,13 @@ class AddEmployeeScreen extends StatefulWidget {
 }
 
 class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
+
   // Controllers for text fields
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _mobileNumberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _personalEmailController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _employeeIdController = TextEditingController();
   final TextEditingController _userNameController = TextEditingController();
@@ -34,19 +35,10 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   // Selected values for dropdowns
   String? _selectedMaritalStatus;
   String? _selectedGender;
-  String? _selectedNationality;
-  String? _selectedCity;
-  String? _selectedState;
-  String? _selectedZipCode;
-  String? _selectedEmployeeType;
-  String? _selectedDepartment;
-  String? _selectedWorkingDays;
-  String? _selectedOfficeLocation;
 
   // Birth date and joining date
   DateTime? _dateOfBirth;
   DateTime? _joiningDate;
-
   bool _isPersonalInfoActive = true;
   bool _isProfessionalInfoActive = false;
   bool _isHeaderVisible = true;
@@ -66,6 +58,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _companyIdController = TextEditingController();
   final TextEditingController _designationController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -112,6 +105,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     _lastNameController.dispose();
     _mobileNumberController.dispose();
     _emailController.dispose();
+    _personalEmailController.dispose();
     _addressController.dispose();
     _employeeIdController.dispose();
     _userNameController.dispose();
@@ -160,11 +154,10 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       _formIsValid = _firstNameController.text.isNotEmpty &&
           _lastNameController.text.isNotEmpty &&
           _emailController.text.isNotEmpty &&
-          _userNameController.text.isNotEmpty &&
           _mobileNumberController.text.isNotEmpty;
     } else {
       // Validate professional info
-      _formIsValid = true; // Professional info is optional
+      _formIsValid = _designationController.text.isNotEmpty; // At least designation is required
     }
   }
 
@@ -187,6 +180,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
     setState(() {
       _isLoading = true;
     });
+
     String? formattedBirthDate;
     if (_dateOfBirth != null) {
       formattedBirthDate = "${_dateOfBirth!.year}-${_dateOfBirth!.month.toString().padLeft(2, '0')}-${_dateOfBirth!.day.toString().padLeft(2, '0')}";
@@ -197,24 +191,32 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       formattedRecruitmentDate = "${_joiningDate!.year}-${_joiningDate!.month.toString().padLeft(2, '0')}-${_joiningDate!.day.toString().padLeft(2, '0')}";
     }
 
+    // Generate a username based on first and last name if not provided
+    // Note: This is handled by the backend but we'll keep this for compatibility
+    String username = _userNameController.text.isNotEmpty
+        ? _userNameController.text
+        : (_firstNameController.text.toLowerCase() + "_" + _lastNameController.text.toLowerCase()).replaceAll(' ', '_');
+
     // Create employee object
     final employee = Employee(
-      username: _userNameController.text,
+      username: username,
       email: _emailController.text,
+      personalEmail: _personalEmailController.text.isNotEmpty ? _personalEmailController.text : null,
       phoneNumber: _mobileNumberController.text,
       firstName: _firstNameController.text,
       lastName: _lastNameController.text,
       password: _passwordController.text,
       gender: _selectedGender ?? 'MALE',
-      martialStatus: _selectedMaritalStatus ?? 'SINGLE',
+      maritalStatus: _selectedMaritalStatus ?? 'SINGLE',
       birthDate: formattedBirthDate,
       recruitmentDate: formattedRecruitmentDate,
       role: _selectedRole,
       type: _selectedType,
       companyId: _companyIdController.text.isEmpty ? null : _companyIdController.text,
       designation: _designationController.text,
+      address: _addressController.text.isNotEmpty ? _addressController.text : null,
       attributes: {},
-      enabled: true,
+      active: true,
     );
 
     try {
@@ -479,14 +481,14 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
 
     return Column(
       children: [
-        // First row: Username and Email
+        // First row: Email fields (Primary and Personal)
         Row(
           children: [
             Expanded(
               child: _buildTextField(
                 context,
-                _userNameController,
-                'Username',
+                _emailController,
+                localizations.getString('emailAddress'),
                 screenWidth,
                 screenHeight,
                 fieldHeight: fieldHeight,
@@ -497,12 +499,11 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
             Expanded(
               child: _buildTextField(
                 context,
-                _emailController,
-                localizations.getString('emailAddress'),
+                _personalEmailController,
+                'Personal Email', // You might want to add this to your localization
                 screenWidth,
                 screenHeight,
                 fieldHeight: fieldHeight,
-                isRequired: true,
               ),
             ),
           ],
@@ -643,11 +644,21 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           ],
         ),
         SizedBox(height: screenHeight * 0.02),
+
+        // Address field
+        _buildTextField(
+          context,
+          _addressController,
+          localizations.getString('address'),
+          screenWidth,
+          screenHeight,
+          fieldHeight: fieldHeight,
+        ),
+        SizedBox(height: screenHeight * 0.02),
       ],
     );
   }
 
-// Update the _buildProfessionalInfoForm method
   Widget _buildProfessionalInfoForm(BuildContext context, double screenWidth, double screenHeight) {
     final localizations = AppLocalizations.of(context);
     final fieldHeight = screenHeight * 0.065; // Consistent field height
@@ -717,11 +728,29 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         ),
         SizedBox(height: screenHeight * 0.02),
 
-        // You can add more rows as needed
+        // Username (read-only with note that it will be generated)
+        _buildTextField(
+          context,
+          _userNameController,
+          'Username (Will be auto-generated if empty)',
+          screenWidth,
+          screenHeight,
+          fieldHeight: fieldHeight,
+          isReadOnly: true,
+        ),
+        SizedBox(height: screenHeight * 0.01),
+        Text(
+          'Note: Username will be generated automatically based on first and last name if left empty.',
+          style: TextStyle(
+            fontSize: screenWidth * 0.008,
+            fontStyle: FontStyle.italic,
+            color: AdaptiveColors.secondaryTextColor(context),
+          ),
+        ),
+        SizedBox(height: screenHeight * 0.02),
       ],
     );
   }
-
 
   Widget _buildTextField(
       BuildContext context,
@@ -731,39 +760,51 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       double screenHeight,
       {double? fieldHeight,
         bool isRequired = false,
-        bool isPassword = false}) {
-    return Container(
-      height: fieldHeight,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: AdaptiveColors.borderColor(context),
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(screenWidth * 0.005),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword,
-        decoration: InputDecoration(
-          labelText: isRequired ? "$label *" : label,
-          labelStyle: TextStyle(
+        bool isPassword = false,
+        bool isReadOnly = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Label displayed above the field
+        Text(
+          isRequired ? "$label *" : label,
+          style: TextStyle(
             fontSize: screenWidth * 0.01,
+            fontWeight: FontWeight.w500,
             color: AdaptiveColors.secondaryTextColor(context),
           ),
-          floatingLabelBehavior: FloatingLabelBehavior.auto,
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.01,
-            vertical: fieldHeight != null
-                ? fieldHeight / 2 - screenWidth * 0.01
-                : screenHeight * 0.015,
+        ),
+        SizedBox(height: screenHeight * 0.01),
+        // Text field without a floating label
+        Container(
+          height: fieldHeight,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: AdaptiveColors.borderColor(context),
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(screenWidth * 0.005),
+          ),
+          child: TextField(
+            controller: controller,
+            obscureText: isPassword,
+            readOnly: isReadOnly,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.01,
+                vertical: fieldHeight != null
+                    ? fieldHeight / 2 - screenWidth * 0.01
+                    : screenHeight * 0.015,
+              ),
+            ),
+            style: TextStyle(
+              fontSize: screenWidth * 0.01,
+              color: AdaptiveColors.primaryTextColor(context),
+            ),
           ),
         ),
-        style: TextStyle(
-          fontSize: screenWidth * 0.01,
-          color: AdaptiveColors.primaryTextColor(context),
-        ),
-      ),
+      ],
     );
   }
 
@@ -823,28 +864,42 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       double screenWidth,
       double screenHeight,
       {double? fieldHeight}) {
-    return Container(
-      height: fieldHeight,
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.01,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+      // Label above the dropdown
+      Text(
+      label,
+      style: TextStyle(
+        fontSize: screenWidth * 0.01,
+        fontWeight: FontWeight.w500,
+        color: AdaptiveColors.secondaryTextColor(context),
       ),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: AdaptiveColors.borderColor(context),
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(screenWidth * 0.005),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: selectedValue,
-          hint: Text(
-            label,
-            style: TextStyle(
-              fontSize: screenWidth * 0.01,
-              color: AdaptiveColors.secondaryTextColor(context),
-            ),
-          ),
+    ),
+    SizedBox(height: screenHeight * 0.01),
+    // Dropdown container
+    Container(
+    height: fieldHeight,
+    padding: EdgeInsets.symmetric(
+    horizontal: screenWidth * 0.01,
+    ),
+    decoration: BoxDecoration(
+    border: Border.all(
+    color: AdaptiveColors.borderColor(context),
+    width: 1,
+    ),
+    borderRadius: BorderRadius.circular(screenWidth * 0.005),
+    ),
+    child: DropdownButtonHideUnderline(
+    child: DropdownButton<String>(
+    value: selectedValue,
+    hint: Text(
+    "Select $label",
+    style: TextStyle(
+    fontSize: screenWidth * 0.01,
+    color: AdaptiveColors.tertiaryTextColor(context),
+    ),
+    ),
           icon: Icon(
             Icons.keyboard_arrow_down,
             color: AdaptiveColors.secondaryTextColor(context),
@@ -867,6 +922,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           onChanged: onChanged,
         ),
       ),
+    )
+      ],
     );
   }
 

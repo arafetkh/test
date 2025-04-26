@@ -3,6 +3,8 @@ import 'package:in_out/localization/app_localizations.dart';
 import 'package:in_out/services/employee_service.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 
+import 'EditEmployeeScreen.dart';
+
 class EmployeeProfileScreen extends StatefulWidget {
   final int employeeId;
 
@@ -52,14 +54,13 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
         print("Employee data received: $_employeeData");
 
         setState(() {
-          // Create a safe map with fallbacks for all possible null values
           _employeeMap = {
             'id': _employeeData?['id']?.toString() ?? 'N/A',
             'name': '${_employeeData?['firstName'] ?? ''} ${_employeeData?['lastName'] ?? ''}'.trim(),
-            'firstName': _employeeData?['firstName'] ?? '',
-            'lastName': _employeeData?['lastName'] ?? '',
-            'username': _employeeData?['username'] ?? '',
-            'email': _employeeData?['email'] ?? '',
+            'firstName': _employeeData?['firstName'] ?? 'N/A',
+            'lastName': _employeeData?['lastName'] ?? 'N/A',
+            'username': _employeeData?['username'] ?? 'N/A',
+            'email': _employeeData?['email'] ?? 'N/A',
             'phoneNumber': _employeeData?['phoneNumber'] ?? 'N/A',
             'avatar': _employeeData?['firstName'] != null && _employeeData?['firstName'].isNotEmpty &&
                 _employeeData?['lastName'] != null && _employeeData?['lastName'].isNotEmpty
@@ -71,21 +72,20 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                 ? _employeeData!['designation'].split(' ').last
                 : 'Department',
             'designation': _employeeData?['designation'] ?? 'N/A',
-            'type': _employeeData?['type'] ?? 'OFFICE',
+            'type': _employeeData?['type'] ?? 'N/A',
             'birthDate': _employeeData?['birthDate'] ?? 'N/A',
             'recruitmentDate': _employeeData?['recruitmentDate'] ?? 'N/A',
             'gender': _employeeData?['gender'] ?? 'N/A',
-            'martialStatus': _employeeData?['martialStatus'] ?? 'SINGLE',
-            'address': 'N/A',
-            'city': 'N/A',
-            'state': 'N/A',
-            'zipCode': 'N/A',
-            'nationality': 'American',
-            'workingDays': '5 Days',
-            'officeLocation': 'Office Location',
+            'maritalStatus': _employeeData?['maritalStatus'] ?? 'N/A',
+            'address': _employeeData?['address'] ?? 'N/A',
+            'city': _employeeData?['city'] ?? 'N/A',
+            'state': _employeeData?['state'] ?? 'N/A',
+            'zipCode': _employeeData?['zipCode'] ?? 'N/A',
+            'nationality': _employeeData?['nationality'] ?? 'N/A',
+            'workingDays': _employeeData?['workingDays'] ?? 'N/A',
+            'officeLocation': _employeeData?['officeLocation'] ??'N/A',
           };
 
-          // Set the status color based on employee type
           final type = _employeeData?['type'] ?? '';
           if (type == 'REMOTE') {
             _statusColor = Colors.blue;
@@ -253,7 +253,18 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                       size: 20,
                     ),
                     onPressed: () {
-                      // Handle edit profile
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditEmployeeScreen(
+                            employeeData: _employeeMap,
+                            onEmployeeUpdated: () {
+                              // Reload employee data after update
+                              _loadEmployeeDetails();
+                            },
+                          ),
+                        ),
+                      );
                     },
                     tooltip: localizations.getString('edit'),
                   ),
@@ -572,27 +583,30 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
               ),
               const SizedBox(height: 24),
 
-              // Mobile/Email row
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoField(
-                      context,
-                      localizations.getString('mobileNumber'),
-                      _employeeMap['phoneNumber'] ?? '',
-                      Icons.phone_outlined,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildInfoField(
-                      context,
-                      localizations.getString('emailAddress'),
-                      _employeeMap['email'] ?? '',
-                      Icons.email_outlined,
-                    ),
-                  ),
-                ],
+              // Primary Email field
+              _buildInfoField(
+                context,
+                localizations.getString('emailAddress'),
+                _employeeMap['email'] ?? '',
+                Icons.email_outlined,
+              ),
+              const SizedBox(height: 24),
+
+              // Personal Email field (new)
+              _buildInfoField(
+                context,
+                'Personal Email', // Add to localizations if needed
+                _employeeMap['personalEmail'] ?? 'N/A',
+                Icons.alternate_email,
+              ),
+              const SizedBox(height: 24),
+
+              // Mobile Number field
+              _buildInfoField(
+                context,
+                localizations.getString('mobileNumber'),
+                _employeeMap['phoneNumber'] ?? '',
+                Icons.phone_outlined,
               ),
               const SizedBox(height: 24),
 
@@ -612,7 +626,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('maritalStatus'),
-                      _employeeMap['martialStatus'] ?? '',
+                      _employeeMap['maritalStatus'] ?? '', // Updated from martialStatus
                       Icons.favorite_border,
                     ),
                   ),
@@ -644,43 +658,21 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
               ),
               const SizedBox(height: 24),
 
+              // Address field (updated to use the new direct address field)
               _buildInfoField(
                 context,
                 localizations.getString('address'),
-                _employeeMap['address'] ?? '',
+                _employeeMap['address'] ?? 'N/A',
                 Icons.location_on_outlined,
               ),
               const SizedBox(height: 24),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoField(
-                      context,
-                      localizations.getString('city'),
-                      _employeeMap['city'] ?? '',
-                      Icons.location_city_outlined,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildInfoField(
-                      context,
-                      localizations.getString('state'),
-                      _employeeMap['state'] ?? '',
-                      Icons.map_outlined,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildInfoField(
-                      context,
-                      localizations.getString('zipCode'),
-                      _employeeMap['zipCode'] ?? '',
-                      Icons.pin_outlined,
-                    ),
-                  ),
-                ],
+              // Active status field (new)
+              _buildInfoField(
+                context,
+                'Account Status',
+                _employeeMap['active'] == true ? 'Active' : 'Inactive',
+                Icons.verified_user_outlined,
               ),
             ],
           ),
@@ -712,7 +704,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('employeeId'),
-                      _employeeMap['id'] ?? '',
+                      _employeeMap['id'] ?? 'N/A',
                       Icons.badge_outlined,
                     ),
                   ),
@@ -721,20 +713,21 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('userName'),
-                      _employeeMap['username'] ?? '',
+                      _employeeMap['username'] ?? 'N/A',
                       Icons.account_circle_outlined,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
+
               Row(
                 children: [
                   Expanded(
                     child: _buildInfoField(
                       context,
                       localizations.getString('type'),
-                      _employeeMap['type'] ?? '',
+                      _employeeMap['type'] ?? 'N/A',
                       Icons.business_center_outlined,
                     ),
                   ),
@@ -743,21 +736,22 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('department'),
-                      _employeeMap['department'] ?? '',
+                      _employeeMap['department'] ?? 'N/A',
                       Icons.domain_outlined,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
+
               Row(
                 children: [
                   Expanded(
                     child: _buildInfoField(
                       context,
-                      localizations.getString('workingDays'),
-                      _employeeMap['workingDays'] ?? '',
-                      Icons.calendar_today_outlined,
+                      'Company ID',
+                      _employeeMap['companyId'] ?? 'N/A',
+                      Icons.badge_outlined,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -765,13 +759,37 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
                     child: _buildInfoField(
                       context,
                       localizations.getString('joiningDate'),
-                      _employeeMap['recruitmentDate'] ?? '',
+                      _employeeMap['recruitmentDate'] ?? 'N/A',
                       Icons.date_range_outlined,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      'Role',
+                      _employeeMap['role'] ?? 'N/A',
+                      Icons.verified_user_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildInfoField(
+                      context,
+                      localizations.getString('workingDays'),
+                      _employeeMap['workingDays'] ?? 'N/A',
+                      Icons.calendar_today_outlined,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
               _buildInfoField(
                 context,
                 localizations.getString('officeLocation'),
