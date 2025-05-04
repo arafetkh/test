@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:in_out/EmployeeProfileScreen.dart';
-import 'package:in_out/NotificationsScreen.dart';
+import 'package:in_out/screens/employees/employee_profile_screen.dart';
+import 'package:in_out/screens/notifications/notifications_screen.dart';
 import 'package:in_out/localization/app_localizations.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
 import 'package:two_dimensional_scrollables/two_dimensional_scrollables.dart';
@@ -570,7 +570,6 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
     final screenWidth = screenSize.width;
     final screenHeight = screenSize.height;
     final borderColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
-    final localizations = AppLocalizations.of(context);
 
     // En-tête (première ligne)
     if (row == 0) {

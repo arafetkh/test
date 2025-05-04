@@ -1,13 +1,12 @@
-// lib/auth/auth_wrapper.dart (update)
 import 'package:flutter/material.dart';
-import 'package:in_out/Login_screens/login_page.dart';
-import 'package:in_out/dashboard.dart';
+import 'package:in_out/auth/auth_service.dart';
+import 'package:in_out/screens/login/login_page.dart';
+import 'package:in_out/screens/dashboard.dart';
 import 'package:in_out/provider/user_settings_provider.dart';
 import 'package:provider/provider.dart';
-import 'auth_service.dart';
 
 class AuthWrapper extends StatefulWidget {
-  const AuthWrapper({Key? key}) : super(key: key);
+  const AuthWrapper({super.key});
 
   @override
   State<AuthWrapper> createState() => _AuthWrapperState();
@@ -24,7 +23,28 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   Future<void> _checkAuthStatus() async {
-    // Check if user is logged in
+    // Check if auto-login is possible
+    final canAutoLogin = await AuthService.shouldAutoLogin();
+
+    if (canAutoLogin) {
+      try {
+        // Attempt auto login
+        final result = await AuthService.autoLogin(context);
+
+        if (result["success"]) {
+          setState(() {
+            _isAuthenticated = true;
+            _isLoading = false;
+          });
+          return;
+        }
+      } catch (e) {
+        // Auto login failed
+        print("Auto login failed: $e");
+      }
+    }
+
+    // Check if user is logged in through normal means
     final isLoggedIn = await AuthService.isLoggedIn();
 
     if (isLoggedIn) {

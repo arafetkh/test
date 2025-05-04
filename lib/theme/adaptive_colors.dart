@@ -105,7 +105,7 @@ class AdaptiveColors {
   }
 
   static Color negativeIndicatorColor(BuildContext context) {
-    return Color(0xFFF44336);
+    return const Color(0xFFF44336);
   }
 
   static Color buttonColor(BuildContext context) {

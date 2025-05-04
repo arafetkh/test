@@ -46,7 +46,7 @@ class UserSettings {
 }
 
 class UserSettingsProvider with ChangeNotifier {
-  Map<String, UserSettings> _userSettings = {};
+  final Map<String, UserSettings> _userSettings = {};
   String? _currentUserId;
   UserSettings? _currentSettings;
 

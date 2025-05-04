@@ -98,30 +98,7 @@ class EmployeeService {
 
     try {
       // Create payload with updated fields
-      final Map<String, dynamic> employeeData = {
-        'email': employee.email,
-        'personalEmail': employee.personalEmail,
-        'phoneNumber': employee.phoneNumber,
-        'firstName': employee.firstName,
-        'lastName': employee.lastName,
-        'password': employee.password,
-        'gender': employee.gender,
-        'maritalStatus': employee.maritalStatus, // Corrected field name
-        'birthDate': employee.birthDate,
-        'recruitmentDate': employee.recruitmentDate,
-        'role': employee.role,
-        'type': employee.type,
-        'companyId': employee.companyId,
-        'designation': employee.designation,
-        'address': employee.address,
-        'attributes': {},
-        'active': true // Default to active
-      };
-
-      // If username is provided, include it (though backend should generate one)
-      if (employee.username.isNotEmpty) {
-        employeeData['username'] = employee.username;
-      }
+      final Map<String, dynamic> employeeData = employee.toJson();
 
       print("Sending modified employee data: ${jsonEncode(employeeData)}");
 
@@ -134,19 +111,50 @@ class EmployeeService {
       print("Response status: ${response.statusCode}");
       print("Response body: ${response.body}");
 
-      final responseData = jsonDecode(response.body);
-      print("Using auth token: ${Global.authToken ?? 'No token found'}");
-
+      // Check for success status codes (both 200 and 201)
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return {
-          "success": true,
-          "employee": Employee.fromJson(responseData),
-          "message": "Employee created successfully"
-        };
+        // Check if the response body is empty
+        if (response.body.isEmpty || response.body.trim().isEmpty) {
+          // If empty but status is success, return success with the sent employee data
+          return {
+            "success": true,
+            "employee": employee, // Return the original employee object since we don't have a response
+            "message": "Employee created successfully"
+          };
+        }
+
+        // If response has content, try to decode it
+        try {
+          final responseData = jsonDecode(response.body);
+          return {
+            "success": true,
+            "employee": Employee.fromJson(responseData),
+            "message": "Employee created successfully"
+          };
+        } catch (e) {
+          // If JSON parsing fails but status is success, still return success
+          print("Warning: Could not parse response body: $e");
+          return {
+            "success": true,
+            "employee": employee, // Return the original employee object
+            "message": "Employee created successfully, but response parsing failed"
+          };
+        }
       } else {
+        // Handle error responses
+        String errorMessage = "Failed to create employee: ${response.statusCode}";
+        try {
+          if (response.body.isNotEmpty) {
+            final responseData = jsonDecode(response.body);
+            errorMessage = responseData["message"] ?? errorMessage;
+          }
+        } catch (e) {
+          // Ignore parsing errors for error responses
+        }
+
         return {
           "success": false,
-          "message": responseData["message"] ?? "Failed to create employee"
+          "message": errorMessage
         };
       }
     } catch (e) {
@@ -275,10 +283,19 @@ class EmployeeService {
           "success": true,
         };
       } else {
-        return {
-          "success": false,
-          "message": "Failed to delete employee: ${response.statusCode}",
-        };
+        // Safely parse the response body
+        try {
+          final responseBody = jsonDecode(response.body);
+          return {
+            "success": false,
+            "message": responseBody['message'] ?? "Failed to delete employee: ${response.statusCode}",
+          };
+        } catch (e) {
+          return {
+            "success": false,
+            "message": "Failed to delete employee: ${response.statusCode}",
+          };
+        }
       }
     } catch (e) {
       return {
@@ -287,4 +304,42 @@ class EmployeeService {
       };
     }
   }
+
+  // Extract department info
+  static Map<String, dynamic> extractDepartmentInfo(Map<String, dynamic>? employeeData) {
+    String departmentName = 'Unknown';
+    String departmentKey = '';
+    bool hasDepartmentInfo = false;
+
+    if (employeeData != null) {
+      if (employeeData['attributes'] != null &&
+          employeeData['attributes']['department'] != null) {
+        // Extract from new structure
+        Map<String, dynamic> deptData = employeeData['attributes']['department'];
+        departmentName = deptData['name'] ?? 'Unknown';
+        departmentKey = deptData['key']?.toString() ?? '';
+        hasDepartmentInfo = true;
+      } else if (employeeData['department'] != null) {
+        // Extract from old structure
+        departmentName = employeeData['department'];
+        hasDepartmentInfo = true;
+      } else if (employeeData['designation'] != null &&
+          employeeData['designation'].toString().contains(' ')) {
+        // Legacy fallback - extract from designation
+        departmentName = employeeData['designation'].toString().split(' ').last;
+      }
+    }
+
+    return {
+      'name': departmentName,
+      'key': departmentKey,
+      'hasInfo': hasDepartmentInfo,
+    };
+  }
+
+// Usage example:
+// Map<String, dynamic> departmentInfo = EmployeeService.extractDepartmentInfo(employeeData);
+// String departmentName = departmentInfo['name'];
+// String departmentKey = departmentInfo['key'];
+// bool hasDepartmentInfo = departmentInfo['hasInfo'];
 }
