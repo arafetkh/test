@@ -21,30 +21,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
     super.initState();
     _checkAuthStatus();
   }
-
   Future<void> _checkAuthStatus() async {
-    // Check if auto-login is possible
-    final canAutoLogin = await AuthService.shouldAutoLogin();
-
-    if (canAutoLogin) {
-      try {
-        // Attempt auto login
-        final result = await AuthService.autoLogin(context);
-
-        if (result["success"]) {
-          setState(() {
-            _isAuthenticated = true;
-            _isLoading = false;
-          });
-          return;
-        }
-      } catch (e) {
-        // Auto login failed
-        print("Auto login failed: $e");
-      }
-    }
-
-    // Check if user is logged in through normal means
+    // First check if user has a valid token already
     final isLoggedIn = await AuthService.isLoggedIn();
 
     if (isLoggedIn) {
@@ -54,10 +32,41 @@ class _AuthWrapperState extends State<AuthWrapper> {
         final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
         await userSettingsProvider.setCurrentUser(userId);
       }
+
+      setState(() {
+        _isAuthenticated = true;
+        _isLoading = false;
+      });
+      return;
     }
 
+    // If not logged in, check if auto-login with saved session is possible
+    final canAutoLogin = await AuthService.shouldAutoLogin();
+
+    if (canAutoLogin) {
+      try {
+        // Try to restore the session
+        final result = await AuthService.autoLogin(context);
+
+        if (result["success"]) {
+          setState(() {
+            _isAuthenticated = true;
+            _isLoading = false;
+          });
+          return;
+        } else {
+          // Session restore failed - may need to go through normal login
+          print("Session restore failed: ${result["message"]}");
+        }
+      } catch (e) {
+        // Auto login failed
+        print("Auto login failed: $e");
+      }
+    }
+
+    // If we get here, user needs to log in normally
     setState(() {
-      _isAuthenticated = isLoggedIn;
+      _isAuthenticated = false;
       _isLoading = false;
     });
   }

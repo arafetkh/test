@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:in_out/screens/employees/employee_profile_screen.dart';
+import 'package:in_out/screens/employees/employee_profile/employee_profile_screen.dart';
 import 'package:in_out/screens/notifications/notifications_screen.dart';
 import 'package:in_out/localization/app_localizations.dart';
 import 'package:in_out/theme/adaptive_colors.dart';

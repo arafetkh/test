@@ -6,6 +6,7 @@ import '../../auth/auth_service.dart';
 import '../dashboard.dart';
 import '../../theme/adaptive_colors.dart';
 import 'forgot_password.dart';
+import 'otp_verif_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -39,24 +40,34 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
 
-    // Pass rememberMe flag
-    final result = await AuthService.login(email, password, context, rememberMe: _rememberMe);
+    // Request OTP first
+    final result = await AuthService.requestOTP(email, password);
 
     setState(() => _isLoading = false);
 
     if (result["success"]) {
-      setState(() {
-        _hasError = false;
-        _errorMessage = '';
-      });
-      // Show success message
-      _showSuccess("Connexion réussie !");
-
-      // Navigate to dashboard
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardScreen()),
-      );
+      if (result["otpRequired"] == true) {
+        // Navigate to OTP verification screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OtpVerificationScreen(
+              identifier: email,
+              requestId: result["requestId"],
+              otpLength: result["otpLength"] ?? 6,
+              password: password,
+              rememberMe: _rememberMe,
+            ),
+          ),
+        );
+      } else {
+        // Direct login without OTP (fallback for backward compatibility)
+        _showSuccess("Connexion réussie !");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      }
     } else {
       setState(() {
         _hasError = true;

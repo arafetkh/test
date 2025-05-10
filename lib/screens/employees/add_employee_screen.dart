@@ -612,7 +612,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
               child: _buildDropdown(
                 context,
                 localizations.getString('maritalStatus'),
-                ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'],
+                ['SINGLE', 'MARRIED', 'DIVORCED'],
                 _selectedMaritalStatus,
                     (value) {
                   setState(() {

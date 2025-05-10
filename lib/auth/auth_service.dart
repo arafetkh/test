@@ -17,76 +17,60 @@ class AuthService {
   static const String USER_ROLE_KEY = "user_role";
 
   static const _secureStorage = FlutterSecureStorage();
-  // Login method
-  static Future<Map<String, dynamic>> login(
-      String identifier,
-      String password,
-      BuildContext context,
-      {bool rememberMe = false}
-      ) async {
+
+  // First authentication step - Request OTP
+  static Future<Map<String, dynamic>> requestOTP(String identifier, String password) async {
     final Uri url = Uri.parse("${Global.baseUrl}/public/authentication-management/login");
 
     try {
       final response = await http.post(
         url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "identifier": identifier,
-          "password": password
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          "X-Public-Identifier": identifier
+        },
+        body: jsonEncode({"password": password}),
       );
 
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        final authHeader = response.headers['authorization'];
-
-        if (authHeader != null && authHeader.startsWith('Bearer ')) {
-          final token = authHeader.substring(7);
-          final userId = responseData["id"]?.toString() ?? identifier;
-
-          // Store additional user details
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(FIRST_NAME_KEY, responseData["firstName"] ?? "");
-          await prefs.setString(LAST_NAME_KEY, responseData["lastName"] ?? "");
-          await prefs.setString(USER_ROLE_KEY, responseData["role"] ?? "");
-
-          // Existing save token and user ID logic
-          await _saveToken(token);
-          await _saveUserId(userId);
-          Global.authToken = token;
-
-          // Handle Remember Me functionality
-          await prefs.setBool(REMEMBER_ME_KEY, rememberMe);
-
-          if (rememberMe) {
-            await _secureStorage.write(key: 'login_username', value: identifier);
-            await _secureStorage.write(key: 'login_password', value: password);
-          } else {
-            await _secureStorage.delete(key: 'login_username');
-            await _secureStorage.delete(key: 'login_password');
-          }
-
-          // Rest of the existing login logic
-          final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
-          await userSettingsProvider.setCurrentUser(userId);
-
-          return {
-            "success": true,
-            "token": token,
-            "userId": userId,
-            "firstName": responseData["firstName"],
-            "lastName": responseData["lastName"],
-            "role": responseData["role"]
-          };
-        } else {
-          return {"success": false, "message": "No token received"};
-        }
-      } else {
-        // Error handling remains the same
-        String errorMessage = "Authentication failed";
+      // Check for OTP generation response (412 Precondition Failed with OTP length)
+      if (response.statusCode == 412) {
         try {
           final responseData = jsonDecode(response.body);
-          errorMessage = responseData["message"] ?? errorMessage;
+          final xRequestId = response.headers['x-request-id'];
+
+          if (xRequestId != null && responseData.containsKey('length')) {
+            return {
+              "success": true,
+              "otpRequired": true,
+              "otpLength": responseData["length"],
+              "requestId": xRequestId,
+              "identifier": identifier,
+              "password": password
+            };
+          } else {
+            return {"success": false, "message": "Invalid OTP response format"};
+          }
+        } catch (e) {
+          return {"success": false, "message": "Failed to parse OTP response: $e"};
+        }
+      } else if (response.statusCode == 200) {
+        // Handle direct login (no OTP required) - should not happen with new system
+        // but keep for backward compatibility
+        return handleSuccessfulLogin(response, identifier, null);
+      } else {
+        // Handle error response
+        String errorMessage = "Authentication failed";
+        try {
+          if (response.body.isNotEmpty) {
+            final responseData = jsonDecode(response.body);
+            errorMessage = responseData["message"] ?? errorMessage;
+
+            // Check for specific error messages
+            if (responseData.containsKey("error") &&
+                responseData["error"] == "invalid_credentials") {
+              errorMessage = "Invalid username or password";
+            }
+          }
         } catch (e) {
           errorMessage = "Failed to parse error message";
         }
@@ -96,6 +80,150 @@ class AuthService {
     } catch (e) {
       return {"success": false, "message": "Cannot connect to server: $e"};
     }
+  }
+
+  // Second authentication step - Verify OTP
+  static Future<Map<String, dynamic>> verifyOTP(
+      String identifier,
+      String requestId,
+      String otpCode,
+      String password,
+      BuildContext context,
+      {bool rememberMe = false}) async {
+    final Uri url = Uri.parse("${Global.baseUrl}/public/authentication-management/login");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Public-Identifier": identifier,
+          "X-Request-ID": requestId,
+          "X-Policy-Data": otpCode
+        },
+        body: jsonEncode({"password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        return handleSuccessfulLogin(response, identifier, context, rememberMe: rememberMe);
+      } else {
+        // Handle error response
+        String errorMessage = "OTP verification failed";
+        String? errorCode;
+
+        try {
+          if (response.body.isNotEmpty) {
+            final responseData = jsonDecode(response.body);
+
+            if (responseData.containsKey("error")) {
+              errorCode = responseData["error"];
+
+              if (errorCode == "invalid_credentials") {
+                errorMessage = "Invalid username or password";
+              }
+            }
+
+            // Get error message from response if available
+            if (responseData.containsKey("message")) {
+              errorMessage = responseData["message"];
+            }
+          }
+        } catch (e) {
+          errorMessage = "Failed to parse error message";
+        }
+
+        return {
+          "success": false,
+          "message": errorMessage,
+          "errorCode": errorCode
+        };
+      }
+    } catch (e) {
+      return {"success": false, "message": "Cannot connect to server: $e"};
+    }
+  }
+
+  // Handle successful login response
+  static Future<Map<String, dynamic>> handleSuccessfulLogin(
+      http.Response response,
+      String identifier,
+      BuildContext? context,
+      {bool rememberMe = false}) async {
+    try {
+      final responseData = jsonDecode(response.body);
+      final authHeader = response.headers['authorization'];
+
+      if (authHeader != null && authHeader.startsWith('Bearer ')) {
+        final token = authHeader.substring(7);
+        final userId = responseData["id"]?.toString() ?? identifier;
+
+        // Store additional user details
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(FIRST_NAME_KEY, responseData["firstName"] ?? "");
+        await prefs.setString(LAST_NAME_KEY, responseData["lastName"] ?? "");
+        await prefs.setString(USER_ROLE_KEY, responseData["role"] ?? "");
+
+        // Save token and user ID
+        await _saveToken(token);
+        await _saveUserId(userId);
+        Global.authToken = token;
+
+        // Handle Remember Me functionality
+        await prefs.setBool(REMEMBER_ME_KEY, rememberMe);
+
+        // Save credentials if Remember Me is checked
+        if (rememberMe) {
+          // Store username and session information
+          await _secureStorage.write(key: 'login_username', value: identifier);
+
+          // Store session token - this helps maintain the session
+          await _secureStorage.write(key: 'session_token', value: token);
+
+          // Set a session expiration time (e.g., 30 days from now)
+          final expirationTime = DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch.toString();
+          await _secureStorage.write(key: 'session_expiry', value: expirationTime);
+
+          // Note: we don't store the password for security
+        } else {
+          // Clean up any stored credentials and session info if not remembered
+          await _secureStorage.delete(key: 'login_username');
+          await _secureStorage.delete(key: 'login_password');
+          await _secureStorage.delete(key: 'session_token');
+          await _secureStorage.delete(key: 'session_expiry');
+        }
+
+        // Update user settings if context is provided
+        if (context != null) {
+          final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
+          await userSettingsProvider.setCurrentUser(userId);
+        }
+
+        return {
+          "success": true,
+          "token": token,
+          "userId": userId,
+          "firstName": responseData["firstName"],
+          "lastName": responseData["lastName"],
+          "role": responseData["role"],
+          "sessionSaved": rememberMe
+        };
+      } else {
+        return {"success": false, "message": "No token received"};
+      }
+    } catch (e) {
+      return {"success": false, "message": "Error processing login response: $e"};
+    }
+  }
+
+  // Legacy login method (forwards to new flow)
+  static Future<Map<String, dynamic>> login(
+      String identifier,
+      String password,
+      BuildContext context,
+      {bool rememberMe = false}) async {
+    // Note: This is just a placeholder that will be overridden by the actual implementation
+    // in the UI flow, as we now need user interaction for OTP
+    return requestOTP(identifier, password);
   }
 
   // Method to get stored user details
@@ -114,27 +242,63 @@ class AuthService {
     final rememberMe = prefs.getBool(REMEMBER_ME_KEY) ?? false;
 
     if (rememberMe) {
-      // Check if credentials exist
-      final username = await _secureStorage.read(key: 'login_username');
-      final password = await _secureStorage.read(key: 'login_password');
+      // Check if session token exists
+      final sessionToken = await _secureStorage.read(key: 'session_token');
+      final expiryString = await _secureStorage.read(key: 'session_expiry');
 
-      return username != null && password != null;
+      if (sessionToken != null && expiryString != null) {
+        // Check if session is still valid
+        final expiry = int.tryParse(expiryString);
+        final now = DateTime.now().millisecondsSinceEpoch;
+
+        if (expiry != null && now < expiry) {
+          // Session is valid, auto-login possible
+          return true;
+        }
+      }
     }
     return false;
   }
 
-
-  // Auto login method
+  // Auto login method with session token
   static Future<Map<String, dynamic>> autoLogin(BuildContext context) async {
-    final username = await _secureStorage.read(key: 'login_username');
-    final password = await _secureStorage.read(key: 'login_password');
+    // Check if session is valid
+    if (await shouldAutoLogin()) {
+      try {
+        final sessionToken = await _secureStorage.read(key: 'session_token');
+        final username = await _secureStorage.read(key: 'login_username');
 
-    if (username != null && password != null) {
-      return login(username, password, context, rememberMe: true);
+        if (sessionToken != null && username != null) {
+          // Restore session token
+          await _saveToken(sessionToken);
+          Global.authToken = sessionToken;
+
+          // Check if token is valid by making a user details request
+          // This is an example - actual implementation would depend on your API
+          final prefs = await SharedPreferences.getInstance();
+          final userId = prefs.getString(USER_ID_KEY);
+
+          if (userId != null) {
+            // Update user settings
+            final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
+            await userSettingsProvider.setCurrentUser(userId);
+
+            return {
+              "success": true,
+              "message": "Session restored",
+              "userId": userId
+            };
+          }
+        }
+      } catch (e) {
+        print("Session restore error: $e");
+      }
     }
 
-    return {"success": false, "message": "No stored credentials"};
+    // If we get here, auto-login failed
+    return {"success": false, "message": "Session expired or invalid"};
   }
+
 
   // Check if user is logged in
   static Future<bool> isLoggedIn() async {

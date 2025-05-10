@@ -67,11 +67,9 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
 
-        // Process the departments - only keep dynamic ones
         List<Map<String, dynamic>> departments = [];
 
         for (var dept in data) {
-          // Convert each department to a Map
           Map<String, dynamic> department = {
             'id': dept['id'],
             'name': dept['name'],
@@ -88,10 +86,9 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
             }).toList()
                 : [],
           };
-
           departments.add(department);
         }
-
+        
         setState(() {
           _departments = departments;
           _isLoading = false;
@@ -154,7 +151,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
           departmentName: department['name'],
           departmentData: department,
           departmentKey: department['key'],
-          departmentId: department['id'], // Pass the numeric ID
+          departmentId: department['id'],
         ),
       ),
     ).then((_) {
