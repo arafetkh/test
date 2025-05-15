@@ -158,8 +158,8 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> with SingleTick
 
       // Make a direct HTTP request instead of using the service
       final response = await http.put(
-        Uri.parse("${Global.baseUrl}/secure/users-management"),
-        headers: Global.headers,
+        Uri.parse("${Global.baseUrl}/secure/users"),
+        headers: await Global.getHeaders(),
         body: json.encode(updatePayload),
       );
 

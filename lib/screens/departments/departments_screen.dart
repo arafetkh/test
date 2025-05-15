@@ -60,8 +60,8 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse("${Global.baseUrl}/secure/department-management"),
-        headers: Global.headers,
+        Uri.parse("${Global.baseUrl}/secure/department"),
+        headers: await Global.getHeaders(),
       );
 
       if (response.statusCode == 200) {

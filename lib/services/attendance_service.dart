@@ -19,7 +19,7 @@ class AttendanceService {
     try {
       final response = await http.get(
         url,
-        headers: Global.headers,
+        headers: await Global.getHeaders(),
       );
 
       if (response.statusCode == 200) {

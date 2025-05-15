@@ -1,4 +1,3 @@
-// lib/models/employee_model.dart
 class Employee {
   final String? id;
   final String username;

@@ -5,7 +5,7 @@ import 'global.dart';
 class LoginAuth {
   // First authentication call to get OTP length and request ID
   static Future<Map<String, dynamic>> initiateLogin(String email, String password) async {
-    final Uri url = Uri.parse("${Global.baseUrl}/public/authentication-management/login");
+    final Uri url = Uri.parse("${Global.baseUrl}/public/authentication/login");
 
     try {
       final response = await http.post(

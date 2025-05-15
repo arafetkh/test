@@ -3,6 +3,7 @@ import 'package:in_out/auth/auth_service.dart';
 import 'package:in_out/screens/login/login_page.dart';
 import 'package:in_out/screens/dashboard.dart';
 import 'package:in_out/provider/user_settings_provider.dart';
+import 'package:in_out/provider/profile_provider.dart';
 import 'package:provider/provider.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -26,11 +27,23 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final isLoggedIn = await AuthService.isLoggedIn();
 
     if (isLoggedIn) {
+      // Initialize profile provider
+      final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+      await profileProvider.loadProfile();
+
       // Initialize user settings
       final userId = await AuthService.getCurrentUserId();
       if (userId != null) {
         final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
         await userSettingsProvider.setCurrentUser(userId);
+
+        // If we have a profile, sync the language setting
+        if (profileProvider.userProfile != null) {
+          final locale = profileProvider.userProfile!.locale;
+          if (userSettingsProvider.currentSettings.language != locale) {
+            await userSettingsProvider.changeLanguage(locale);
+          }
+        }
       }
 
       setState(() {
@@ -49,6 +62,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
         final result = await AuthService.autoLogin(context);
 
         if (result["success"]) {
+          // Initialize profile provider
+          final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+          await profileProvider.loadProfile();
+
           setState(() {
             _isAuthenticated = true;
             _isLoading = false;

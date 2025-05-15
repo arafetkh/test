@@ -2,8 +2,11 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:in_out/provider/color_provider.dart';
 import 'package:in_out/provider/language_provider.dart';
+import 'package:in_out/provider/profile_provider.dart';
 import 'package:in_out/provider/user_settings_provider.dart';
+import 'package:in_out/utils/app_initializer.dart';
 import 'package:provider/provider.dart';
 import 'auth/auth_service.dart';
 import 'auth/auth_wrapper.dart';
@@ -11,7 +14,7 @@ import 'localization/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await AppInitializer.initialize();
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
   final userId = await AuthService.getCurrentUserId();
 
@@ -21,8 +24,18 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => LanguageProvider()),
-        ChangeNotifierProvider.value(value: userSettingsProvider),
+        ChangeNotifierProvider<UserSettingsProvider>.value(
+          value: userSettingsProvider,
+        ),
+        ChangeNotifierProvider<LanguageProvider>(
+          create: (context) => LanguageProvider(),
+        ),
+        ChangeNotifierProvider<ColorProvider>(
+          create: (context) => ColorProvider(),
+        ),
+        ChangeNotifierProvider<ProfileProvider>(
+          create: (context) => ProfileProvider(),
+        ),
       ],
       child: MyApp(savedThemeMode: savedThemeMode),
     ),
@@ -36,11 +49,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppInitializer.handleHotReload(context);
     return Consumer2<LanguageProvider, UserSettingsProvider>(
       builder: (context, languageProvider, userSettingsProvider, child) {
         // Get user settings
         final settings = userSettingsProvider.currentSettings;
-
         // Create theme data with user's primary color
         final lightTheme = ThemeData(
           brightness: Brightness.light,
@@ -105,7 +118,6 @@ class MyApp extends StatelessWidget {
             ),
           ),
         );
-        // Determine theme mode from user settings
         AdaptiveThemeMode initialThemeMode;
         switch (settings.themeMode) {
           case 'dark':
@@ -117,14 +129,36 @@ class MyApp extends StatelessWidget {
           default:
             initialThemeMode = savedThemeMode ?? AdaptiveThemeMode.system;
         }
+        final userSettings = Provider.of<UserSettingsProvider>(context);
+        final appTheme = savedThemeMode ?? AdaptiveThemeMode.light;
 
+        // Initialize profile provider
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+          profileProvider.initialize();
+        });
         return AdaptiveTheme(
-          light: lightTheme,
-          dark: darkTheme,
-          initial: initialThemeMode,
+          light: ThemeData(
+            primaryColor: userSettings.currentSettings.primaryColor,
+            colorScheme: ColorScheme.light(
+              primary: userSettings.currentSettings.primaryColor,
+              secondary: userSettings.currentSettings.secondaryColor,
+            ),
+            brightness: Brightness.light,
+            scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+          ),
+          dark: ThemeData(
+            primaryColor: userSettings.currentSettings.primaryColor,
+            colorScheme: ColorScheme.dark(
+              primary: userSettings.currentSettings.primaryColor,
+              secondary: userSettings.currentSettings.secondaryColor,
+            ),
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF1E1E1E),
+          ),
+          initial: appTheme,
           builder: (theme, darkTheme) => MaterialApp(
-            title: 'In Out',
-            debugShowCheckedModeBanner: false,
+            title: 'In & Out',
             theme: theme,
             darkTheme: darkTheme,
             localizationsDelegates: const [
@@ -134,10 +168,11 @@ class MyApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [
-              Locale('en', ''),
-              Locale('fr', ''),
+              Locale('en'), // English
+              Locale('fr'), // French
             ],
-            locale: Locale(settings.language),
+            locale: Locale(userSettings.currentSettings.language),
+            debugShowCheckedModeBanner: false,
             home: const AuthWrapper(),
           ),
         );

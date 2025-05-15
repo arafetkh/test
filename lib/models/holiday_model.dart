@@ -1,66 +1,53 @@
-class Holiday {
-  final String id;
-  final String name;
-  final String description;
-  final DateTime date;
-  final String day;
+class HolidayModel {
+  final int month;
+  final int day;
+  final Map<String, String> label;
+  final int count;
+  final String type;
   final bool isRecurringYearly;
-  final String type; // Public or Company
 
-  Holiday({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.date,
+  HolidayModel({
+    required this.month,
     required this.day,
-    required this.isRecurringYearly,
+    required this.label,
+    required this.count,
     required this.type,
+    required this.isRecurringYearly,
   });
 
-  // Create a holiday from a map (for database operations)
-  factory Holiday.fromMap(Map<String, dynamic> map) {
-    return Holiday(
-      id: map['id'] ?? '',
-      name: map['name'] ?? '',
-      description: map['description'] ?? '',
-      date: map['date'] is DateTime ? map['date'] : DateTime.parse(map['date']),
-      day: map['day'] ?? '',
-      isRecurringYearly: map['isRecurringYearly'] ?? false,
-      type: map['type'] ?? 'Public',
+  // Create a holiday from JSON (for API operations)
+  factory HolidayModel.fromJson(Map<String, dynamic> json) {
+    return HolidayModel(
+      month: json['month'] ?? 1,
+      day: json['day'] ?? 1,
+      label: (json['label'] is Map)
+          ? Map<String, String>.from(json['label'])
+          : {'en': json['label'].toString(), 'fr': json['label'].toString()},
+      count: json['count'] ?? 1,
+      type: json['type'] ?? 'Public',
+      isRecurringYearly: json['isRecurringYearly'] ?? true,
     );
   }
 
-  // Convert holiday to map (for database operations)
-  Map<String, dynamic> toMap() {
+  // Convert holiday to map (for API operations)
+  Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'date': date.toIso8601String(),
+      'month': month,
       'day': day,
-      'isRecurringYearly': isRecurringYearly,
+      'label': label,
+      'count': count,
       'type': type,
+      'isRecurringYearly': isRecurringYearly,
     };
   }
 
-  // Create a copy of the holiday with updated fields
-  Holiday copyWith({
-    String? id,
-    String? name,
-    String? description,
-    DateTime? date,
-    String? day,
-    bool? isRecurringYearly,
-    String? type,
-  }) {
-    return Holiday(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      date: date ?? this.date,
-      day: day ?? this.day,
-      isRecurringYearly: isRecurringYearly ?? this.isRecurringYearly,
-      type: type ?? this.type,
-    );
+  // Get the name based on the current language
+  String getName(String languageCode) {
+    return label[languageCode] ?? label['en'] ?? '';
+  }
+
+  // Get date for a specific year
+  DateTime getDateForYear(int year) {
+    return DateTime(year, month, day);
   }
 }

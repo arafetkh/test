@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:in_out/services/navigation_service.dart';
 import 'package:in_out/widget/responsive_navigation_scaffold.dart';
 import 'package:in_out/widget/user_profile_header.dart';
-
 import 'notifications/notifications_screen.dart';
 import '../localization/app_localizations.dart';
 
@@ -62,11 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final screenHeight = screenSize.height;
     final localizations = AppLocalizations.of(context);
     final padding = screenWidth * 0.04;
-
-    // Vérifier si on est en mode sombre
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    // Couleurs adaptatives
     final cardColor = isDarkMode ? const Color(0xFF1E1E1E) : Colors.white;
     final textColor = isDarkMode ? Colors.white : Colors.black87;
     final secondaryTextColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;

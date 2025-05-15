@@ -94,14 +94,14 @@
       try {
         // Construire l'URL avec les paramètres de pagination
         final url = Uri.parse(
-            "${Global.baseUrl}/secure/user-department-management/users?departmentId=${widget.departmentId}&page=${_currentPage - 1}&size=$_pageSize"
+            "${Global.baseUrl}/secure/user-department/users?departmentId=${widget.departmentId}&page=${_currentPage - 1}&size=$_pageSize"
         );
 
         print("Fetching users with URL: $url");
 
         final response = await http.get(
           url,
-          headers: Global.headers,
+          headers: await Global.getHeaders(),
         );
 
         if (response.statusCode == 200) {
@@ -273,9 +273,9 @@
         print("Updating department with payload: ${jsonEncode(requestBody)}");
   
         final response = await http.put(
-          Uri.parse("${Global.baseUrl}/secure/department-management"),
+          Uri.parse("${Global.baseUrl}/secure/department"),
           headers: {
-            ...Global.headers,
+            ...await Global.getHeaders(),
             'Content-Type': 'application/json',
           },
           body: jsonEncode(requestBody),
@@ -379,8 +379,8 @@
         );
   
         final response = await http.delete(
-          Uri.parse("${Global.baseUrl}/secure/department-management/${widget.departmentId}"),
-          headers: Global.headers,
+          Uri.parse("${Global.baseUrl}/secure/department/${widget.departmentId}"),
+          headers: await Global.getHeaders(),
         );
   
         // Close loading indicator
@@ -860,13 +860,13 @@
       try {
         // First, we need to get the current department details to know which users to exclude
         final departmentUsersUrl = Uri.parse(
-            "${Global.baseUrl}/secure/user-department-management/users?departmentId=${widget.departmentId}&size=999999");
+            "${Global.baseUrl}/secure/user-department/users?departmentId=${widget.departmentId}&size=999999");
 
         print("Fetching department users from: $departmentUsersUrl");
 
         final departmentUsersResponse = await http.get(
           departmentUsersUrl,
-          headers: Global.headers,
+          headers:await Global.getHeaders(),
         );
 
         // Set of user IDs already in this department
@@ -885,12 +885,12 @@
         }
 
         // Now fetch all users
-        final Uri url = Uri.parse("${Global.baseUrl}/secure/users-management/filter?size=0");
+        final Uri url = Uri.parse("${Global.baseUrl}/secure/users/filter?size=0");
         final Map<String, dynamic> filterBody = {};
         final response = await http.post(
           url,
           headers: {
-            ...Global.headers,
+            ...await Global.getHeaders(),
             'Content-Type': 'application/json',
           },
           body: jsonEncode(filterBody),
@@ -1008,9 +1008,9 @@
   
             // Make the API request
             final response = await http.put(
-              Uri.parse("${Global.baseUrl}/secure/user-department-management/assign"),
+              Uri.parse("${Global.baseUrl}/secure/user-department/assign"),
               headers: {
-                ...Global.headers,
+                ...await Global.getHeaders(),
                 'Content-Type': 'application/json',
               },
               body: requestBody,

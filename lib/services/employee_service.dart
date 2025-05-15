@@ -7,12 +7,12 @@ class EmployeeService {
   // Get all employees with pagination
   static Future<Map<String, dynamic>> getEmployees({int page = 0, int size = 10}) async {
     final Uri url = Uri.parse(
-        "${Global.baseUrl}/secure/users-management?page=$page&size=$size");
+        "${Global.baseUrl}/secure/users?page=$page&size=$size");
 
     try {
       final response = await http.get(
         url,
-        headers: Global.headers,
+        headers: await Global.getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -51,12 +51,12 @@ class EmployeeService {
   // Search employees with pagination
   static Future<Map<String, dynamic>> searchEmployees(String query, {int page = 0, int size = 10}) async {
     final Uri url = Uri.parse(
-        "${Global.baseUrl}/secure/users-management/search?query=$query&page=$page&size=$size");
+        "${Global.baseUrl}/secure/users/search?query=$query&page=$page&size=$size");
 
     try {
       final response = await http.get(
         url,
-        headers: Global.headers,
+        headers: await Global.getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -94,7 +94,7 @@ class EmployeeService {
 
   // Create a new employee
   static Future<Map<String, dynamic>> createEmployee(Employee employee) async {
-    final Uri url = Uri.parse("${Global.baseUrl}/secure/users-management");
+    final Uri url = Uri.parse("${Global.baseUrl}/secure/users");
 
     try {
       // Create payload with updated fields
@@ -104,7 +104,7 @@ class EmployeeService {
 
       final response = await http.post(
         url,
-        headers: Global.headers,
+        headers: await Global.getHeaders(),
         body: jsonEncode(employeeData),
       );
 
@@ -165,12 +165,13 @@ class EmployeeService {
 
   // Get employee by ID
   static Future<Map<String, dynamic>> getEmployeeById(int employeeId) async {
-    final Uri url = Uri.parse("${Global.baseUrl}/secure/users-management/$employeeId");
+    final Uri url = Uri.parse("${Global.baseUrl}/secure/users/$employeeId");
 
     try {
       final response = await http.get(
         url,
-        headers: Global.headers,
+        headers: await Global.getHeaders()
+        ,
       );
 
       // Print for debugging
@@ -220,7 +221,7 @@ class EmployeeService {
   // Update an employee
   static Future<Map<String, dynamic>> updateEmployee(Employee employee) async {
     final Uri url =
-    Uri.parse("${Global.baseUrl}/secure/users-management/${employee.id}");
+    Uri.parse("${Global.baseUrl}/secure/users/${employee.id}");
 
     try {
       // Create payload with updated fields for update operation
@@ -245,7 +246,7 @@ class EmployeeService {
 
       final response = await http.put(
         url,
-        headers: Global.headers,
+        headers: await Global.getHeaders(),
         body: jsonEncode(updateData),
       );
 
@@ -270,12 +271,12 @@ class EmployeeService {
 
   // Delete an employee
   static Future<Map<String, dynamic>> deleteEmployee(int id) async {
-    final Uri url = Uri.parse("${Global.baseUrl}/secure/users-management/$id");
+    final Uri url = Uri.parse("${Global.baseUrl}/secure/users/$id");
 
     try {
       final response = await http.delete(
         url,
-        headers: Global.headers,
+        headers: await Global.getHeaders(),
       );
 
       if (response.statusCode == 200 || response.statusCode == 204) {

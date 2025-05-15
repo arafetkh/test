@@ -195,7 +195,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
 
     try {
       // Determine which endpoint to use based on current status
-      final String endpoint ="/secure/users-management/toggle/$userId";
+      final String endpoint ="/secure/users/toggle/$userId";
 
       // Show loading indicator during API call
       showDialog(
@@ -212,7 +212,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
       final Uri url = Uri.parse("${Global.baseUrl}$endpoint");
       final response = await http.put(
         url,
-        headers: Global.headers,
+        headers: await Global.getHeaders(),
       );
 
       // Close loading indicator

@@ -41,8 +41,8 @@ class _AddDepartmentScreenState extends State<AddDepartmentScreen> {
       print('Creating department with key: $key, name: $name');
 
       final response = await http.post(
-        Uri.parse("${Global.baseUrl}/configuration/department-management"),
-        headers: Global.headers,
+        Uri.parse("${Global.baseUrl}/secure/department"),
+        headers: await Global.getHeaders(),
         body: jsonEncode({
           "key": key,
           "name": name,

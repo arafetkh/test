@@ -20,7 +20,7 @@ class AuthService {
 
   // First authentication step - Request OTP
   static Future<Map<String, dynamic>> requestOTP(String identifier, String password) async {
-    final Uri url = Uri.parse("${Global.baseUrl}/public/authentication-management/login");
+    final Uri url = Uri.parse("${Global.baseUrl}/public/authentication/login");
 
     try {
       final response = await http.post(
@@ -90,7 +90,7 @@ class AuthService {
       String password,
       BuildContext context,
       {bool rememberMe = false}) async {
-    final Uri url = Uri.parse("${Global.baseUrl}/public/authentication-management/login");
+    final Uri url = Uri.parse("${Global.baseUrl}/public/authentication/login");
 
     try {
       final response = await http.post(
@@ -148,7 +148,8 @@ class AuthService {
       http.Response response,
       String identifier,
       BuildContext? context,
-      {bool rememberMe = false}) async {
+      {bool rememberMe = false}) async
+  {
     try {
       final responseData = jsonDecode(response.body);
       final authHeader = response.headers['authorization'];
@@ -163,31 +164,27 @@ class AuthService {
         await prefs.setString(LAST_NAME_KEY, responseData["lastName"] ?? "");
         await prefs.setString(USER_ROLE_KEY, responseData["role"] ?? "");
 
-        // Save token and user ID
-        await _saveToken(token);
+        // Save user ID (toujours persistent pour identifier l'utilisateur)
         await _saveUserId(userId);
-        Global.authToken = token;
 
-        // Handle Remember Me functionality
-        await prefs.setBool(REMEMBER_ME_KEY, rememberMe);
+        // Save token with remember me flag
+        await Global.setAuthToken(token, rememberMe: rememberMe);
+
+        // No need to call _saveToken separately as Global.setAuthToken handles it
+        // when rememberMe is true
 
         // Save credentials if Remember Me is checked
         if (rememberMe) {
           // Store username and session information
           await _secureStorage.write(key: 'login_username', value: identifier);
-
-          // Store session token - this helps maintain the session
           await _secureStorage.write(key: 'session_token', value: token);
 
           // Set a session expiration time (e.g., 30 days from now)
           final expirationTime = DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch.toString();
           await _secureStorage.write(key: 'session_expiry', value: expirationTime);
-
-          // Note: we don't store the password for security
         } else {
           // Clean up any stored credentials and session info if not remembered
           await _secureStorage.delete(key: 'login_username');
-          await _secureStorage.delete(key: 'login_password');
           await _secureStorage.delete(key: 'session_token');
           await _secureStorage.delete(key: 'session_expiry');
         }
@@ -220,14 +217,14 @@ class AuthService {
       String identifier,
       String password,
       BuildContext context,
-      {bool rememberMe = false}) async {
-    // Note: This is just a placeholder that will be overridden by the actual implementation
-    // in the UI flow, as we now need user interaction for OTP
+      {bool rememberMe = false}) async
+  {
     return requestOTP(identifier, password);
   }
 
   // Method to get stored user details
-  static Future<Map<String, String>> getUserDetails() async {
+  static Future<Map<String, String>> getUserDetails() async
+  {
     final prefs = await SharedPreferences.getInstance();
     return {
       'firstName': prefs.getString(FIRST_NAME_KEY) ?? '',
@@ -269,12 +266,10 @@ class AuthService {
         final username = await _secureStorage.read(key: 'login_username');
 
         if (sessionToken != null && username != null) {
-          // Restore session token
-          await _saveToken(sessionToken);
-          Global.authToken = sessionToken;
+          // Restore session token with remember me flag set to true
+          await Global.setAuthToken(sessionToken, rememberMe: true);
 
           // Check if token is valid by making a user details request
-          // This is an example - actual implementation would depend on your API
           final prefs = await SharedPreferences.getInstance();
           final userId = prefs.getString(USER_ID_KEY);
 
@@ -299,10 +294,9 @@ class AuthService {
     return {"success": false, "message": "Session expired or invalid"};
   }
 
-
   // Check if user is logged in
   static Future<bool> isLoggedIn() async {
-    final token = await _getToken();
+    final token = await Global.getAuthToken();
     return token != null;
   }
 
@@ -328,27 +322,33 @@ class AuthService {
 
     await _secureStorage.delete(key: 'login_username');
     await _secureStorage.delete(key: 'login_password');
+    await _secureStorage.delete(key: 'session_token');
+    await _secureStorage.delete(key: 'session_expiry');
 
+    // Clear user settings
     final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
     userSettingsProvider.clearCurrentUser();
 
-    Global.authToken = null;
+    // Reset global auth token
+    await Global.clearAuthToken();
   }
 
-  // Private methods for token storage
-  static Future<void> _saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(TOKEN_KEY, token);
-  }
 
-  static Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(TOKEN_KEY);
-  }
+  // // Private methods for token storage
+  // static Future<void> _saveToken(String token) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setString(TOKEN_KEY, token);
+  // }
+  //
+  // static Future<String?> _getToken() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   return prefs.getString(TOKEN_KEY);
+  // }
 
   // Save user ID
   static Future<void> _saveUserId(String userId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(USER_ID_KEY, userId);
   }
+
 }

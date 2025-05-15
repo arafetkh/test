@@ -1,4 +1,4 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../localization/app_localizations.dart';
 import '../../theme/adaptive_colors.dart';
@@ -17,7 +17,8 @@ class AddHolidayScreen extends StatefulWidget {
 
 class _AddHolidayScreenState extends State<AddHolidayScreen> {
   // Controllers for text fields
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nameEnController = TextEditingController();
+  final TextEditingController _nameFrController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
   // Selected values
@@ -31,14 +32,16 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _nameEnController.dispose();
+    _nameFrController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
 
   void _validateForm() {
     setState(() {
-      _formIsValid = _nameController.text.isNotEmpty;
+      // Both English and French names are required
+      _formIsValid = _nameEnController.text.isNotEmpty && _nameFrController.text.isNotEmpty;
     });
   }
 
@@ -68,9 +71,12 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
       return;
     }
 
-    // Create holiday data
+    // Create holiday data with both English and French names
     final Map<String, dynamic> holidayData = {
-      'name': _nameController.text,
+      'name': {
+        'en': _nameEnController.text,
+        'fr': _nameFrController.text,
+      },
       'description': _descriptionController.text,
       'date': _selectedDate,
       'day': DateFormat('EEEE').format(_selectedDate),
@@ -135,9 +141,9 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Holiday Name
+                        // English Holiday Name
                         Text(
-                          '${localizations.getString('holidayName')} *',
+                          'Holiday Name (English) *',
                           style: TextStyle(
                             fontSize: baseFontSize,
                             fontWeight: FontWeight.w500,
@@ -146,9 +152,9 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
                         ),
                         SizedBox(height: screenHeight * 0.01),
                         TextFormField(
-                          controller: _nameController,
+                          controller: _nameEnController,
                           decoration: InputDecoration(
-                            hintText: localizations.getString('enterHolidayName'),
+                            hintText: 'Enter holiday name in English',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide(color: Colors.grey.shade300),
@@ -171,7 +177,50 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return localizations.getString('holidayNameRequired');
+                              return 'English holiday name is required';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: screenHeight * 0.02),
+
+                        // French Holiday Name
+                        Text(
+                          'Nom du jour férié (Français) *',
+                          style: TextStyle(
+                            fontSize: baseFontSize,
+                            fontWeight: FontWeight.w500,
+                            color: AdaptiveColors.primaryTextColor(context),
+                          ),
+                        ),
+                        SizedBox(height: screenHeight * 0.01),
+                        TextFormField(
+                          controller: _nameFrController,
+                          decoration: InputDecoration(
+                            hintText: 'Entrez le nom du jour férié en français',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.green.shade800),
+                            ),
+                            filled: true,
+                            fillColor: AdaptiveColors.cardColor(context),
+                            contentPadding: EdgeInsets.all(screenWidth * 0.03),
+                          ),
+                          style: TextStyle(
+                            fontSize: baseFontSize,
+                            color: AdaptiveColors.primaryTextColor(context),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Le nom du jour férié en français est requis';
                             }
                             return null;
                           },

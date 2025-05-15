@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:in_out/screens/holiday/add_holiday_screen.dart';
 import 'package:intl/intl.dart';
-import '../../../models/holiday_model.dart';
+import 'package:provider/provider.dart';
+import 'package:in_out/screens/holiday/add_holiday_screen.dart';
 import '../../../services/holiday_service.dart';
 import '../../../services/navigation_service.dart';
 import '../../../theme/adaptive_colors.dart';
@@ -10,10 +10,10 @@ import '../../../widget/responsive_navigation_scaffold.dart';
 import '../../../widget/user_profile_header.dart';
 import '../../../widget/bottom_navigation_bar.dart';
 import '../../../localization/app_localizations.dart';
-
+import '../../../provider/language_provider.dart';
+import '../../models/holiday_model.dart';
 class HolidaysScreen extends StatefulWidget {
   const HolidaysScreen({super.key});
-
   @override
   State<HolidaysScreen> createState() => _HolidaysScreenState();
 }
@@ -24,8 +24,10 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
   bool _isHeaderVisible = true;
 
   final HolidayService _holidayService = HolidayService();
-  List<Holiday> _holidays = [];
+  List<HolidayModel> _holidays = [];
   bool _isLoading = true;
+  bool _hasError = false;
+  String _errorMessage = '';
   int _selectedYear = DateTime.now().year;
 
   TabController? _tabController;
@@ -43,22 +45,38 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
       DeviceOrientation.portraitDown,
     ]);
 
-    // Initialize holiday service
-    _initializeHolidays();
-  }
-
-  Future<void> _initializeHolidays() async {
-    await _holidayService.initialize();
-    _updateHolidaysList();
+    // Initialize holidays
+    _loadHolidays();
 
     // Add listener for updates
     _holidayService.addListener(_updateHolidaysList);
   }
 
+  Future<void> _loadHolidays() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+      _errorMessage = '';
+    });
+
+    try {
+      final holidays = await _holidayService.fetchHolidays();
+      setState(() {
+        _holidays = holidays;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
   void _updateHolidaysList() {
     setState(() {
-      _holidays = _holidayService.getHolidaysForYear(_selectedYear);
-      _isLoading = false;
+      _holidays = _holidayService.holidays;
     });
   }
 
@@ -81,93 +99,36 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
   void _addNewHoliday(Map<String, dynamic> holidayData) async {
     await _holidayService.addHoliday(holidayData);
 
-    // Show success snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          AppLocalizations.of(context).getString('holidayAddedSuccessfully'),
-        ),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 
-  void _deleteHoliday(String id) async {
-    // Show confirmation dialog
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context).getString('confirmDelete')),
-        content: Text(AppLocalizations.of(context).getString('deleteHolidayConfirmation')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context).getString('cancel')),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await _holidayService.deleteHoliday(id);
-
-              // Show success snackbar
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    AppLocalizations.of(context).getString('holidayDeletedSuccessfully'),
-                  ),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: Text(
-              AppLocalizations.of(context).getString('delete'),
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
+  List<HolidayModel> get _upcomingHolidays {
+    return _holidayService.getUpcomingHolidays(_selectedYear);
   }
 
-  List<Holiday> get _upcomingHolidays {
-    final now = DateTime.now();
-    return _holidays.where((holiday) {
-      final holidayDate = DateTime(
-        _selectedYear,
-        holiday.date.month,
-        holiday.date.day,
-      );
-      return holidayDate.isAfter(now) ||
-          holidayDate.year == now.year &&
-              holidayDate.month == now.month &&
-              holidayDate.day == now.day;
-    }).toList()
-      ..sort((a, b) {
-        final aDate = DateTime(_selectedYear, a.date.month, a.date.day);
-        final bDate = DateTime(_selectedYear, b.date.month, b.date.day);
-        return aDate.compareTo(bDate);
-      });
+  List<HolidayModel> get _pastHolidays {
+    return _holidayService.getPastHolidays(_selectedYear);
   }
 
-  List<Holiday> get _pastHolidays {
-    final now = DateTime.now();
-    return _holidays.where((holiday) {
-      final holidayDate = DateTime(
-        _selectedYear,
-        holiday.date.month,
-        holiday.date.day,
-      );
-      return holidayDate.isBefore(now) &&
-          !(holidayDate.year == now.year &&
-              holidayDate.month == now.month &&
-              holidayDate.day == now.day);
-    }).toList()
-      ..sort((a, b) {
-        final aDate = DateTime(_selectedYear, a.date.month, a.date.day);
-        final bDate = DateTime(_selectedYear, b.date.month, b.date.day);
-        return bDate.compareTo(aDate); // Reverse order for past holidays
-      });
-  }
+  // Method to show the holiday detail dialog
+  // void _showHolidayDetailDialog(HolidayModel holiday) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return HolidayDetailDialog(
+  //         holiday: holiday,
+  //         selectedYear: _selectedYear,
+  //         onDeleted: () {
+  //           // Refresh the holidays list after deletion
+  //           _loadHolidays();
+  //         },
+  //         onEdited: () {
+  //           // Refresh the holidays list after editing
+  //           _loadHolidays();
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   void dispose() {
@@ -177,7 +138,6 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
     _holidayService.removeListener(_updateHolidaysList);
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -222,6 +182,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                       ),
                     ],
                   ),
+                  // Add Holiday button
                   ElevatedButton.icon(
                     onPressed: () {
                       Navigator.push(
@@ -277,7 +238,6 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                           onPressed: () {
                             setState(() {
                               _selectedYear--;
-                              _updateHolidaysList();
                             });
                           },
                         ),
@@ -294,7 +254,6 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                           onPressed: () {
                             setState(() {
                               _selectedYear++;
-                              _updateHolidaysList();
                             });
                           },
                         ),
@@ -335,13 +294,35 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                 ),
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
+                    : _hasError
+                    ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline,
+                          color: Colors.red,
+                          size: screenWidth * 0.1),
+                      SizedBox(height: screenHeight * 0.02),
+                      Text(
+                        _errorMessage,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.04,
+                          color: Colors.red,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      ElevatedButton(
+                        onPressed: _loadHolidays,
+                        child: Text(localizations.getString('retry') ?? 'Retry'),
+                      )
+                    ],
+                  ),
+                )
                     : TabBarView(
                   controller: _tabController,
                   children: [
-                    // Upcoming holidays tab
                     _buildHolidaysList(_upcomingHolidays),
-
-                    // Past holidays tab
                     _buildHolidaysList(_pastHolidays),
                   ],
                 ),
@@ -357,7 +338,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildHolidaysList(List<Holiday> holidays) {
+  Widget _buildHolidaysList(List<HolidayModel> holidays) {
     final screenSize = MediaQuery.of(context).size;
     final screenWidth = screenSize.width;
 
@@ -380,8 +361,8 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
         final holiday = holidays[index];
         final holidayDate = DateTime(
           _selectedYear,
-          holiday.date.month,
-          holiday.date.day,
+          holiday.month,
+          holiday.day,
         );
         final isToday = DateTime.now().year == holidayDate.year &&
             DateTime.now().month == holidayDate.month &&
@@ -392,107 +373,109 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildHolidayCard(Holiday holiday, bool isToday) {
+  Widget _buildHolidayCard(HolidayModel holiday, bool isToday) {
     final screenSize = MediaQuery.of(context).size;
     final screenWidth = screenSize.width;
     final screenHeight = screenSize.height;
 
+    // Get the appropriate label based on the app's language
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final currentLanguage = languageProvider.currentLanguage;
+    final holidayName = currentLanguage == 'fr'
+        ? holiday.label['fr']
+        : holiday.label['en'];
+
     final holidayDate = DateTime(
       _selectedYear,
-      holiday.date.month,
-      holiday.date.day,
+      holiday.month,
+      holiday.day,
     );
 
-    return Container(
-      margin: EdgeInsets.only(bottom: screenHeight * 0.015),
-      decoration: BoxDecoration(
-        color: AdaptiveColors.cardColor(context),
-        borderRadius: BorderRadius.circular(screenWidth * 0.02),
-        border: isToday
-            ? Border.all(color: Colors.green.shade800, width: 2)
-            : Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(
-            color: AdaptiveColors.shadowColor(context),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: EdgeInsets.all(screenWidth * 0.03),
-        title: Row(
-          children: [
-            Text(
-              holiday.name,
-              style: TextStyle(
-                fontSize: screenWidth * 0.04,
-                fontWeight: FontWeight.bold,
-                color: AdaptiveColors.primaryTextColor(context),
-              ),
+    // Use GestureDetector to handle taps on the holiday card
+    return GestureDetector(
+      //onTap: () => _showHolidayDetailDialog(holiday),
+      child: Container(
+        margin: EdgeInsets.only(bottom: screenHeight * 0.015),
+        decoration: BoxDecoration(
+          color: AdaptiveColors.cardColor(context),
+          borderRadius: BorderRadius.circular(screenWidth * 0.02),
+          border: isToday
+              ? Border.all(color: Colors.green.shade800, width: 2)
+              : Border.all(color: Colors.grey.shade300),
+          boxShadow: [
+            BoxShadow(
+              color: AdaptiveColors.shadowColor(context),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
             ),
-            if (isToday) ...[
-              SizedBox(width: screenWidth * 0.02),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.02,
-                  vertical: screenHeight * 0.005,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade800.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(screenWidth * 0.01),
-                ),
+          ],
+        ),
+        child: ListTile(
+          contentPadding: EdgeInsets.all(screenWidth * 0.03),
+          title: Row(
+            children: [
+              Expanded(
                 child: Text(
-                  AppLocalizations.of(context).getString('today'),
+                  holidayName!,
                   style: TextStyle(
-                    fontSize: screenWidth * 0.03,
-                    color: Colors.green.shade800,
+                    fontSize: screenWidth * 0.04,
                     fontWeight: FontWeight.bold,
+                    color: AdaptiveColors.primaryTextColor(context),
                   ),
                 ),
               ),
-            ],
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (holiday.description.isNotEmpty) ...[
-              SizedBox(height: screenHeight * 0.01),
-              Text(
-                holiday.description,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.035,
-                  color: AdaptiveColors.secondaryTextColor(context),
-                ),
-              ),
-            ],
-            SizedBox(height: screenHeight * 0.01),
-            Row(
-              children: [
+              if  (isToday) ...[
+                SizedBox(width: screenWidth * 0.02),
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: screenWidth * 0.02,
                     vertical: screenHeight * 0.005,
                   ),
                   decoration: BoxDecoration(
-                    color: holiday.type == 'Public'
-                        ? Colors.blue.shade100
-                        : Colors.orange.shade100,
+                    color: Colors.green.shade800.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(screenWidth * 0.01),
                   ),
                   child: Text(
-                    holiday.type,
+                    AppLocalizations.of(context).getString('today'),
                     style: TextStyle(
                       fontSize: screenWidth * 0.03,
-                      color: holiday.type == 'Public'
-                          ? Colors.blue.shade800
-                          : Colors.orange.shade800,
+                      color: Colors.green.shade800,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                SizedBox(width: screenWidth * 0.02),
-                if (holiday.isRecurringYearly) ...[
+              ],
+            ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: screenHeight * 0.01),
+              Row(
+                children: [
+                  // Holiday type badge
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.02,
+                      vertical: screenHeight * 0.005,
+                    ),
+                    decoration: BoxDecoration(
+                      color: holiday.type == 'Public'
+                          ? Colors.blue.shade100
+                          : Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(screenWidth * 0.01),
+                    ),
+                    child: Text(
+                      holiday.type ?? 'Public',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.03,
+                        color: holiday.type == 'Public'
+                            ? Colors.blue.shade800
+                            : Colors.orange.shade800,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: screenWidth * 0.02),
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: screenWidth * 0.02,
@@ -510,32 +493,25 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                       ),
                     ),
                   ),
-                ],
-                const Spacer(),
-                Icon(
-                  Icons.calendar_today,
-                  size: screenWidth * 0.04,
-                  color: AdaptiveColors.secondaryTextColor(context),
-                ),
-                SizedBox(width: screenWidth * 0.01),
-                Text(
-                  DateFormat('MMMM d, yyyy').format(holidayDate),
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.035,
+
+                  const Spacer(),
+                  Icon(
+                    Icons.calendar_today,
+                    size: screenWidth * 0.04,
                     color: AdaptiveColors.secondaryTextColor(context),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        trailing: IconButton(
-          icon: Icon(
-            Icons.delete_outline,
-            color: Colors.red,
-            size: screenWidth * 0.055,
+                  SizedBox(width: screenWidth * 0.01),
+                  Text(
+                    DateFormat('MMMM d, yyyy').format(holidayDate),
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.035,
+                      color: AdaptiveColors.secondaryTextColor(context),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          onPressed: () => _deleteHoliday(holiday.id),
         ),
       ),
     );

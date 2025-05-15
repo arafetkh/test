@@ -1,120 +1,166 @@
+// lib/services/holiday_service.dart
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
+import 'package:http/http.dart' as http;
+
+import '../auth/global.dart';
 import '../models/holiday_model.dart';
+
 
 class HolidayService {
   static final HolidayService _instance = HolidayService._internal();
-  factory HolidayService() => _instance;
-  HolidayService._internal();
 
-  static const String _storageKey = 'holidays_data';
-  final List<Holiday> _holidays = [];
-  final _uuid = const Uuid();
+  factory HolidayService() => _instance;
+
+  HolidayService._internal();
 
   // Listeners for state changes
   final List<Function()> _listeners = [];
 
+  // Cache for holidays
+  List<HolidayModel> _holidays = [];
+  bool _hasLoaded = false;
+
   // Get all holidays
-  List<Holiday> get holidays => List.unmodifiable(_holidays);
+  List<HolidayModel> get holidays => List.unmodifiable(_holidays);
 
-  // Initialize the service with sample data if empty
-  Future<void> initialize() async {
-    await _loadHolidays();
-
-    // If no holidays are loaded, add sample data
-    if (_holidays.isEmpty) {
-      _addSampleHolidays();
-      await _saveHolidays();
+  // Fetch holidays from API
+  Future<List<HolidayModel>> fetchHolidays({bool forceRefresh = false}) async {
+    if (_hasLoaded && !forceRefresh && _holidays.isNotEmpty) {
+      return _holidays;
     }
-  }
 
-  // Load holidays from storage
-  Future<void> _loadHolidays() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? holidaysJson = prefs.getString(_storageKey);
+      final response = await http.get(
+        Uri.parse("${Global.baseUrl}/secure/holidays"),
+        headers: await Global.getHeaders(),
+      );
 
-      if (holidaysJson != null) {
-        final List<dynamic> decodedList = json.decode(holidaysJson);
-        _holidays.clear();
-        _holidays.addAll(
-            decodedList.map((item) => Holiday.fromMap(item)).toList()
-        );
+      if (response.statusCode == 200) {
+        final List<dynamic> holidaysJson = json.decode(response.body);
+        _holidays = holidaysJson.map((json) => HolidayModel.fromJson(json)).toList();
+        _hasLoaded = true;
+        _notifyListeners();
+        return _holidays;
+      } else {
+        throw Exception('Failed to load holidays: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error loading holidays: $e');
-    }
-  }
-
-  // Save holidays to storage
-  Future<void> _saveHolidays() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String encodedList = json.encode(
-          _holidays.map((holiday) => holiday.toMap()).toList()
-      );
-      await prefs.setString(_storageKey, encodedList);
-    } catch (e) {
-      print('Error saving holidays: $e');
+      throw Exception('Error fetching holidays: $e');
     }
   }
 
   // Add a new holiday
-  Future<Holiday> addHoliday(Map<String, dynamic> holidayData) async {
-    final newHoliday = Holiday(
-      id: _uuid.v4(),
-      name: holidayData['name'],
-      description: holidayData['description'] ?? '',
-      date: holidayData['date'],
-      day: holidayData['day'],
-      isRecurringYearly: holidayData['isRecurringYearly'] ?? false,
-      type: holidayData['type'] ?? 'Public',
-    );
+  Future<bool> addHoliday(Map<String, dynamic> holidayData) async {
+    try {
+      // Extract date data
+      final DateTime date = holidayData['date'];
 
-    _holidays.add(newHoliday);
-    await _saveHolidays();
-    _notifyListeners();
+      // Create the API request payload with the required count attribute
+      final Map<String, dynamic> apiHoliday = {
+        'month': date.month,
+        'day': date.day,
+        'count': 1, // Adding the required count attribute with default value 1
+        'label': {
+          'en': holidayData['name']['en'],
+          'fr': holidayData['name']['fr'],
+        },
+        'type': holidayData['type'],
+        'isRecurringYearly': holidayData['isRecurringYearly'],
+      };
 
-    return newHoliday;
-  }
+      print('Sending holiday data: ${jsonEncode(apiHoliday)}');
 
-  // Update an existing holiday
-  Future<void> updateHoliday(String id, Map<String, dynamic> holidayData) async {
-    final index = _holidays.indexWhere((holiday) => holiday.id == id);
-
-    if (index >= 0) {
-      _holidays[index] = _holidays[index].copyWith(
-        name: holidayData['name'],
-        description: holidayData['description'],
-        date: holidayData['date'],
-        day: holidayData['day'],
-        isRecurringYearly: holidayData['isRecurringYearly'],
-        type: holidayData['type'],
+      final response = await http.post(
+        Uri.parse("${Global.baseUrl}/secure/holidays"),
+        headers: {
+          ...await Global.getHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(apiHoliday),
       );
 
-      await _saveHolidays();
-      _notifyListeners();
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        // Refresh the holiday list
+        await fetchHolidays(forceRefresh: true);
+        return true;
+      } else {
+        print('Failed to add holiday: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Error adding holiday: $e');
+      return false;
     }
   }
 
   // Delete a holiday
-  Future<void> deleteHoliday(String id) async {
-    _holidays.removeWhere((holiday) => holiday.id == id);
-    await _saveHolidays();
-    _notifyListeners();
+  Future<bool> deleteHoliday(int month, int day) async {
+    try {
+      final response = await http.delete(
+        Uri.parse("${Global.baseUrl}/secure/holidays/$month/$day"),
+        headers: await Global.getHeaders(),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        // Remove from cache and notify listeners
+        _holidays.removeWhere((h) => h.month == month && h.day == day);
+        _notifyListeners();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Error deleting holiday: $e');
+      return false;
+    }
   }
 
   // Get holidays for a specific year
-  List<Holiday> getHolidaysForYear(int year) {
+  List<HolidayModel> getHolidaysForYear(int year) {
+    return _holidays;
+  }
+
+  // Get upcoming holidays
+  List<HolidayModel> getUpcomingHolidays(int year) {
+    final now = DateTime.now();
     return _holidays.where((holiday) {
-      // Include recurring holidays from previous years
-      if (holiday.isRecurringYearly && holiday.date.year <= year) {
-        return true;
-      }
-      // Include non-recurring holidays for the specific year
-      return holiday.date.year == year;
-    }).toList();
+      final holidayDate = DateTime(
+        year,
+        holiday.month,
+        holiday.day,
+      );
+      return holidayDate.isAfter(now) ||
+          (holidayDate.year == now.year &&
+              holidayDate.month == now.month &&
+              holidayDate.day == now.day);
+    }).toList()
+      ..sort((a, b) {
+        final aDate = DateTime(year, a.month, a.day);
+        final bDate = DateTime(year, b.month, b.day);
+        return aDate.compareTo(bDate);
+      });
+  }
+
+  // Get past holidays
+  List<HolidayModel> getPastHolidays(int year) {
+    final now = DateTime.now();
+    return _holidays.where((holiday) {
+      final holidayDate = DateTime(
+        year,
+        holiday.month,
+        holiday.day,
+      );
+      return holidayDate.isBefore(now) &&
+          !(holidayDate.year == now.year &&
+              holidayDate.month == now.month &&
+              holidayDate.day == now.day);
+    }).toList()
+      ..sort((a, b) {
+        final aDate = DateTime(year, a.month, a.day);
+        final bDate = DateTime(year, b.month, b.day);
+        return bDate.compareTo(aDate); // Reverse order for past holidays
+      });
   }
 
   // Add a listener
@@ -132,49 +178,5 @@ class HolidayService {
     for (var listener in _listeners) {
       listener();
     }
-  }
-
-  // Add sample holidays
-  void _addSampleHolidays() {
-    final currentYear = DateTime.now().year;
-
-    _holidays.addAll([
-      Holiday(
-        id: _uuid.v4(),
-        name: "New Year's Day",
-        description: "First day of the year in the Gregorian calendar",
-        date: DateTime(currentYear, 1, 1),
-        day: "Monday",
-        isRecurringYearly: true,
-        type: "Public",
-      ),
-      Holiday(
-        id: _uuid.v4(),
-        name: "Independence Day",
-        description: "National holiday",
-        date: DateTime(currentYear, 7, 4),
-        day: "Tuesday",
-        isRecurringYearly: true,
-        type: "Public",
-      ),
-      Holiday(
-        id: _uuid.v4(),
-        name: "Christmas Day",
-        description: "Annual festival commemorating the birth of Jesus Christ",
-        date: DateTime(currentYear, 12, 25),
-        day: "Monday",
-        isRecurringYearly: true,
-        type: "Public",
-      ),
-      Holiday(
-        id: _uuid.v4(),
-        name: "Company Foundation Day",
-        description: "Anniversary of the company's founding",
-        date: DateTime(currentYear, 3, 15),
-        day: "Wednesday",
-        isRecurringYearly: true,
-        type: "Company",
-      ),
-    ]);
   }
 }
