@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-
+import '../../auth/forgot_password_service.dart';
 import 'password_success_dialog.dart';
 
 class ResetPasswordPage extends StatefulWidget {
-  final String email;
+  final String email; // Peut être un email ou un nom d'utilisateur
+  final String requestId;
+  final String otpCode;
 
   const ResetPasswordPage({
     super.key,
     required this.email,
+    required this.requestId,
+    required this.otpCode,
   });
 
   @override
@@ -15,7 +19,7 @@ class ResetPasswordPage extends StatefulWidget {
 }
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
-  // Controllers for password fields
+  // Contrôleurs pour les champs de mot de passe
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
@@ -23,25 +27,32 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
 
-  // Password visibility toggles
+  // Toggles de visibilité du mot de passe
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  // Form validation
+  // Validation du formulaire
   bool _isFormValid = false;
   bool _hasError = false;
   String _errorMessage = '';
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Add listeners to check when form is valid
+    // Ajouter des écouteurs pour vérifier quand le formulaire est valide
     _passwordController.addListener(_validateForm);
     _confirmPasswordController.addListener(_validateForm);
+
+    // Debug info
+    print('Reset Password Page initialized with:');
+    print('Identifier: ${widget.email}');
+    print('RequestId: ${widget.requestId}');
+    print('OTP Code: ${widget.otpCode}');
   }
 
-  // Validate password form
+  // Valider le formulaire de mot de passe
   void _validateForm() {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
@@ -50,14 +61,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     String error = '';
     bool hasError = false;
 
-    // Check if passwords are entered
+    // Vérifier si les mots de passe sont saisis
     if (password.isNotEmpty && confirmPassword.isNotEmpty) {
-      // Check if passwords match
+      // Vérifier si les mots de passe correspondent
       if (password != confirmPassword) {
         hasError = true;
         error = 'Passwords do not match';
       }
-      // Check password strength (at least 8 characters)
+      // Vérifier la force du mot de passe (au moins 8 caractères)
       else if (password.length < 8) {
         hasError = true;
         error = 'Password must be at least 8 characters';
@@ -73,14 +84,57 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     });
   }
 
-  // Reset password
-  void _resetPassword() {
-    showPasswordSuccessDialog(context);
+  // Réinitialiser le mot de passe en utilisant l'API
+  void _resetPassword() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+      _errorMessage = '';
+    });
+
+    try {
+      // S'assurer que nous avons tous les paramètres nécessaires
+      if (widget.email.isEmpty || widget.requestId.isEmpty || widget.otpCode.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+          _errorMessage = "Missing required parameters for password reset";
+        });
+        return;
+      }
+
+      final result = await ForgotPasswordService.resetPassword(
+          widget.email,
+          widget.requestId,
+          widget.otpCode,
+          _passwordController.text
+      );
+
+      setState(() => _isLoading = false);
+
+      if (result["success"]) {
+        // Afficher la boîte de dialogue de succès
+        if (mounted) {
+          showPasswordSuccessDialog(context);
+        }
+      } else {
+        setState(() {
+          _hasError = true;
+          _errorMessage = result["message"] ?? "Failed to reset password";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+        _errorMessage = "An error occurred: $e";
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get the screen dimensions to make sizes responsive
+    // Obtenir les dimensions de l'écran pour rendre la taille responsive
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final baseFontSize = screenHeight * 0.018;
@@ -129,7 +183,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               ),
               SizedBox(height: screenHeight * 0.035),
 
-              // New Password Field
+              // Champ Nouveau mot de passe
               TextField(
                 controller: _passwordController,
                 focusNode: _passwordFocusNode,
@@ -179,7 +233,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
               SizedBox(height: screenHeight * 0.02),
 
-              // Confirm Password Field
+              // Champ Confirmer le mot de passe
               TextField(
                 controller: _confirmPasswordController,
                 focusNode: _confirmPasswordFocusNode,
@@ -240,7 +294,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
               SizedBox(height: screenHeight * 0.03),
 
-              // Password requirements
+              // Exigences de mot de passe
               Container(
                 padding: EdgeInsets.all(screenWidth * 0.04),
                 decoration: BoxDecoration(
@@ -276,11 +330,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
               SizedBox(height: screenHeight * 0.03),
 
-              // Reset Button
+              // Bouton Réinitialiser
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isFormValid ? _resetPassword : null,
+                  onPressed: _isFormValid && !_isLoading ? _resetPassword : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.shade800,
                     foregroundColor: Colors.white,
@@ -294,7 +348,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('Reset Password'),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Reset Password'),
                 ),
               ),
 
@@ -331,7 +387,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     );
   }
 
-  // Helper method to create password requirement items
+  // Méthode d'aide pour créer des éléments d'exigence de mot de passe
   Widget _passwordRequirementItem(String text, bool isMet, double baseFontSize) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),

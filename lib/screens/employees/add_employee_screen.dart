@@ -48,8 +48,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   // Form validation
   final _formKey = GlobalKey<FormState>();
   bool _formIsValid = false;
-
-  // Nationality lists
   List<String> _nationalities = [];
   final _nationalityService = NationalityService();
   bool _nationalitiesLoaded = false;

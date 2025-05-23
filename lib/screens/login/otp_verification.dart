@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_out/screens/Login/reset_password.dart';
 
+import '../../auth/forgot_password_service.dart';
+
 class OtpVerificationPage extends StatefulWidget {
   final String email;
+  final String requestId;
+  final int otpLength;
 
   const OtpVerificationPage({
     super.key,
     required this.email,
+    required this.requestId,
+    required this.otpLength,
   });
 
   @override
@@ -15,36 +21,42 @@ class OtpVerificationPage extends StatefulWidget {
 }
 
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
-  // Controllers for each OTP digit - changed to 6
   final List<TextEditingController> _controllers = List.generate(
       6,
           (index) => TextEditingController()
   );
 
-  // Focus nodes for each OTP field - changed to 6
+  // Focus nodes pour chaque champ OTP
   final List<FocusNode> _focusNodes = List.generate(
       6,
           (index) => FocusNode()
   );
 
-  // Track if OTP is filled
+  // Suivi si OTP est rempli
   bool _isOtpFilled = false;
 
-  // Error state
+  // État d'erreur
   bool _hasError = false;
   String _errorMessage = '';
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Add listeners to check when all fields are filled
+    // Ajouter des écouteurs pour vérifier quand tous les champs sont remplis
     for (var controller in _controllers) {
       controller.addListener(_checkOtpFilled);
     }
+
+    // Log pour le débogage
+    print('OTP Verification Page initialized with:');
+    print('Identifier: ${widget.email}');
+    print('RequestId: ${widget.requestId}');
+    print('OTP Length: ${widget.otpLength}');
   }
 
-  // Check if all OTP fields are filled
+  // Vérifier si tous les champs OTP sont remplis
   void _checkOtpFilled() {
     bool filled = true;
     for (var controller in _controllers) {
@@ -62,44 +74,74 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     }
   }
 
-  // Verify OTP
   void _verifyOtp() {
-    // Get the full OTP
     final otp = _controllers.map((c) => c.text).join();
 
-    // Replace with your actual OTP verification logic
-    // Updated for 6-digit OTP - "123456" is the correct OTP
-    if (otp == "123456") {
-      // Navigate to reset password page
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ResetPasswordPage(email: widget.email),
+    print('OTP entered: $otp');
+    print('Proceeding to reset password screen');
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ResetPasswordPage(
+          email: widget.email,
+          requestId: widget.requestId,
+          otpCode: otp,
         ),
-      );
-    } else {
+      ),
+    );
+  }
+
+  // Renvoyer OTP
+  void _resendOtp() async {
+    setState(() => _isLoading = true);
+
+    try {
+      // Appel API pour demander un nouveau OTP
+      final result = await ForgotPasswordService.requestPasswordResetOTP(widget.email);
+
+      setState(() => _isLoading = false);
+
+      if (result["success"]) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('OTP resent successfully',
+              style: TextStyle(fontSize: MediaQuery.of(context).size.height * 0.018))),
+        );
+
+        // Mettre à jour requestId si nécessaire
+        final newRequestId = result["requestId"];
+        if (newRequestId != null && newRequestId != widget.requestId) {
+          // Remplacer cette page avec une nouvelle instance contenant le nouveau requestId
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpVerificationPage(
+                email: widget.email,
+                requestId: newRequestId,
+                otpLength: result["otpLength"] ?? widget.otpLength,
+              ),
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _hasError = true;
+          _errorMessage = result["message"] ?? "Failed to resend OTP";
+        });
+      }
+    } catch (e) {
       setState(() {
+        _isLoading = false;
         _hasError = true;
-        _errorMessage = 'Incorrect OTP. Please try again.';
+        _errorMessage = "An error occurred: $e";
       });
     }
   }
 
-  // Resend OTP
-  void _resendOtp() {
-    // Implement resend OTP logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('OTP resent to ${widget.email}',
-          style: TextStyle(fontSize: MediaQuery.of(context).size.height * 0.018))),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Get the screen dimensions to make sizes responsive
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final baseFontSize = screenHeight * 0.018;
-    // Adjust field size to accommodate 6 digits
     final otpFieldSize = screenWidth * 0.12;
 
     return Scaffold(
@@ -138,7 +180,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               ),
               SizedBox(height: screenHeight * 0.01),
               Text(
-                'We have sent a code to your registered email address.',
+                'We have sent a verification code to your registered contact method.',
                 style: TextStyle(
                   fontSize: baseFontSize * 0.875,
                   color: Colors.black54,
@@ -148,7 +190,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(
-                  6,
+                  _controllers.length,
                       (index) => SizedBox(
                     width: otpFieldSize,
                     height: otpFieldSize,
@@ -159,7 +201,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: baseFontSize * 1.5,
-                        // Ensure text is centered horizontally
                         fontWeight: FontWeight.w500,
                       ),
                       maxLength: 1,
@@ -172,9 +213,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                         fillColor: _controllers[index].text.isNotEmpty
                             ? Colors.green.withOpacity(0.1)
                             : Colors.white,
-                        // Center the content by adjusting content padding
                         contentPadding: EdgeInsets.zero,
-                        // Ensure the border is symmetric
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
@@ -191,7 +230,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                         ),
                       ),
                       onChanged: (value) {
-                        if (value.isNotEmpty && index < 5) {
+                        if (value.isNotEmpty && index < _controllers.length - 1) {
                           _focusNodes[index + 1].requestFocus();
                         }
                       },
@@ -215,7 +254,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
               Center(
                 child: TextButton(
-                  onPressed: _resendOtp,
+                  onPressed: _isLoading ? null : _resendOtp,
                   child: Text(
                     'Didn\'t receive the code? Resend',
                     style: TextStyle(
@@ -244,7 +283,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('Verify OTP'),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Verify OTP'),
                 ),
               ),
 
@@ -283,8 +324,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   @override
   void dispose() {
-    // Updated to dispose 6 controllers and focus nodes
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < _controllers.length; i++) {
       _controllers[i].dispose();
       _focusNodes[i].dispose();
     }

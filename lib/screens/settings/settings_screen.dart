@@ -33,7 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _mobilePushEnabled = true;
   bool _desktopPushEnabled = true;
   bool _emailNotificationsEnabled = true;
-  bool _twoFactorEnabled = false;
 
   @override
   void initState() {
@@ -56,21 +55,183 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  /*Widget _buildTokenManagementPanel(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.width * 0.04),
+      padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
+      decoration: BoxDecoration(
+        color: AdaptiveColors.cardColor(context),
+        borderRadius: BorderRadius.circular(MediaQuery.of(context).size.width * 0.04),
+        boxShadow: [
+          BoxShadow(
+            color: AdaptiveColors.shadowColor(context),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Session Management",
+            style: TextStyle(
+              fontSize: MediaQuery.of(context).size.width * 0.045,
+              fontWeight: FontWeight.bold,
+              color: AdaptiveColors.primaryTextColor(context),
+            ),
+          ),
+          SizedBox(height: MediaQuery.of(context).size.width * 0.02),
+          Text(
+            "Debug and manage your authentication session",
+            style: TextStyle(
+              fontSize: MediaQuery.of(context).size.width * 0.03,
+              color: AdaptiveColors.secondaryTextColor(context),
+            ),
+          ),
+          SizedBox(height: MediaQuery.of(context).size.width * 0.04),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => TokenChecker.showTokenInfo(context),
+                  icon: const Icon(Icons.security),
+                  label: const Text("Check Token Status"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF5C6BC0),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: MediaQuery.of(context).size.width * 0.02),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    final rememberMe = prefs.getBool('remember_me') ?? false;
+
+                    // Toggle remember me
+                    await prefs.setBool('remember_me', !rememberMe);
+
+                    // Show confirmation
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(
+                          "Remember Me setting ${!rememberMe ? 'enabled' : 'disabled'}"
+                      )),
+                    );
+                  },
+                  icon: const Icon(Icons.toggle_on),
+                  label: const Text("Toggle Remember Me"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF26A69A),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: MediaQuery.of(context).size.width * 0.02),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    try {
+                      // Force token reload from storage
+                      await Global.getAuthToken();
+
+                      // Show confirmation
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text(
+                            "Token reloaded from storage"
+                        )),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error: $e")),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text("Reload Token"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF66BB6A),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }*/
+
+
+  // Implémentation sécurisée pour éviter les problèmes de dépendance dans SettingsScreen
   Future<void> _updateTwoFactorAuthentication(bool enabled) async {
-    // Use ProfileProvider to update the backend
-    final profileProvider =
-        Provider.of<ProfileProvider>(context, listen: false);
-    final success =
-        await profileProvider.updateTwoFactorAuthentication(enabled);
+    if (!mounted) return;
 
-    if (!success) {
-      // Show error message if update failed
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to update: ${profileProvider.error}")),
-      );
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+
+    // Update UI immediately for better user experience
+    profileProvider.setTwoFactorEnabledUIOnly(enabled);
+
+    // Process the actual update
+    final success = await profileProvider.updateTwoFactorAuthentication(enabled, context);
+
+    // Vérifier si le widget est toujours monté avant de continuer
+    if (!mounted) return;
+
+    // Force refresh profile to ensure UI state matches server state
+    // Envelopper dans un try-catch pour éviter les erreurs non gérées
+    try {
+      await profileProvider.refreshProfile();
+    } catch (e) {
+      print("Erreur lors du rafraîchissement du profil: $e");
     }
-  }
 
+    // Vérifier à nouveau si le widget est monté
+    if (!mounted) return;
+
+    // Utiliser un Future.microtask pour éviter les problèmes de dépendance
+    Future.microtask(() {
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                "L'authentification à deux facteurs a été ${enabled ? 'activée' : 'désactivée'} avec succès"
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (profileProvider.error.isNotEmpty && mounted) {
+        // Force le rebuild du widget pour mettre à jour l'UI
+        setState(() {});
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Échec de mise à jour: ${profileProvider.error}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+  }
   Future<void> _updateLanguage(String languageCode) async {
     final profileProvider =
         Provider.of<ProfileProvider>(context, listen: false);
@@ -301,7 +462,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required String subtitle,
     required Widget trailing,
-  }) {
+  })
+  {
     final screenWidth = MediaQuery.of(context).size.width;
     return Container(
       margin: EdgeInsets.only(bottom: screenWidth * 0.04),
@@ -370,9 +532,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildDropdownWidget(
-      String value, List<String> options, Function(String?) onChanged) {
+      String value, List<String> options, Function(String?) onChanged)
+  {
     final screenWidth = MediaQuery.of(context).size.width;
-
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: screenWidth * 0.03,
@@ -490,12 +652,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Text(
                           profileProvider.error,
-                          style: TextStyle(color: Colors.red),
+                          style: const TextStyle(color: Colors.red),
                           textAlign: TextAlign.center,
                         ),
                         ElevatedButton(
                           onPressed: () => profileProvider.loadProfile(),
-                          child: Text('Retry'),
+                          child: const Text('Retry'),
                         ),
                       ],
                     ),
@@ -696,6 +858,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               },
                             ),
                           ),
+                          // _buildTokenManagementPanel(context),
+                          // TokenManagement.createEmergencyTokenButton(context),
                           InkWell(
                             onTap: () {
                               Navigator.push(

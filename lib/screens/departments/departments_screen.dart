@@ -22,7 +22,7 @@ class DepartmentsScreen extends StatefulWidget {
 }
 
 class _DepartmentsScreenState extends State<DepartmentsScreen> {
-  int _selectedIndex = 3; // Index for departments in the navigation
+  int _selectedIndex = 4;
   bool _isHeaderVisible = true;
   final ScrollController _scrollController = ScrollController();
   late TextEditingController _searchController;

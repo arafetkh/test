@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../auth/auth_service.dart';
 import '../dashboard.dart';
 import '../../theme/adaptive_colors.dart';
@@ -36,7 +37,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   void initState() {
     super.initState();
 
-    // Initialize controllers and focus nodes based on OTP length
     _controllers = List.generate(
       widget.otpLength,
           (index) => TextEditingController(),
@@ -74,10 +74,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     return _controllers.map((controller) => controller.text).join('');
   }
 
+
   void _verifyOtp() async {
     final otpCode = _getOtpValue();
 
     setState(() => _isLoading = true);
+
+    print("OTP: Verifying OTP with Remember Me: ${widget.rememberMe}");
 
     final result = await AuthService.verifyOTP(
       widget.identifier,
@@ -85,12 +88,18 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       otpCode,
       widget.password,
       context,
-      rememberMe: widget.rememberMe,
+      rememberMe: widget.rememberMe, // Pass remember me state
     );
 
     setState(() => _isLoading = false);
 
     if (result['success']) {
+      print("OTP: Verification successful");
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('remember_me', widget.rememberMe);
+      print("OTP: Remember Me setting saved: ${widget.rememberMe}");
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -99,35 +108,35 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         ),
       );
 
+      // Verify if token is saved
+      if (widget.rememberMe) {
+        final token = prefs.getString('auth_token');
+        print("OTP: Token in SharedPreferences: ${token != null ? 'Present' : 'Missing'}");
+
+        if (token == null) {
+          print("OTP: WARNING - Token not found in SharedPreferences despite Remember Me being enabled");
+
+          // Try to get token from result and save it directly as fallback
+          if (result.containsKey('token') && result['token'] != null) {
+            final resultToken = result['token'];
+            await prefs.setString('auth_token', resultToken);
+            print("OTP: Saved token directly from result");
+          }
+        }
+      }
+
       // Navigate to dashboard
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const DashboardScreen()),
       );
     } else {
-      // Check for specific error code for invalid credentials
-      if (result['errorCode'] == 'invalid_credentials' ||
-          (result['message'] != null &&
-              (result['message'].toString().contains('Invalid username or password') ||
-                  result['message'].toString().contains('invalid credentials')))) {
-
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Identifiants invalides. Veuillez réessayer."),
-            backgroundColor: Colors.red,
-          ),
-        );
-
-        // Return to login page
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      } else {
-        // Handle other errors (like invalid OTP)
-        setState(() {
-          _hasError = true;
-          _errorMessage = result['message'];
-        });
-      }
+      // Handle error
+      print("OTP ERROR: ${result['message']}");
+      setState(() {
+        _hasError = true;
+        _errorMessage = result['message'];
+      });
     }
   }
 
@@ -162,8 +171,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
       // Update requestId if needed
       if (result['requestId'] != widget.requestId) {
-        // This is a bit hacky since we can't update the widget property directly
-        // In a real app, you might want to handle this differently
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

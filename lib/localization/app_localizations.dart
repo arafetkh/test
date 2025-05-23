@@ -20,6 +20,7 @@ class AppLocalizations {
 
   String getString(String key) {
     switch (key) {
+
       case "settings":
         return settings;
       case "allSystemSettings":
@@ -329,6 +330,135 @@ class AppLocalizations {
       case "secondaryColorSample":
         return secondaryColorSample;
 
+      case "checkInTime1":
+        return checkInTime1;
+      case "checkInTime2":
+        return checkInTime2;
+      case "checkInTime3":
+        return checkInTime3;
+      case "checkInTime4":
+        return checkInTime4;
+      case "checkOutTime1":
+        return checkOutTime1;
+      case "checkOutTime2":
+        return checkOutTime2;
+      case "selectDate":
+        return selectDate;
+      case "filterByDate":
+        return filterByDate;
+      case "refreshData":
+        return refreshData;
+      case "close":
+        return close;
+      case "selectFilter":
+        return selectFilter;
+      case "filterByMonth":
+        return filterByMonth;
+      case "filterByYear":
+        return filterByYear;
+      case "dateColon":
+        return dateColon;
+
+      case "vacation":
+        return vacation;
+      case "vacationBalance":
+        return vacationBalance;
+      case "requestVacation":
+        return requestVacation;
+      case "vacationRequests":
+        return vacationRequests;
+      case "vacationManagement":
+        return vacationManagement;
+      case "vacationType":
+        return vacationType;
+      case "annualLeave":
+        return annualLeave;
+      case "sickLeave":
+        return sickLeave;
+      case "personalLeave":
+        return personalLeave;
+      case "maternityLeave":
+        return maternityLeave;
+      case "paternityLeave":
+        return paternityLeave;
+      case "startDate":
+        return startDate;
+      case "endDate":
+        return endDate;
+      case "startTime":
+        return startTime;
+      case "endTime":
+        return endTime;
+      case "morning":
+        return morning;
+      case "afternoon":
+        return afternoon;
+      case "reason":
+        return reason;
+      case "totalDays":
+        return totalDays;
+      case "usedDays":
+        return usedDays;
+      case "availableDays":
+        return availableDays;
+      case "pendingDays":
+        return pendingDays;
+      case "insufficientBalance":
+        return insufficientBalance;
+      case "selectDate":
+        return selectDate;
+      case "requestSubmitted":
+        return requestSubmitted;
+      case "requestCancelled":
+        return requestCancelled;
+      case "requestApproved":
+        return requestApproved;
+      case "requestRejected":
+        return requestRejected;
+      case "pending":
+        return pending;
+      case "approved":
+        return approved;
+      case "rejected":
+        return rejected;
+      case "cancelled":
+        return cancelled;
+      case "noPendingRequests":
+        return noPendingRequests;
+      case "noVacationHistory":
+        return noVacationHistory;
+      case "approveRequest":
+        return approveRequest;
+      case "rejectRequest":
+        return rejectRequest;
+      case "viewBalance":
+        return viewBalance;
+      case "employeeBalance":
+        return employeeBalance;
+      case "noRequestsToDisplay":
+        return noRequestsToDisplay;
+      case "allTypes":
+        return allTypes;
+      case "requestedOn":
+        return requestedOn;
+      case "editVacationRequest":
+        return editVacationRequest;
+      case "updateRequest":
+        return updateRequest;
+      case "submitRequest":
+        return submitRequest;
+      case "confirmCancel":
+        return confirmCancel;
+      case "confirmCancelMessage":
+        return confirmCancelMessage;
+      case "confirmApprove":
+        return confirmApprove;
+      case "confirmApproveMessage":
+        return confirmApproveMessage;
+      case "confirmReject":
+        return confirmReject;
+      case "confirmRejectMessage":
+        return confirmRejectMessage;
       default:
         return key;
     }
@@ -645,6 +775,81 @@ class AppLocalizations {
   String get upcoming => Intl.message('Upcoming', name: 'upcoming');
   String get pastHolidays =>
       Intl.message('Past Holidays', name: 'pastHolidays');
+
+  String get checkInTime1 => Intl.message('Check-In 1', name: 'checkInTime1');
+  String get checkInTime2 => Intl.message('Check-In 2', name: 'checkInTime2');
+  String get checkInTime3 => Intl.message('Check-In 3', name: 'checkInTime3');
+  String get checkInTime4 => Intl.message('Check-In 4', name: 'checkInTime4');
+  String get checkOutTime1 => Intl.message('Check-Out 1', name: 'checkOutTime1');
+  String get checkOutTime2 => Intl.message('Check-Out 2', name: 'checkOutTime2');
+
+  // Filter options
+  String get selectDate => Intl.message('Select Date', name: 'selectDate');
+  String get filterByDate => Intl.message('Filter by Date', name: 'filterByDate');
+  String get refreshData => Intl.message('Refresh Data', name: 'refreshData');
+  String get close => Intl.message('Close', name: 'close');
+  String get selectFilter => Intl.message('Select Filter', name: 'selectFilter');
+  String get filterByMonth => Intl.message('Filter by Month', name: 'filterByMonth');
+  String get filterByYear => Intl.message('Filter by Year', name: 'filterByYear');
+  String get dateColon => Intl.message('Date:', name: 'dateColon');
+
+// vacation
+  String get vacation => Intl.message('Vacation', name: 'vacation');
+  String get vacationBalance => Intl.message('Vacation Balance', name: 'vacationBalance');
+  String get requestVacation => Intl.message('Request Vacation', name: 'requestVacation');
+  String get vacationRequests => Intl.message('Vacation Requests', name: 'vacationRequests');
+  String get vacationManagement => Intl.message('Vacation Management', name: 'vacationManagement');
+  String get vacationType => Intl.message('Vacation Type', name: 'vacationType');
+  String get annualLeave => Intl.message('Annual Leave', name: 'annualLeave');
+  String get sickLeave => Intl.message('Sick Leave', name: 'sickLeave');
+  String get personalLeave => Intl.message('Personal Leave', name: 'personalLeave');
+  String get maternityLeave => Intl.message('Maternity Leave', name: 'maternityLeave');
+  String get paternityLeave => Intl.message('Paternity Leave', name: 'paternityLeave');
+  String get startDate => Intl.message('Start Date', name: 'startDate');
+  String get endDate => Intl.message('End Date', name: 'endDate');
+  String get startTime => Intl.message('Start Time', name: 'startTime');
+  String get endTime => Intl.message('End Time', name: 'endTime');
+  String get morning => Intl.message('Morning', name: 'morning');
+  String get afternoon => Intl.message('Afternoon', name: 'afternoon');
+  String get reason => Intl.message('Reason', name: 'reason');
+  String get totalDays => Intl.message('Total Days', name: 'totalDays');
+  String get usedDays => Intl.message('Used Days', name: 'usedDays');
+  String get availableDays => Intl.message('Available Days', name: 'availableDays');
+  String get pendingDays => Intl.message('Pending Days', name: 'pendingDays');
+  String get insufficientBalance => Intl.message('Insufficient balance. Available: {days} days',
+      name: 'insufficientBalance', args: ['days']);
+  String get requestSubmitted => Intl.message('Vacation request submitted successfully', name: 'requestSubmitted');
+  String get requestCancelled => Intl.message('Vacation request cancelled successfully', name: 'requestCancelled');
+  String get requestApproved => Intl.message('Request approved successfully', name: 'requestApproved');
+  String get requestRejected => Intl.message('Request rejected successfully', name: 'requestRejected');
+  String get pending => Intl.message('Pending', name: 'pending');
+  String get approved => Intl.message('Approved', name: 'approved');
+  String get rejected => Intl.message('Rejected', name: 'rejected');
+  String get cancelled => Intl.message('Cancelled', name: 'cancelled');
+  String get noPendingRequests => Intl.message('No pending requests', name: 'noPendingRequests');
+  String get noVacationHistory => Intl.message('No vacation history', name: 'noVacationHistory');
+  String get approveRequest => Intl.message('Approve Request', name: 'approveRequest');
+  String get rejectRequest => Intl.message('Reject Request', name: 'rejectRequest');
+  String get viewBalance => Intl.message('View Balance', name: 'viewBalance');
+  String get employeeBalance => Intl.message('{name}\'s Balance',
+      name: 'employeeBalance', args: ['name']);
+  String get noRequestsToDisplay => Intl.message('No requests to display', name: 'noRequestsToDisplay');
+  String get allTypes => Intl.message('All Types', name: 'allTypes');
+  String get requestedOn => Intl.message('Requested on {date}',
+      name: 'requestedOn', args: ['date']);
+  String get editVacationRequest => Intl.message('Edit Vacation Request', name: 'editVacationRequest');
+  String get updateRequest => Intl.message('Update Request', name: 'updateRequest');
+  String get submitRequest => Intl.message('Submit Request', name: 'submitRequest');
+  String get confirmCancel => Intl.message('Confirm Cancel', name: 'confirmCancel');
+  String get confirmCancelMessage => Intl.message('Are you sure you want to cancel this vacation request?',
+      name: 'confirmCancelMessage');
+  String get confirmApprove => Intl.message('Confirm Approve', name: 'confirmApprove');
+  String get confirmApproveMessage => Intl.message('Are you sure you want to approve {name}\'s vacation request for {days} days?',
+      name: 'confirmApproveMessage', args: ['name', 'days']);
+  String get confirmReject => Intl.message('Confirm Reject', name: 'confirmReject');
+  String get confirmRejectMessage => Intl.message('Are you sure you want to reject {name}\'s vacation request for {days} days?',
+      name: 'confirmRejectMessage', args: ['name', 'days']);
+
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

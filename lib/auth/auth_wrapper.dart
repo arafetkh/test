@@ -1,3 +1,4 @@
+// lib/auth/auth_wrapper.dart
 import 'package:flutter/material.dart';
 import 'package:in_out/auth/auth_service.dart';
 import 'package:in_out/screens/login/login_page.dart';
@@ -5,6 +6,7 @@ import 'package:in_out/screens/dashboard.dart';
 import 'package:in_out/provider/user_settings_provider.dart';
 import 'package:in_out/provider/profile_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
@@ -22,49 +24,25 @@ class _AuthWrapperState extends State<AuthWrapper> {
     super.initState();
     _checkAuthStatus();
   }
+
   Future<void> _checkAuthStatus() async {
-    // First check if user has a valid token already
-    final isLoggedIn = await AuthService.isLoggedIn();
+    try {
+      print("AUTH: Checking authentication status");
+      final prefs = await SharedPreferences.getInstance();
 
-    if (isLoggedIn) {
-      // Initialize profile provider
-      final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-      await profileProvider.loadProfile();
+      // First check if Remember Me is enabled
+      final rememberMe = prefs.getBool('remember_me') ?? false;
+      print("AUTH: Remember Me enabled: $rememberMe");
 
-      // Initialize user settings
-      final userId = await AuthService.getCurrentUserId();
-      if (userId != null) {
-        final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
-        await userSettingsProvider.setCurrentUser(userId);
+      if (rememberMe) {
+        // Try to get stored token
+        final token = prefs.getString('auth_token');
+        print("AUTH: Stored token: ${token != null ? 'Found' : 'Not Found'}");
 
-        // If we have a profile, sync the language setting
-        if (profileProvider.userProfile != null) {
-          final locale = profileProvider.userProfile!.locale;
-          if (userSettingsProvider.currentSettings.language != locale) {
-            await userSettingsProvider.changeLanguage(locale);
-          }
-        }
-      }
-
-      setState(() {
-        _isAuthenticated = true;
-        _isLoading = false;
-      });
-      return;
-    }
-
-    // If not logged in, check if auto-login with saved session is possible
-    final canAutoLogin = await AuthService.shouldAutoLogin();
-
-    if (canAutoLogin) {
-      try {
-        // Try to restore the session
-        final result = await AuthService.autoLogin(context);
-
-        if (result["success"]) {
-          // Initialize profile provider
-          final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-          await profileProvider.loadProfile();
+        if (token != null && token.isNotEmpty) {
+          // Initialize user data
+          print("AUTH: Token found, loading user data");
+          await _loadUserData();
 
           setState(() {
             _isAuthenticated = true;
@@ -72,20 +50,47 @@ class _AuthWrapperState extends State<AuthWrapper> {
           });
           return;
         } else {
-          // Session restore failed - may need to go through normal login
-          print("Session restore failed: ${result["message"]}");
+          print("AUTH: No valid token found despite Remember Me enabled");
         }
-      } catch (e) {
-        // Auto login failed
-        print("Auto login failed: $e");
+      } else {
+        print("AUTH: Remember Me disabled, requiring login");
       }
-    }
 
-    // If we get here, user needs to log in normally
-    setState(() {
-      _isAuthenticated = false;
-      _isLoading = false;
-    });
+      // No valid token found or Remember Me disabled
+      setState(() {
+        _isAuthenticated = false;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("AUTH: Error checking auth status: $e");
+      setState(() {
+        _isAuthenticated = false;
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      print("AUTH: Loading user data");
+      // Initialize profile provider
+      final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+      await profileProvider.loadProfile();
+      print("AUTH: Profile loaded");
+
+      // Initialize user settings
+      final userId = await AuthService.getCurrentUserId();
+      if (userId != null) {
+        print("AUTH: User ID found: $userId");
+        final userSettingsProvider = Provider.of<UserSettingsProvider>(context, listen: false);
+        await userSettingsProvider.setCurrentUser(userId);
+        print("AUTH: User settings initialized");
+      } else {
+        print("AUTH: No user ID found");
+      }
+    } catch (e) {
+      print("AUTH: Error loading user data: $e");
+    }
   }
 
   @override

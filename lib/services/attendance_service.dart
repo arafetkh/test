@@ -5,16 +5,16 @@ import 'package:intl/intl.dart';
 import '../auth/global.dart';
 
 class AttendanceService {
-  // Get attendance records for a specific employee with pagination and year filter
   static Future<Map<String, dynamic>> getEmployeeAttendance(
       String employeeId, {
         int page = 0,
         int size = 10,
         int? year,
-      }) async {
+      }) async
+  {
     // Build URL with pagination parameters
     final Uri url = Uri.parse(
-        "${Global.baseUrl}/secure/attendance?userId=$employeeId&page=$page&size=$size${year != null ? '&year=$year' : '&year=2025'}");
+        "${Global.baseUrl}/secure/attendance/user?userId=$employeeId&page=$page&size=$size${year != null ? '&year=$year' : '&year=2025'}");
 
     try {
       final response = await http.get(
@@ -187,4 +187,66 @@ class AttendanceService {
       return [DateTime.now().year];
     }
   }
+
+  static Future<Map<String, dynamic>> getDailyAttendance({
+    required String date,
+    int page = 0,
+    int size = 10,
+  }) async
+  {
+    final Uri url = Uri.parse(
+        "${Global.baseUrl}/secure/attendance/date?page=$page&size=$size&date=$date");
+
+    try {
+      final response = await http.get(
+        url,
+        headers: await Global.getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        return {
+          "success": true,
+          "content": responseData["content"] ?? [],
+          "totalElements": responseData["totalElements"] ?? 0,
+          "totalPages": responseData["totalPages"] ?? 0,
+          "currentPage": responseData["pageable"]?["pageNumber"] ?? 0,
+          "size": responseData["pageable"]?["pageSize"] ?? size,
+        };
+      } else {
+        return {
+          "success": false,
+          "message": "Failed to load attendance: ${response.statusCode}",
+          "content": [],
+        };
+      }
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Error connecting to server: $e",
+        "content": [],
+      };
+    }
+  }
+
+  // Format the entry times into a readable format
+  static String formatTime(String timeString) {
+    if (timeString.isEmpty) return '';
+
+    // Parse the time string in format "08:31:32"
+    final parts = timeString.split(':');
+    if (parts.length < 2) return timeString;
+
+    int hour = int.tryParse(parts[0]) ?? 0;
+    final minutes = parts[1];
+
+    // Convert to 12-hour format
+    final period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+
+    return '$hour:$minutes $period';
+  }
+
+
 }

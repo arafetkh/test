@@ -16,7 +16,6 @@ import '../../models/employee_model.dart';
 import '../../widget/search_and_filter_bar.dart';
 import '../../widget/pagination_widgets.dart';
 import 'package:in_out/widget/landscape_user_profile_header.dart';
-
 import 'employee_profile/employee_profile_screen.dart';
 
 class EmployeeTableScreen extends StatefulWidget {
@@ -34,7 +33,7 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
   int _currentPage = 0;
   int _totalPages = 1;
   int _totalElements = 0;
-  int _itemsPerPage = 10;
+  final int _itemsPerPage = 10;
   String _searchQuery = '';
 
   // Employee data variables
@@ -43,11 +42,8 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
   String _errorMessage = '';
 
   // Selected filters
-  Set<String> _selectedDepartments = {};
-  // Dans la classe _EmployeeTableScreenState, ajoutez ces variables:
   List<Map<String, dynamic>> _departments = [];
-  Set<int> _selectedDepartmentIds = {}; // Remplace _selectedDepartments
-  // Méthode pour charger les départements depuis l'API
+  Set<int> _selectedDepartmentIds = {};
   Future<void> _fetchDepartments() async {
     try {
       final response = await http.get(
@@ -546,9 +542,7 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
         setState(() {
           _selectedDepartmentIds = result['departmentIds'];
           _selectedWorkType = result['workType']; // Stocke la valeur String? directement
-          _selectedDepartments = result['workTypes'] != null
-              ? Set<String>.from(result['workTypes'])
-              : {}; // Conserver pour la compatibilité avec la fonction existante
+// Conserver pour la compatibilité avec la fonction existante
           _currentPage = 0; // Reset to first page when filters change
 
           // Si une recherche était active et qu'un département est maintenant sélectionné,
@@ -579,9 +573,6 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final screenWidth = screenSize.width;
-    final screenHeight = screenSize.height;
-    final localizations = AppLocalizations.of(context);
-
     return ResponsiveNavigationScaffold(
       selectedIndex: _selectedIndex,
       onItemTapped: _onItemTapped,
@@ -597,7 +588,6 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                 );
               },
             ),
-        // Dans le widget SearchAndFilterBar
         SearchAndFilterBar(
           searchController: _searchController,
           onSearchChanged: (value) {
@@ -610,15 +600,14 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                 _selectedDepartmentIds.clear();
                 // Afficher un message indiquant que les filtres ont été réinitialisés
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text('Department filter has been reset'),
-                    duration: const Duration(seconds: 2),
+                    duration: Duration(seconds: 2),
                     backgroundColor: Colors.orange,
                   ),
                 );
               }
-
-              _currentPage = 0; // Reset to first page on search
+              _currentPage = 0;
             });
             _fetchEmployees();
           },
@@ -630,7 +619,7 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                     onEmployeeAdded: _addNewEmployee,
                   )
               ),
-            ).then((_) => _fetchEmployees()); // Refresh on return
+            ).then((_) => _fetchEmployees());
           },
           onFilterTap: (context) => _showFilterDialog(context),
         ),
@@ -917,7 +906,7 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(localizations.getString('employeeUpdatedSuccessfully') ?? 'Employee updated successfully' ),
+                              content: Text(localizations.getString('employeeUpdatedSuccessfully') ),
                               backgroundColor: Colors.green,
                             ),
                           );
@@ -933,7 +922,7 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
                   builder: (BuildContext context) {
                     return AlertDialog(
                       title: Text(localizations.getString('confirmDelete')),
-                      content: Text(localizations.getString('areYouSureDelete') ?? 'Are you sure you want to delete this employee?'),
+                      content: Text(localizations.getString('areYouSureDelete')),
                       actions: [
                         TextButton(
                           onPressed: () {

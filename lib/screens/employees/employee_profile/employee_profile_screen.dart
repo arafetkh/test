@@ -13,10 +13,12 @@ import 'employee_profile_tabs/leave_tab.dart';
 
 class EmployeeProfileScreen extends StatefulWidget {
   final int employeeId;
+  final int initialTabIndex;
 
   const EmployeeProfileScreen({
     super.key,
     required this.employeeId,
+    this.initialTabIndex = 0,
   });
 
   @override
@@ -34,10 +36,10 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 3, vsync: this,initialIndex: widget.initialTabIndex,);
     _loadEmployeeDetails();
-    // Listen for tab changes to show/hide refresh button when needed
     _tabController.addListener(_handleTabChange);
+
   }
   @override
   void dispose() {

@@ -41,27 +41,36 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
         BottomNavigationBarItem(
           icon:
-              Iconify(Ic.outline_groups, size: iconSize, color: inactiveColor),
+          Iconify(Ic.outline_groups, size: iconSize, color: inactiveColor),
           activeIcon:
-              Iconify(Ic.baseline_groups, size: iconSize, color: activeColor),
+          Iconify(Ic.baseline_groups, size: iconSize, color: activeColor),
           label: 'team',
           tooltip: 'team',
+        ),
+
+        BottomNavigationBarItem(
+          icon: Iconify(Mdi.umbrella_beach_outline,
+              size: iconSize, color: inactiveColor),
+          activeIcon:
+          Iconify(Mdi.umbrella_beach, size: iconSize, color: activeColor),
+          label: 'vacation',
+          tooltip: 'vacation',
         ),
 
         BottomNavigationBarItem(
           icon: Iconify(Mdi.calendar_clock_outline,
               size: iconSize, color: inactiveColor),
           activeIcon:
-              Iconify(Mdi.calendar_clock, size: iconSize, color: activeColor),
+          Iconify(Mdi.calendar_clock, size: iconSize, color: activeColor),
           label: 'attendance',
           tooltip: 'attendance',
         ),
 
         BottomNavigationBarItem(
           icon:
-              Iconify(Ic.outline_groups, size: iconSize, color: inactiveColor),
+          Iconify(Ic.outline_groups, size: iconSize, color: inactiveColor),
           activeIcon:
-              Iconify(Ic.baseline_groups, size: iconSize, color: activeColor),
+          Iconify(Ic.baseline_groups, size: iconSize, color: activeColor),
           label: 'departments',
           tooltip: 'departments',
         ),
@@ -70,7 +79,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           icon: Iconify(Mdi.calendar_star_outline,
               size: iconSize, color: inactiveColor),
           activeIcon:
-              Iconify(Mdi.calendar_star, size: iconSize, color: activeColor),
+          Iconify(Mdi.calendar_star, size: iconSize, color: activeColor),
           label: 'holidays',
           tooltip: 'holidays',
         ),

@@ -47,23 +47,27 @@ class CustomSideNavigationBar extends StatelessWidget {
           // Dashboard (Home)
           _buildNavItem(context, 0, Mdi.home_outline, Mdi.home, iconSize),
 
-          // Departments (Renamed from Employees/Team)
+          // Employees (Team)
           _buildNavItem(
               context, 1, Ic.outline_groups, Ic.baseline_groups, iconSize),
 
+          // Vacation
+          _buildNavItem(context, 2, Mdi.umbrella_beach_outline,
+              Mdi.umbrella_beach, iconSize),
+
           // Attendance
-          _buildNavItem(context, 2, Mdi.calendar_clock_outline,
+          _buildNavItem(context, 3, Mdi.calendar_clock_outline,
               Mdi.calendar_clock, iconSize),
 
-          // Notifications
-          _buildNavItem(context, 3, Ic.outline_groups,
+          // Departments
+          _buildNavItem(context, 4, Ic.outline_groups,
               Ic.baseline_groups, iconSize),
 
           // Holidays
-          _buildNavItem(context, 4, Mdi.calendar_star_outline,
+          _buildNavItem(context, 5, Mdi.calendar_star_outline,
               Mdi.calendar_star, iconSize),
           // Settings
-          _buildNavItem(context, 5, Mdi.cog_outline, Mdi.cog, iconSize),
+          _buildNavItem(context, 6, Mdi.cog_outline, Mdi.cog, iconSize),
         ],
       ),
     );

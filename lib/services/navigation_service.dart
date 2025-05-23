@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:in_out/screens/dashboard.dart';
 import 'package:in_out/screens/employees/employee_table_screen.dart';
 import 'package:in_out/screens/attendance/attendance_screen.dart';
+import '../auth/role_helper.dart';
 import '../screens/holiday/holiday_screen.dart';
 import '../screens/departments/departments_screen.dart';
 import '../screens/settings/settings_screen.dart';
+import '../screens/vacation/manager/vacation_management_screen.dart';
+import '../screens/vacation/vacation_screen.dart';
 
 class NavigationService {
-  static void navigateToScreen(BuildContext context, int index) {
+  static Future<void> navigateToScreen(BuildContext context, int index) async {
     final Widget screen;
 
     switch (index) {
@@ -19,20 +22,29 @@ class NavigationService {
       case 1:
         screen = const EmployeeTableScreen();
         break;
-      // Attendance
+    // Vacation
       case 2:
+        final isManager = await RoleHelper.isUserManager();
+        if (isManager) {
+          screen = const VacationManagementScreen();
+        } else {
+          screen = const VacationScreen();
+        }
+        break;
+      // Attendance
+      case 3:
         screen = const AttendanceScreen();
         break;
       // Departments
-      case 3:
+      case 4:
         screen = const DepartmentsScreen();
         break;
       // Holidays
-      case 4:
+      case 5:
         screen = const HolidaysScreen();
         break;
       // Settings
-      case 5:
+      case 6:
         screen = const SettingsScreen();
         break;
 

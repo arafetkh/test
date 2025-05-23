@@ -12,6 +12,8 @@ import '../../../widget/bottom_navigation_bar.dart';
 import '../../../localization/app_localizations.dart';
 import '../../../provider/language_provider.dart';
 import '../../models/holiday_model.dart';
+import 'holiday_detail_dialog.dart';
+
 class HolidaysScreen extends StatefulWidget {
   const HolidaysScreen({super.key});
   @override
@@ -19,7 +21,7 @@ class HolidaysScreen extends StatefulWidget {
 }
 
 class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProviderStateMixin {
-  int _selectedIndex = 5; // Index for holidays in the navigation
+  int _selectedIndex = 5;
   final ScrollController _scrollController = ScrollController();
   bool _isHeaderVisible = true;
 
@@ -45,32 +47,45 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
       DeviceOrientation.portraitDown,
     ]);
 
-    // Initialize holidays
-    _loadHolidays();
+    // Initialize holidays with current year
+    _loadHolidays(_selectedYear);
 
     // Add listener for updates
     _holidayService.addListener(_updateHolidaysList);
   }
 
-  Future<void> _loadHolidays() async {
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-      _errorMessage = '';
-    });
+  // Modified to accept a year parameter
+  Future<void> _loadHolidays(int year) async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _hasError = false;
+        _errorMessage = '';
+      });
+    }
 
     try {
-      final holidays = await _holidayService.fetchHolidays();
-      setState(() {
-        _holidays = holidays;
-        _isLoading = false;
-      });
+      // Pass the year parameter to fetch holidays for the specific year
+      final holidays = await _holidayService.fetchHolidays(
+        forceRefresh: true,
+        year: year,
+      );
+
+      if (mounted) {
+        setState(() {
+          _holidays = holidays;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage = e.toString();
-      });
+      print('Error loading holidays for year $year: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+          _errorMessage = e.toString();
+        });
+      }
     }
   }
 
@@ -96,39 +111,89 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
     NavigationService.navigateToScreen(context, index);
   }
 
-  void _addNewHoliday(Map<String, dynamic> holidayData) async {
-    await _holidayService.addHoliday(holidayData);
-
+  // Change year and fetch holidays
+  void _changeYear(int newYear) {
+    setState(() {
+      _selectedYear = newYear;
+    });
+    // Trigger API fetch with the new year
+    _loadHolidays(_selectedYear);
   }
 
+  void _addNewHoliday(Map<String, dynamic> holidayData) async {
+    final success = await _holidayService.addHoliday(holidayData);
+    if (success) {
+      // Reload holidays for the current year after adding a new one
+      _loadHolidays(_selectedYear);
+    }
+  }
+
+  // These getters now use the holidays list directly instead of calling service methods
   List<HolidayModel> get _upcomingHolidays {
-    return _holidayService.getUpcomingHolidays(_selectedYear);
+    final now = DateTime.now();
+    return _holidays.where((holiday) {
+      final holidayDate = DateTime(
+        _selectedYear,
+        holiday.month,
+        holiday.day,
+      );
+      return holidayDate.isAfter(now) ||
+          (holidayDate.year == now.year &&
+              holidayDate.month == now.month &&
+              holidayDate.day == now.day);
+    }).toList()
+      ..sort((a, b) {
+        final aDate = DateTime(_selectedYear, a.month, a.day);
+        final bDate = DateTime(_selectedYear, b.month, b.day);
+        return aDate.compareTo(bDate);
+      });
   }
 
   List<HolidayModel> get _pastHolidays {
-    return _holidayService.getPastHolidays(_selectedYear);
+    final now = DateTime.now();
+    return _holidays.where((holiday) {
+      final holidayDate = DateTime(
+        _selectedYear,
+        holiday.month,
+        holiday.day,
+      );
+      return holidayDate.isBefore(now) &&
+          !(holidayDate.year == now.year &&
+              holidayDate.month == now.month &&
+              holidayDate.day == now.day);
+    }).toList()
+      ..sort((a, b) {
+        final aDate = DateTime(_selectedYear, a.month, a.day);
+        final bDate = DateTime(_selectedYear, b.month, b.day);
+        return bDate.compareTo(aDate); // Reverse order for past holidays
+      });
   }
 
-  // Method to show the holiday detail dialog
-  // void _showHolidayDetailDialog(HolidayModel holiday) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return HolidayDetailDialog(
-  //         holiday: holiday,
-  //         selectedYear: _selectedYear,
-  //         onDeleted: () {
-  //           // Refresh the holidays list after deletion
-  //           _loadHolidays();
-  //         },
-  //         onEdited: () {
-  //           // Refresh the holidays list after editing
-  //           _loadHolidays();
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
+  // Simple refresh method to be called after deletion or editing
+  void refreshHolidays() {
+    // Use Future.delayed to make sure the operation happens after the current frame
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        _loadHolidays(_selectedYear);
+      }
+    });
+  }
+
+  void _showHolidayDetailDialog(HolidayModel holiday) {
+    // Show the detail dialog
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return HolidayDetailDialog(
+          holiday: holiday,
+          selectedYear: _selectedYear,
+          onDeleted: refreshHolidays,  // Use the simple refresh method
+          onEdited: refreshHolidays,   // Use the same method for edit callback
+        );
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -138,6 +203,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
     _holidayService.removeListener(_updateHolidaysList);
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -218,7 +284,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
               child: Column(
                 children: [
-                  // Year selector
+                  // Year selector with updated handlers
                   Container(
                     margin: EdgeInsets.only(bottom: screenHeight * 0.02),
                     padding: EdgeInsets.symmetric(
@@ -235,11 +301,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                       children: [
                         IconButton(
                           icon: Icon(Icons.arrow_back_ios, size: screenWidth * 0.04),
-                          onPressed: () {
-                            setState(() {
-                              _selectedYear--;
-                            });
-                          },
+                          onPressed: () => _changeYear(_selectedYear - 1),
                         ),
                         Text(
                           _selectedYear.toString(),
@@ -251,11 +313,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                         ),
                         IconButton(
                           icon: Icon(Icons.arrow_forward_ios, size: screenWidth * 0.04),
-                          onPressed: () {
-                            setState(() {
-                              _selectedYear++;
-                            });
-                          },
+                          onPressed: () => _changeYear(_selectedYear + 1),
                         ),
                       ],
                     ),
@@ -313,8 +371,8 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                       ),
                       SizedBox(height: screenHeight * 0.02),
                       ElevatedButton(
-                        onPressed: _loadHolidays,
-                        child: Text(localizations.getString('retry') ?? 'Retry'),
+                        onPressed: () => _loadHolidays(_selectedYear),
+                        child: Text(localizations.getString('retry')),
                       )
                     ],
                   ),
@@ -381,9 +439,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
     // Get the appropriate label based on the app's language
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final currentLanguage = languageProvider.currentLanguage;
-    final holidayName = currentLanguage == 'fr'
-        ? holiday.label['fr']
-        : holiday.label['en'];
+    final holidayName = holiday.getName(currentLanguage);
 
     final holidayDate = DateTime(
       _selectedYear,
@@ -393,7 +449,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
 
     // Use GestureDetector to handle taps on the holiday card
     return GestureDetector(
-      //onTap: () => _showHolidayDetailDialog(holiday),
+      onTap: () => _showHolidayDetailDialog(holiday),
       child: Container(
         margin: EdgeInsets.only(bottom: screenHeight * 0.015),
         decoration: BoxDecoration(
@@ -416,7 +472,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
             children: [
               Expanded(
                 child: Text(
-                  holidayName!,
+                  holidayName,
                   style: TextStyle(
                     fontSize: screenWidth * 0.04,
                     fontWeight: FontWeight.bold,
@@ -424,7 +480,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                   ),
                 ),
               ),
-              if  (isToday) ...[
+              if (isToday) ...[
                 SizedBox(width: screenWidth * 0.02),
                 Container(
                   padding: EdgeInsets.symmetric(
@@ -466,7 +522,7 @@ class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProvid
                       borderRadius: BorderRadius.circular(screenWidth * 0.01),
                     ),
                     child: Text(
-                      holiday.type ?? 'Public',
+                      holiday.type,
                       style: TextStyle(
                         fontSize: screenWidth * 0.03,
                         color: holiday.type == 'Public'

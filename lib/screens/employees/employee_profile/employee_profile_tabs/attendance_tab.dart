@@ -1,4 +1,3 @@
-// lib/screens/employees/employee_profile_tabs/attendance_tab.dart
 import 'package:flutter/material.dart';
 import 'package:in_out/localization/app_localizations.dart';
 import 'package:in_out/services/attendance_service.dart';
@@ -91,7 +90,6 @@ class _AttendanceTabState extends State<AttendanceTab> {
         size: _pageSize,
         year: _selectedYear,
       );
-
       setState(() {
         if (result["success"]) {
           _attendances = result["attendances"];
@@ -111,19 +109,17 @@ class _AttendanceTabState extends State<AttendanceTab> {
       });
     }
   }
-
   void _changeYear(int? year) {
     if (year != null && year != _selectedYear) {
       setState(() {
         _selectedYear = year;
-        _currentPage = 0; // Reset to first page when changing year
+        _currentPage = 0;
       });
       _loadAttendanceData();
     }
   }
 
   void _changePage(int page) {
-    // Page is 1-based in the UI but 0-based in the API
     final apiPage = page - 1;
     if (apiPage != _currentPage) {
       setState(() {
@@ -136,15 +132,11 @@ class _AttendanceTabState extends State<AttendanceTab> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-
-    // If loading years, show a loading indicator
     if (_isLoadingYears) {
       return const Center(child: CircularProgressIndicator());
     }
-
     return Column(
       children: [
-        // Year filter dropdown
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
@@ -197,7 +189,6 @@ class _AttendanceTabState extends State<AttendanceTab> {
           ),
         ),
 
-        // Content area (table or messages)
         Expanded(
           child: _buildContent(localizations),
         ),
@@ -205,7 +196,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
         // Pagination controls
         if (!_isLoading && _errorMessage.isEmpty && _attendances.isNotEmpty)
           PaginationFooter(
-            currentPage: _currentPage + 1, // Convert to 1-based for display
+            currentPage: _currentPage + 1,
             totalPages: _totalPages,
             filteredEmployeesCount: _totalElements,
             itemsPerPage: _pageSize,

@@ -1659,6 +1659,636 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Check-In 1`
+  String get checkInTime1 {
+    return Intl.message(
+      'Check-In 1',
+      name: 'checkInTime1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check-In 2`
+  String get checkInTime2 {
+    return Intl.message(
+      'Check-In 2',
+      name: 'checkInTime2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check-In 3`
+  String get checkInTime3 {
+    return Intl.message(
+      'Check-In 3',
+      name: 'checkInTime3',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check-In 4`
+  String get checkInTime4 {
+    return Intl.message(
+      'Check-In 4',
+      name: 'checkInTime4',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check-Out 1`
+  String get checkOutTime1 {
+    return Intl.message(
+      'Check-Out 1',
+      name: 'checkOutTime1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check-Out 2`
+  String get checkOutTime2 {
+    return Intl.message(
+      'Check-Out 2',
+      name: 'checkOutTime2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Date`
+  String get selectDate {
+    return Intl.message(
+      'Select Date',
+      name: 'selectDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Filter by Date`
+  String get filterByDate {
+    return Intl.message(
+      'Filter by Date',
+      name: 'filterByDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refresh Data`
+  String get refreshData {
+    return Intl.message(
+      'Refresh Data',
+      name: 'refreshData',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close`
+  String get close {
+    return Intl.message(
+      'Close',
+      name: 'close',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Filter`
+  String get selectFilter {
+    return Intl.message(
+      'Select Filter',
+      name: 'selectFilter',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Filter by Month`
+  String get filterByMonth {
+    return Intl.message(
+      'Filter by Month',
+      name: 'filterByMonth',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Filter by Year`
+  String get filterByYear {
+    return Intl.message(
+      'Filter by Year',
+      name: 'filterByYear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Date:`
+  String get dateColon {
+    return Intl.message(
+      'Date:',
+      name: 'dateColon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vacation`
+  String get vacation {
+    return Intl.message(
+      'Vacation',
+      name: 'vacation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vacation Balance`
+  String get vacationBalance {
+    return Intl.message(
+      'Vacation Balance',
+      name: 'vacationBalance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Request Vacation`
+  String get requestVacation {
+    return Intl.message(
+      'Request Vacation',
+      name: 'requestVacation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vacation Requests`
+  String get vacationRequests {
+    return Intl.message(
+      'Vacation Requests',
+      name: 'vacationRequests',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vacation Management`
+  String get vacationManagement {
+    return Intl.message(
+      'Vacation Management',
+      name: 'vacationManagement',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vacation Type`
+  String get vacationType {
+    return Intl.message(
+      'Vacation Type',
+      name: 'vacationType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Annual Leave`
+  String get annualLeave {
+    return Intl.message(
+      'Annual Leave',
+      name: 'annualLeave',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sick Leave`
+  String get sickLeave {
+    return Intl.message(
+      'Sick Leave',
+      name: 'sickLeave',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Personal Leave`
+  String get personalLeave {
+    return Intl.message(
+      'Personal Leave',
+      name: 'personalLeave',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Maternity Leave`
+  String get maternityLeave {
+    return Intl.message(
+      'Maternity Leave',
+      name: 'maternityLeave',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paternity Leave`
+  String get paternityLeave {
+    return Intl.message(
+      'Paternity Leave',
+      name: 'paternityLeave',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start Date`
+  String get startDate {
+    return Intl.message(
+      'Start Date',
+      name: 'startDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `End Date`
+  String get endDate {
+    return Intl.message(
+      'End Date',
+      name: 'endDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start Time`
+  String get startTime {
+    return Intl.message(
+      'Start Time',
+      name: 'startTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `End Time`
+  String get endTime {
+    return Intl.message(
+      'End Time',
+      name: 'endTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Morning`
+  String get morning {
+    return Intl.message(
+      'Morning',
+      name: 'morning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Afternoon`
+  String get afternoon {
+    return Intl.message(
+      'Afternoon',
+      name: 'afternoon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reason`
+  String get reason {
+    return Intl.message(
+      'Reason',
+      name: 'reason',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total Days`
+  String get totalDays {
+    return Intl.message(
+      'Total Days',
+      name: 'totalDays',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Used Days`
+  String get usedDays {
+    return Intl.message(
+      'Used Days',
+      name: 'usedDays',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Available Days`
+  String get availableDays {
+    return Intl.message(
+      'Available Days',
+      name: 'availableDays',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pending Days`
+  String get pendingDays {
+    return Intl.message(
+      'Pending Days',
+      name: 'pendingDays',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Insufficient balance. Available: {days} days`
+  String insufficientBalance(Object days) {
+    return Intl.message(
+      'Insufficient balance. Available: $days days',
+      name: 'insufficientBalance',
+      desc: '',
+      args: [days],
+    );
+  }
+
+  /// `Vacation request submitted successfully`
+  String get requestSubmitted {
+    return Intl.message(
+      'Vacation request submitted successfully',
+      name: 'requestSubmitted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vacation request cancelled successfully`
+  String get requestCancelled {
+    return Intl.message(
+      'Vacation request cancelled successfully',
+      name: 'requestCancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Request approved successfully`
+  String get requestApproved {
+    return Intl.message(
+      'Request approved successfully',
+      name: 'requestApproved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Request rejected successfully`
+  String get requestRejected {
+    return Intl.message(
+      'Request rejected successfully',
+      name: 'requestRejected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pending`
+  String get pending {
+    return Intl.message(
+      'Pending',
+      name: 'pending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Approved`
+  String get approved {
+    return Intl.message(
+      'Approved',
+      name: 'approved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rejected`
+  String get rejected {
+    return Intl.message(
+      'Rejected',
+      name: 'rejected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancelled`
+  String get cancelled {
+    return Intl.message(
+      'Cancelled',
+      name: 'cancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No pending requests`
+  String get noPendingRequests {
+    return Intl.message(
+      'No pending requests',
+      name: 'noPendingRequests',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No vacation history`
+  String get noVacationHistory {
+    return Intl.message(
+      'No vacation history',
+      name: 'noVacationHistory',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Approve Request`
+  String get approveRequest {
+    return Intl.message(
+      'Approve Request',
+      name: 'approveRequest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reject Request`
+  String get rejectRequest {
+    return Intl.message(
+      'Reject Request',
+      name: 'rejectRequest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `View Balance`
+  String get viewBalance {
+    return Intl.message(
+      'View Balance',
+      name: 'viewBalance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{name}'s Balance`
+  String employeeBalance(Object name) {
+    return Intl.message(
+      '$name\'s Balance',
+      name: 'employeeBalance',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `No requests to display`
+  String get noRequestsToDisplay {
+    return Intl.message(
+      'No requests to display',
+      name: 'noRequestsToDisplay',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All Types`
+  String get allTypes {
+    return Intl.message(
+      'All Types',
+      name: 'allTypes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Requested on {date}`
+  String requestedOn(Object date) {
+    return Intl.message(
+      'Requested on $date',
+      name: 'requestedOn',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Edit Vacation Request`
+  String get editVacationRequest {
+    return Intl.message(
+      'Edit Vacation Request',
+      name: 'editVacationRequest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update Request`
+  String get updateRequest {
+    return Intl.message(
+      'Update Request',
+      name: 'updateRequest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Submit Request`
+  String get submitRequest {
+    return Intl.message(
+      'Submit Request',
+      name: 'submitRequest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm Cancel`
+  String get confirmCancel {
+    return Intl.message(
+      'Confirm Cancel',
+      name: 'confirmCancel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure you want to cancel this vacation request?`
+  String get confirmCancelMessage {
+    return Intl.message(
+      'Are you sure you want to cancel this vacation request?',
+      name: 'confirmCancelMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm Approve`
+  String get confirmApprove {
+    return Intl.message(
+      'Confirm Approve',
+      name: 'confirmApprove',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure you want to approve {name}'s vacation request for {days} days?`
+  String confirmApproveMessage(Object name, Object days) {
+    return Intl.message(
+      'Are you sure you want to approve $name\'s vacation request for $days days?',
+      name: 'confirmApproveMessage',
+      desc: '',
+      args: [name, days],
+    );
+  }
+
+  /// `Confirm Reject`
+  String get confirmReject {
+    return Intl.message(
+      'Confirm Reject',
+      name: 'confirmReject',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure you want to reject {name}'s vacation request for {days} days?`
+  String confirmRejectMessage(Object name, Object days) {
+    return Intl.message(
+      'Are you sure you want to reject $name\'s vacation request for $days days?',
+      name: 'confirmRejectMessage',
+      desc: '',
+      args: [name, days],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

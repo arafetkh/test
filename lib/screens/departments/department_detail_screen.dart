@@ -615,7 +615,7 @@
             // Page size dropdown
             SizedBox(width: screenWidth * 0.02),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: AdaptiveColors.cardColor(context),
                 borderRadius: BorderRadius.circular(screenWidth * 0.02),
@@ -655,7 +655,7 @@
   
     Widget _buildPaginationControls(double screenWidth, double screenHeight) {
       if (_totalPages <= 1) {
-        return SizedBox.shrink(); // Hide pagination if only one page
+        return const SizedBox.shrink(); // Hide pagination if only one page
       }
   
       return Container(
@@ -665,7 +665,7 @@
           children: [
             // Previous page button
             IconButton(
-              icon: Icon(Icons.chevron_left),
+              icon: const Icon(Icons.chevron_left),
               onPressed: _currentPage > 1
                   ? () {
                 setState(() {
@@ -689,7 +689,7 @@
   
             // Next page button
             IconButton(
-              icon: Icon(Icons.chevron_right),
+              icon: const Icon(Icons.chevron_right),
               onPressed: _currentPage < _totalPages
                   ? () {
                 setState(() {

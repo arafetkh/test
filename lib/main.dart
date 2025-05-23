@@ -52,9 +52,7 @@ class MyApp extends StatelessWidget {
     AppInitializer.handleHotReload(context);
     return Consumer2<LanguageProvider, UserSettingsProvider>(
       builder: (context, languageProvider, userSettingsProvider, child) {
-        // Get user settings
         final settings = userSettingsProvider.currentSettings;
-        // Create theme data with user's primary color
         final lightTheme = ThemeData(
           brightness: Brightness.light,
           primarySwatch: _createMaterialColor(settings.primaryColor),
@@ -168,8 +166,8 @@ class MyApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [
-              Locale('en'), // English
-              Locale('fr'), // French
+              Locale('en'),
+              Locale('fr'),
             ],
             locale: Locale(userSettings.currentSettings.language),
             debugShowCheckedModeBanner: false,
@@ -179,8 +177,6 @@ class MyApp extends StatelessWidget {
       },
     );
   }
-
-  // Helper method to convert a Color to MaterialColor
   MaterialColor _createMaterialColor(Color color) {
     List<double> strengths = <double>[.05, .1, .2, .3, .4, .5, .6, .7, .8, .9];
     Map<int, Color> swatch = <int, Color>{};

@@ -23,8 +23,9 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
 
   // Selected values
   DateTime _selectedDate = DateTime.now();
-  bool _isRecurringYearly = false;
+  bool _isRecurring = false; // Renamed from _isRecurringYearly
   String _holidayType = 'Public'; // Public or Company
+  int _count = 1; // Add count field (default to 1)
 
   // Form validation
   final _formKey = GlobalKey<FormState>();
@@ -79,10 +80,13 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
       },
       'description': _descriptionController.text,
       'date': _selectedDate,
-      'day': DateFormat('EEEE').format(_selectedDate),
-      'isRecurringYearly': _isRecurringYearly,
+      'count': _count,
+      'recurring': _isRecurring,
       'type': _holidayType,
     };
+
+    // Debug info
+    print('Submitting holid ay with recurring: $_isRecurring');
 
     // Call callback if exists
     if (widget.onHolidayAdded != null) {
@@ -305,6 +309,59 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
                         ),
                         SizedBox(height: screenHeight * 0.02),
 
+                        // Number of days (count)
+                        Text(
+                          'Number of days',
+                          style: TextStyle(
+                            fontSize: baseFontSize,
+                            fontWeight: FontWeight.w500,
+                            color: AdaptiveColors.primaryTextColor(context),
+                          ),
+                        ),
+                        SizedBox(height: screenHeight * 0.01),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.03,
+                            vertical: screenWidth * 0.01,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                            color: AdaptiveColors.cardColor(context),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              value: _count,
+                              icon: Icon(
+                                Icons.arrow_drop_down,
+                                color: Colors.green.shade800,
+                              ),
+                              isExpanded: true,
+                              dropdownColor: AdaptiveColors.cardColor(context),
+                              items: [1, 2, 3, 4, 5, 6, 7].map((int value) {
+                                return DropdownMenuItem<int>(
+                                  value: value,
+                                  child: Text(
+                                    value.toString(),
+                                    style: TextStyle(
+                                      fontSize: baseFontSize,
+                                      color: AdaptiveColors.primaryTextColor(context),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (int? newValue) {
+                                if (newValue != null) {
+                                  setState(() {
+                                    _count = newValue;
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: screenHeight * 0.02),
+
                         // Holiday Type
                         Text(
                           localizations.getString('holidayType'),
@@ -358,16 +415,17 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
                         ),
                         SizedBox(height: screenHeight * 0.02),
 
-                        // Recurring Yearly Option
+                        // Recurring Yearly Option (renamed from _isRecurringYearly to _isRecurring)
                         Row(
                           children: [
                             Checkbox(
-                              value: _isRecurringYearly,
+                              value: _isRecurring,
                               activeColor: Colors.green.shade800,
                               onChanged: (bool? value) {
                                 setState(() {
-                                  _isRecurringYearly = value ?? false;
+                                  _isRecurring = value ?? false;
                                 });
+                                print('Recurring checkbox changed to: $_isRecurring');
                               },
                             ),
                             Text(

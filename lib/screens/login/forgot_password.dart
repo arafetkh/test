@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../auth/forgot_password_service.dart';
 import 'otp_verification.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
@@ -9,40 +10,50 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _identifierController = TextEditingController();
   bool _isLoading = false;
 
-  // Regex pour vérifier si l'email est valide
-  bool _isValidEmail(String email) {
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return emailRegex.hasMatch(email);
-  }
+  // Vérifie si l'identifiant est valide (email ou nom d'utilisateur)
 
-  void _sendOtp() {
-    final email = _emailController.text.trim();
 
-    if (email.isEmpty) {
-      _showError("Enter your email address.");
+  void _sendOtp() async {
+    final identifier = _identifierController.text.trim();
+
+    if (identifier.isEmpty) {
+      _showError("Enter your email or username.");
       return;
     }
 
-    if (!_isValidEmail(email)) {
-      _showError("Enter a valid email address.");
-      return;
-    }
+
 
     setState(() => _isLoading = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() => _isLoading = false);
-      _showSuccess("OTP code sent to $email");
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OtpVerificationPage(email: email),
-        ),
-      );
-    });
+    try {
+      // Appel API pour demander l'OTP
+      final result = await ForgotPasswordService.requestPasswordResetOTP(identifier);
+
+      setState(() => _isLoading = false);
+
+      if (result["success"]) {
+        _showSuccess("OTP code sent to your registered contact method");
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OtpVerificationPage(
+              email: identifier, // Identifiant (email ou username)
+              requestId: result["requestId"],
+              otpLength: result["otpLength"] ?? 6,
+            ),
+          ),
+        );
+      } else {
+        _showError(result["message"] ?? "Failed to send OTP");
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showError("An error occurred: $e");
+    }
   }
 
   void _showError(String message) {
@@ -109,16 +120,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     SizedBox(height: screenHeight * 0.01),
                     // Description
                     Text(
-                      'Enter your registered email address, we\'ll send you a code to reset your password.',
+                      'Enter your username or email address, we\'ll send you a code to reset your password.',
                       style: TextStyle(
                         fontSize: baseFontSize * 0.875,
                         color: Colors.black54,
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.025),
-                    // Email Field Label
+                    // Identifier Field Label
                     Text(
-                      'Email Address',
+                      'Username or Email',
                       style: TextStyle(
                         fontSize: baseFontSize * 0.875,
                         fontWeight: FontWeight.w500,
@@ -126,12 +137,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.01),
-                    // Email TextField
+                    // Identifier TextField
                     TextField(
-                      controller: _emailController,
+                      controller: _identifierController,
                       style: TextStyle(fontSize: baseFontSize),
                       decoration: InputDecoration(
-                        hintText: 'Enter your email address',
+                        hintText: 'Enter your username or email',
                         hintStyle: TextStyle(fontSize: baseFontSize),
                         filled: true,
                         fillColor: Colors.white,
@@ -152,7 +163,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           vertical: screenHeight * 0.015,
                         ),
                       ),
-                      keyboardType: TextInputType.emailAddress,
+                      keyboardType: TextInputType.text, // Accepte tout type de texte
                     ),
                     SizedBox(height: screenHeight * 0.03),
                     // Send OTP Button
@@ -214,7 +225,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _identifierController.dispose();
     super.dispose();
   }
 }

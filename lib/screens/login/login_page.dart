@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/material_symbols.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../auth/auth_service.dart';
 import '../dashboard.dart';
 import '../../theme/adaptive_colors.dart';
@@ -40,14 +41,30 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
 
-    // Request OTP first
-    final result = await AuthService.requestOTP(email, password);
+    // Log the Remember Me state
+    print("LOGIN PAGE: Starting login with Remember Me: $_rememberMe");
+
+    // Save Remember Me setting FIRST
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remember_me', _rememberMe);
+    print("LOGIN PAGE: Remember Me preference saved: $_rememberMe");
+
+    // Request OTP - PASS THE REMEMBER ME FLAG EXPLICITLY
+    final result = await AuthService.requestOTP(
+        email,
+        password,
+        rememberMe: _rememberMe  // Pass remember me explicitly
+    );
 
     setState(() => _isLoading = false);
 
     if (result["success"]) {
+      print("LOGIN PAGE: Login request successful, OTP required: ${result["otpRequired"]}");
+
       if (result["otpRequired"] == true) {
         // Navigate to OTP verification screen
+        print("LOGIN PAGE: Navigating to OTP verification with Remember Me: $_rememberMe");
+
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -56,13 +73,30 @@ class _LoginPageState extends State<LoginPage> {
               requestId: result["requestId"],
               otpLength: result["otpLength"] ?? 6,
               password: password,
-              rememberMe: _rememberMe,
+              rememberMe: _rememberMe, // Pass remember me state
             ),
           ),
         );
       } else {
         // Direct login without OTP (fallback for backward compatibility)
         _showSuccess("Connexion réussie !");
+
+        // Verify token is saved if Remember Me is enabled
+        if (_rememberMe) {
+          final token = prefs.getString('auth_token');
+          print("LOGIN PAGE: Token in SharedPreferences: ${token != null ? 'Present' : 'Missing'}");
+
+          // If token is missing but we have it in the result, save it directly
+          if (token == null && result.containsKey("token") && result["token"] != null) {
+            print("LOGIN PAGE: Saving token directly to SharedPreferences");
+            await prefs.setString('auth_token', result["token"]);
+
+            // Verify it was saved
+            final verifyToken = prefs.getString('auth_token');
+            print("LOGIN PAGE: Token verification after direct save: ${verifyToken != null ? 'Success' : 'Failed'}");
+          }
+        }
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const DashboardScreen()),
@@ -73,6 +107,7 @@ class _LoginPageState extends State<LoginPage> {
         _hasError = true;
         _errorMessage = result["message"];
       });
+      print("LOGIN PAGE: Login error: ${result["message"]}");
     }
   }
 
@@ -405,7 +440,7 @@ class _LoginPageState extends State<LoginPage> {
                       'Powered By ',
                       style: TextStyle(
                         fontSize: baseFontSize * 0.875,
-                        color: AdaptiveColors.secondaryTextColor(context), // Adaptive secondary text
+                        color: AdaptiveColors.secondaryTextColor(context),
                       ),
                     ),
                     Text(
