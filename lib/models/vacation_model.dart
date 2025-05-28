@@ -1,3 +1,4 @@
+// lib/models/vacation_model.dart
 import 'dart:ui';
 
 class VacationRequest {
@@ -54,17 +55,28 @@ class VacationRequest {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      if (id != null) 'id': id,
+    // Create the payload that exactly matches the API expectation
+    final Map<String, dynamic> json = {
       'startDate': startDate,
       'endDate': endDate,
       'startTime': startTime,
       'endTime': endTime,
       'type': type,
       'reason': reason,
-      if (status != null) 'status': status,
-      if (userId != null) 'userId': userId,
     };
+
+    // Only include optional fields if they exist
+    if (id != null) {
+      json['id'] = id;
+    }
+    if (status != null) {
+      json['status'] = status;
+    }
+    if (userId != null) {
+      json['userId'] = userId;
+    }
+
+    return json;
   }
 
   // Calculate number of days
@@ -100,18 +112,14 @@ class VacationRequest {
 
 // Enums for vacation types and statuses
 class VacationType {
-  static const String annualLeave = 'ANNUAL_LEAVE';
   static const String sickLeave = 'SICK_LEAVE';
-  static const String personalLeave = 'PERSONAL_LEAVE';
-  static const String maternityLeave = 'MATERNITY_LEAVE';
-  static const String paternityLeave = 'PATERNITY_LEAVE';
+  static const String regularLeave = 'REGULAR_LEAVE';
+  static const String unpaidLeave = 'UNPAID_LEAVE';
 
   static Map<String, String> get displayNames => {
-    annualLeave: 'Annual Leave',
     sickLeave: 'Sick Leave',
-    personalLeave: 'Personal Leave',
-    maternityLeave: 'Maternity Leave',
-    paternityLeave: 'Paternity Leave',
+    regularLeave: 'Regular Leave',
+    unpaidLeave: 'Unpaid Leave',
   };
 }
 

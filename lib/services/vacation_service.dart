@@ -73,30 +73,61 @@ class VacationService {
   // Create new vacation request
   Future<Map<String, dynamic>> createRequest(VacationRequest request) async {
     try {
+      print('VacationService: Creating request with data: ${request.toJson()}');
+
       final response = await http.post(
         Uri.parse("${Global.baseUrl}/secure/vocations"),
         headers: await Global.getHeaders(),
         body: jsonEncode(request.toJson()),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      print('VacationService: Response status: ${response.statusCode}');
+      print('VacationService: Response body: ${response.body}');
+
+      // Accept both 200 and 202 as success codes
+      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 202) {
+        // Determine success message based on status code
+        String successMessage;
+        switch (response.statusCode) {
+          case 200:
+            successMessage = "Vacation request created successfully";
+            break;
+          case 201:
+            successMessage = "Vacation request created successfully";
+            break;
+          case 202:
+            successMessage = "Vacation request submitted and is being processed";
+            break;
+          default:
+            successMessage = "Vacation request submitted successfully";
+        }
+
         return {
           "success": true,
-          "message": "Vacation request created successfully",
+          "message": successMessage,
+          "statusCode": response.statusCode,
         };
       } else {
-        String errorMessage = "Failed to create request";
+        // Handle error responses
+        String errorMessage = "Failed to create vacation request";
         try {
-          final errorData = json.decode(response.body);
-          errorMessage = errorData['message'] ?? errorMessage;
-        } catch (_) {}
+          if (response.body.isNotEmpty) {
+            final errorData = json.decode(response.body);
+            errorMessage = errorData['message'] ?? errorMessage;
+          }
+        } catch (parseError) {
+          // If we can't parse the error response, use a generic message with status code
+          errorMessage = "Failed to create vacation request (Status: ${response.statusCode})";
+        }
 
         return {
           "success": false,
           "message": errorMessage,
+          "statusCode": response.statusCode,
         };
       }
     } catch (e) {
+      print('VacationService: Exception occurred: $e');
       return {
         "success": false,
         "message": "Error connecting to server: $e",
@@ -112,15 +143,45 @@ class VacationService {
         headers: await Global.getHeaders(),
       );
 
-      if (response.statusCode == 200) {
+      print('VacationService: Cancel request status: ${response.statusCode}');
+
+      // Accept 200, 202, and 204 as success codes for cancellation
+      if (response.statusCode == 200 || response.statusCode == 202 || response.statusCode == 204) {
+        String successMessage;
+        switch (response.statusCode) {
+          case 200:
+            successMessage = "Vacation request cancelled successfully";
+            break;
+          case 202:
+            successMessage = "Vacation request cancellation is being processed";
+            break;
+          case 204:
+            successMessage = "Vacation request cancelled successfully";
+            break;
+          default:
+            successMessage = "Vacation request cancelled successfully";
+        }
+
         return {
           "success": true,
-          "message": "Request cancelled successfully",
+          "message": successMessage,
+          "statusCode": response.statusCode,
         };
       } else {
+        String errorMessage = "Failed to cancel vacation request";
+        try {
+          if (response.body.isNotEmpty) {
+            final errorData = json.decode(response.body);
+            errorMessage = errorData['message'] ?? errorMessage;
+          }
+        } catch (parseError) {
+          errorMessage = "Failed to cancel vacation request (Status: ${response.statusCode})";
+        }
+
         return {
           "success": false,
-          "message": "Failed to cancel request: ${response.statusCode}",
+          "message": errorMessage,
+          "statusCode": response.statusCode,
         };
       }
     } catch (e) {
@@ -203,15 +264,45 @@ class VacationService {
         }),
       );
 
-      if (response.statusCode == 200) {
+      print('VacationService: Manage request status: ${response.statusCode}');
+
+      // Accept 200, 201, and 202 as success codes for management actions
+      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 202) {
+        String successMessage;
+        switch (response.statusCode) {
+          case 200:
+            successMessage = "Request $status successfully";
+            break;
+          case 201:
+            successMessage = "Request $status successfully";
+            break;
+          case 202:
+            successMessage = "Request $status and is being processed";
+            break;
+          default:
+            successMessage = "Request $status successfully";
+        }
+
         return {
           "success": true,
-          "message": "Request $status successfully",
+          "message": successMessage,
+          "statusCode": response.statusCode,
         };
       } else {
+        String errorMessage = "Failed to update request";
+        try {
+          if (response.body.isNotEmpty) {
+            final errorData = json.decode(response.body);
+            errorMessage = errorData['message'] ?? errorMessage;
+          }
+        } catch (parseError) {
+          errorMessage = "Failed to update request (Status: ${response.statusCode})";
+        }
+
         return {
           "success": false,
-          "message": "Failed to update request: ${response.statusCode}",
+          "message": errorMessage,
+          "statusCode": response.statusCode,
         };
       }
     } catch (e) {
@@ -220,5 +311,42 @@ class VacationService {
         "message": "Error connecting to server: $e",
       };
     }
+  }
+
+  // Helper method to check if HTTP status code indicates success
+  bool _isSuccessStatusCode(int statusCode) {
+    return statusCode >= 200 && statusCode < 300;
+  }
+
+  // Helper method to get appropriate success message based on status code
+  String _getSuccessMessage(int statusCode, String operation) {
+    switch (statusCode) {
+      case 200:
+        return "$operation completed successfully";
+      case 201:
+        return "$operation created successfully";
+      case 202:
+        return "$operation accepted and is being processed";
+      case 204:
+        return "$operation completed successfully";
+      default:
+        return "$operation completed successfully";
+    }
+  }
+
+  // Helper method to get appropriate error message
+  String _getErrorMessage(int statusCode, String operation, String? responseBody) {
+    String baseMessage = "Failed to $operation";
+
+    try {
+      if (responseBody != null && responseBody.isNotEmpty) {
+        final errorData = json.decode(responseBody);
+        return errorData['message'] ?? "$baseMessage (Status: $statusCode)";
+      }
+    } catch (e) {
+      // Ignore JSON parsing errors
+    }
+
+    return "$baseMessage (Status: $statusCode)";
   }
 }

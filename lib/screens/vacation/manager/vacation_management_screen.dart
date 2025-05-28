@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../models/vacation_model.dart';
 import '../../../models/vacation_balance_model.dart';
+import '../../../services/navigation_service.dart';
 import '../../../services/vacation_service.dart';
 import '../../../theme/adaptive_colors.dart';
 import '../../../widget/responsive_navigation_scaffold.dart';
@@ -58,12 +59,18 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
     });
   }
 
+  void _onItemTapped(int index) {
+    if (index == _selectedIndex) return;
+
+    // Use NavigationService to navigate to the selected screen
+    NavigationService.navigateToScreen(context, index);
+  }
+
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
       _error = '';
     });
-
     try {
       final result = await _vacationService.getEmployeeRequests();
       if (result['success']) {
@@ -210,9 +217,7 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
 
     return ResponsiveNavigationScaffold(
       selectedIndex: _selectedIndex,
-      onItemTapped: (index) {
-        // Handle navigation
-      },
+      onItemTapped: _onItemTapped,
       body: SafeArea(
         child: Column(
           children: [
@@ -250,9 +255,10 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
                       isDense: true,
                       items: const [
                         DropdownMenuItem(value: 'all', child: Text('All Types')),
-                        DropdownMenuItem(value: VacationType.annualLeave, child: Text('Annual Leave')),
+
                         DropdownMenuItem(value: VacationType.sickLeave, child: Text('Sick Leave')),
-                        DropdownMenuItem(value: VacationType.personalLeave, child: Text('Personal Leave')),
+                        DropdownMenuItem(value: VacationType.regularLeave, child: Text('Regular Leave')),
+                        DropdownMenuItem(value: VacationType.unpaidLeave, child: Text('Unpaid Leave')),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -273,8 +279,8 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
               indicatorColor: AdaptiveColors.primaryGreen,
               tabs: [
                 Tab(text: 'Pending (${_pendingRequests.length})'),
-                Tab(text: 'Approved'),
-                Tab(text: 'Rejected'),
+                const Tab(text: 'Approved'),
+                const Tab(text: 'Rejected'),
               ],
             ),
 
@@ -330,12 +336,6 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: (index) {
-          // Handle navigation
-        },
       ),
     );
   }

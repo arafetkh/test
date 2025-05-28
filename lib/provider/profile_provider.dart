@@ -11,6 +11,9 @@ class ProfileProvider with ChangeNotifier {
   final ProfileService _profileService = ProfileService();
   final TwoFactorService _twoFactorService = TwoFactorService();
 
+  // Store password update request ID for OTP verification
+  String? _passwordUpdateRequestId;
+
   ProfileModel? get userProfile => _userProfile;
   bool get isLoading => _isLoading;
   String get error => _error;
@@ -42,6 +45,143 @@ class ProfileProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // Update password - First step of password update process
+  Future<bool> updatePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+
+      final result = await _profileService.updatePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+
+      // Check if we got a 412 Precondition Failed (OTP required)
+      if (result["statusCode"] == 412) {
+        // Password update initiated but requires OTP verification
+        _passwordUpdateRequestId = result["requestId"];
+        _error = '';
+        return true; // Success - ready for OTP step
+      }
+
+      // Check for immediate success (200/202)
+      if (result["success"] || (result["statusCode"] != null &&
+          (result["statusCode"] == 200 || result["statusCode"] == 202))) {
+        _error = '';
+        // Password updated successfully without OTP
+        return true;
+      }
+
+      // Handle error cases
+      _error = result["message"] ?? "Failed to update password";
+      return false;
+
+    } catch (e) {
+      _error = "Error updating password: $e";
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Verify OTP for password update - Second step of password update process
+  Future<bool> verifyPasswordUpdateOtp({
+    required String otpCode,
+  }) async {
+    if (_passwordUpdateRequestId == null) {
+      _error = "No password update request found. Please try again.";
+      return false;
+    }
+
+    try {
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+
+      final result = await _profileService.verifyPasswordUpdateOtp(
+        requestId: _passwordUpdateRequestId!,
+        otpCode: otpCode,
+      );
+
+      // Check for success
+      if (result["success"] || (result["statusCode"] != null &&
+          (result["statusCode"] == 200 || result["statusCode"] == 202))) {
+        // Clear the request ID as the process is complete
+        _passwordUpdateRequestId = null;
+        _error = '';
+        return true;
+      }
+
+      // Handle specific error cases
+      if (result["errorCode"] == "invalid_otp" ||
+          result["message"]?.toString().contains("Invalid OTP") == true) {
+        _error = "Invalid OTP code. Please try again.";
+      } else if (result["errorCode"] == "expired_otp" ||
+          result["message"]?.toString().contains("expired") == true) {
+        _error = "OTP code has expired. Please request a new one.";
+        _passwordUpdateRequestId = null; // Clear expired request
+      } else {
+        _error = result["message"] ?? "Failed to verify OTP";
+      }
+
+      return false;
+
+    } catch (e) {
+      _error = "Error verifying OTP: $e";
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Resend OTP for password update
+  Future<bool> resendPasswordUpdateOtp({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      _isLoading = true;
+      _error = '';
+      notifyListeners();
+
+      // Re-initiate the password update to get a new OTP
+      final result = await _profileService.updatePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+
+      // Check if we got a 412 Precondition Failed (new OTP sent)
+      if (result["statusCode"] == 412) {
+        _passwordUpdateRequestId = result["requestId"];
+        _error = '';
+        return true;
+      }
+
+      _error = result["message"] ?? "Failed to resend OTP";
+      return false;
+
+    } catch (e) {
+      _error = "Error resending OTP: $e";
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Cancel password update process
+  void cancelPasswordUpdate() {
+    _passwordUpdateRequestId = null;
+    _error = '';
+    notifyListeners();
   }
 
   // Update two-factor authentication setting with improved flow
@@ -389,6 +529,7 @@ class ProfileProvider with ChangeNotifier {
   // Clear profile when logging out
   void clearProfile() {
     _userProfile = null;
+    _passwordUpdateRequestId = null;
     _error = '';
     notifyListeners();
   }

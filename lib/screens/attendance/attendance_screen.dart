@@ -29,7 +29,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   int _currentPage = 0; // API uses 0-based indexing
   int _totalPages = 0;
   int _totalElements = 0;
-  int _itemsPerPage = 10;
+  final int _itemsPerPage = 10;
 
   // Filter state
   String _searchQuery = '';
@@ -67,7 +67,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     // Set landscape orientation
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
 
@@ -85,8 +84,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
     ]);
     super.dispose();
   }

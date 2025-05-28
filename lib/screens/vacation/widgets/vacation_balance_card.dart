@@ -1,4 +1,3 @@
-// lib/screens/vacation/widgets/vacation_balance_card.dart
 import 'package:flutter/material.dart';
 import '../../../models/vacation_balance_model.dart';
 import '../../../theme/adaptive_colors.dart';
@@ -46,10 +45,10 @@ class VacationBalanceCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
-              value: balance.usagePercentage / 100,
+              value: balance.availableDays / 100,
               backgroundColor: Colors.grey.shade300,
               valueColor: AlwaysStoppedAnimation<Color>(
-                balance.usagePercentage > 80
+                balance.availableDays > 80
                     ? Colors.orange
                     : AdaptiveColors.primaryGreen,
               ),
@@ -59,7 +58,7 @@ class VacationBalanceCard extends StatelessWidget {
           SizedBox(height: screenHeight * 0.01),
 
           Text(
-            '${balance.usagePercentage.toStringAsFixed(0)}% used',
+            '${balance.availableDays.toStringAsFixed(0)}% used',
             style: TextStyle(
               fontSize: screenWidth * 0.03,
               color: AdaptiveColors.secondaryTextColor(context),
@@ -67,7 +66,6 @@ class VacationBalanceCard extends StatelessWidget {
           ),
           SizedBox(height: screenHeight * 0.02),
 
-          // Balance Details Grid
           Row(
             children: [
               Expanded(

@@ -156,13 +156,8 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(
                           height: screenHeight * 0.12,
                           child: SvgPicture.asset(
-                            'images/logo.svg',
+                            'assets/images/logo.svg',
                             fit: BoxFit.contain,
-                            // Make SVG adapt to dark mode if needed
-                            colorFilter: ColorFilter.mode(
-                              AdaptiveColors.primaryTextColor(context),
-                              BlendMode.srcIn,
-                            ),
                           ),
                         ),
                         SizedBox(height: screenHeight * 0.025),

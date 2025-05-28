@@ -1,3 +1,4 @@
+// lib/widget/responsive_navigation_scaffold.dart
 import 'package:flutter/material.dart';
 import '../theme/adaptive_colors.dart';
 import 'custom_side_navigation_bar.dart';
@@ -28,21 +29,21 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
       appBar: appBar,
       body: isLandscape
           ? Row(
-              children: [
-                CustomSideNavigationBar(
-                  selectedIndex: selectedIndex,
-                  onItemTapped: onItemTapped,
-                ),
-                Expanded(child: body),
-              ],
-            )
+        children: [
+          CustomSideNavigationBar(
+            selectedIndex: selectedIndex,
+            onItemTapped: onItemTapped,
+          ),
+          Expanded(child: body),
+        ],
+      )
           : body,
       bottomNavigationBar: isLandscape
           ? null
           : (bottomNavigationBar ?? CustomBottomNavigationBar(
-              selectedIndex: selectedIndex,
-              onItemTapped: onItemTapped,
-            )),
+        selectedIndex: selectedIndex,
+        onItemTapped: onItemTapped,
+      )),
     );
   }
 }

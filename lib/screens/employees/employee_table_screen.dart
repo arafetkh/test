@@ -44,7 +44,9 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
   // Selected filters
   List<Map<String, dynamic>> _departments = [];
   Set<int> _selectedDepartmentIds = {};
-  Future<void> _fetchDepartments() async {
+
+  Future<void> _fetchDepartments() async 
+  {
     try {
       final response = await http.get(
         Uri.parse("${Global.baseUrl}/secure/department/base"),
@@ -66,17 +68,14 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
       print("Exception lors du chargement des départements: $e");
     }
   }
+  
   String? _selectedWorkType;
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: _searchQuery);
 
-    // Don't use addListener as we'll handle search in the onSearchChanged callback
-
-    // Set landscape orientation
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
     _mainScrollController.addListener(_scrollListener);
@@ -91,8 +90,6 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
     ]);
     _mainScrollController.removeListener(_scrollListener);
     _mainScrollController.dispose();
@@ -187,22 +184,16 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
           print("Error response body: ${response.body}");
         }
       }
-      // Sinon, utiliser l'API de filtre générale
       else {
-        // Construire l'URL avec les paramètres de pagination
         final Uri url = Uri.parse("${Global.baseUrl}/secure/users/filter?page=$_currentPage&size=$_itemsPerPage");
 
-        // Créer le corps de la requête en fonction des filtres
         final Map<String, dynamic> filterBody = {};
 
-        // Ajouter la recherche par nom si présente
         if (_searchQuery.isNotEmpty) {
           filterBody['name'] = _searchQuery;
         }
-
-        // Ajouter le filtre par type si sélectionné
         if (_selectedWorkType != null) {
-          filterBody['type'] = [_selectedWorkType]; // Utiliser un tableau même pour un seul élément
+          filterBody['type'] = [_selectedWorkType];
         }
 
         print("Fetching employees with URL: $url and filter: $filterBody");
@@ -219,14 +210,12 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
         if (response.statusCode == 200) {
           final Map<String, dynamic> data = json.decode(response.body);
 
-          // Mise à jour des informations de pagination
           _totalElements = data['page']['totalElements'] ?? 0;
           _totalPages = data['page']['totalPages'] ?? 1;
 
           List<Map<String, dynamic>> employees = [];
           if (data.containsKey('content') && data['content'] is List) {
             for (var emp in data['content']) {
-              // Extraire le département si disponible
               String department = 'Unknown';
               if (emp['attributes'] != null &&
                   emp['attributes']['department'] != null &&
@@ -281,7 +270,6 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
     }
   }
 
-  // Obtenir les initiales d'un nom
   String _getInitials(String name) {
     if (name.isEmpty) return '';
 
@@ -304,13 +292,10 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
     NavigationService.navigateToScreen(context, index);
   }
 
-  // Gérer l'ajout d'un nouvel employé
   void _addNewEmployee(Employee newEmployee) {
-    // Recharger les données après l'ajout d'un nouvel employé
     _fetchEmployees();
   }
 
-  // Gérer l'affichage des détails d'un employé
   void _viewEmployeeDetails(Map<String, dynamic> employee) {
     Navigator.push(
       context,
@@ -319,7 +304,7 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
           employeeId: int.parse(employee['id']),
         ),
       ),
-    ).then((_) => _fetchEmployees()); // Refresh on return
+    ).then((_) => _fetchEmployees());
   }
   void _showFilterDialog(BuildContext context) {
     final isDarkMode = AdaptiveColors.isDarkMode(context);
@@ -331,16 +316,13 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
         final screenWidth = size.width;
         final screenHeight = size.height;
 
-        // Variables d'état pour les sélections
         int? selectedDepartmentId = _selectedDepartmentIds.isNotEmpty ? _selectedDepartmentIds.first : null;
-        String? selectedWorkType = _selectedWorkType; // Utiliser une variable de type String? au lieu de Set
+        String? selectedWorkType = _selectedWorkType;
         final localizations = AppLocalizations.of(context);
 
-        // Variables pour détecter les changements
         bool departmentWasSelected = selectedDepartmentId != null;
         bool workTypeWasSelected = selectedWorkType != null;
 
-        // Get unique work types from current data or use defaults
         List<String> availableWorkTypes = ['OFFICE', 'REMOTE', 'HYBRID'];
 
         return StatefulBuilder(builder: (context, setState) {
@@ -378,7 +360,6 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Department filters
                           Text(
                             localizations.getString('department'),
                             style: TextStyle(
@@ -398,13 +379,10 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                                 selected: selectedDepartmentId == dept['id'],
                                 onSelected: (selected) {
                                   setState(() {
-                                    // Si déjà sélectionné, désélectionner
                                     if (selectedDepartmentId == dept['id']) {
                                       selectedDepartmentId = null;
                                     } else {
                                       selectedDepartmentId = dept['id'];
-
-                                      // Si un type de travail était sélectionné, le réinitialiser
                                       if (selectedWorkType != null) {
                                         selectedWorkType = null;
                                       }
@@ -419,8 +397,6 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                           ),
 
                           SizedBox(height: screenHeight * 0.02),
-
-                          // Work type filters
                           Text(
                             localizations.getString('selectType'),
                             style: TextStyle(
@@ -440,16 +416,12 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                                 selected: selectedWorkType == type,
                                 onSelected: (selected) {
                                   setState(() {
-                                    // Si on sélectionne un nouveau type ou si on désélectionne le type actuel
                                     if (selected) {
                                       selectedWorkType = type;
-
-                                      // Si un département était sélectionné, le réinitialiser
                                       if (selectedDepartmentId != null) {
                                         selectedDepartmentId = null;
                                       }
                                     } else {
-                                      // Si on clique sur le chip déjà sélectionné, on le désélectionne
                                       selectedWorkType = null;
                                     }
                                   });
@@ -466,8 +438,6 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                   ),
 
                   SizedBox(height: screenHeight * 0.02),
-
-                  // Action buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -487,16 +457,12 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          // Convertir en Set pour la cohérence avec l'état actuel
                           Set<int> departmentIds = selectedDepartmentId != null
                               ? {selectedDepartmentId!}
                               : {};
-
-                          // Convertir la sélection de type de travail en Set
                           Set<String> workTypes = selectedWorkType != null
                               ? {selectedWorkType!}
                               : {};
-                          // Vérifier si un changement de mode de filtrage s'est produit
                           bool switchedToWorkType = departmentWasSelected && selectedWorkType != null;
                           bool switchedToDepartment = workTypeWasSelected && selectedDepartmentId != null;
 
@@ -510,7 +476,7 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                           Navigator.pop(context, {
                             'departmentIds': departmentIds,
                             'workType': selectedWorkType,
-                            'workTypes': workTypes, // Conserver pour la compatibilité avec la fonction existante
+                            'workTypes': workTypes,
                             'notificationMessage': notificationMessage,
                           });
                         },
@@ -537,23 +503,15 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
       },
     ).then((result) {
       if (result != null) {
-        // Dans le gestionnaire de résultat du dialogue
-
         setState(() {
           _selectedDepartmentIds = result['departmentIds'];
-          _selectedWorkType = result['workType']; // Stocke la valeur String? directement
-// Conserver pour la compatibilité avec la fonction existante
-          _currentPage = 0; // Reset to first page when filters change
-
-          // Si une recherche était active et qu'un département est maintenant sélectionné,
-          // réinitialiser la recherche
+          _selectedWorkType = result['workType'];
+          _currentPage = 0;
           if (_searchQuery.isNotEmpty && _selectedDepartmentIds.isNotEmpty) {
             _searchController.text = '';
             _searchQuery = '';
           }
         });
-
-        // Afficher le message de notification si nécessaire
         if (result['notificationMessage'] != null && result['notificationMessage'].isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -593,12 +551,8 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
           onSearchChanged: (value) {
             setState(() {
               _searchQuery = value;
-
-              // Si une recherche est lancée et qu'un filtre de département est actif,
-              // réinitialiser le filtre de département
               if (value.isNotEmpty && _selectedDepartmentIds.isNotEmpty) {
                 _selectedDepartmentIds.clear();
-                // Afficher un message indiquant que les filtres ont été réinitialisés
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Department filter has been reset'),
@@ -676,9 +630,9 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
                       filteredEmployeesCount: _totalElements,
                       itemsPerPage: _itemsPerPage,
                       onPageChanged: (page) {
-                        if (page != _currentPage + 1) { // Only fetch if page actually changed
+                        if (page != _currentPage + 1) {
                           setState(() {
-                            _currentPage = page - 1; // API uses 0-based indexing
+                            _currentPage = page - 1;
                           });
                           _fetchEmployees();
                           print("Changing to page: $page, API page: ${page-1}");
@@ -728,10 +682,9 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
       );
     }
 
-    // Table headers
     final headerTitles = [
       localizations.getString('employeeName'),
-      'Company ID', // Using companyId consistently
+      'Company ID',
       localizations.getString('department'),
       localizations.getString('designation'),
       localizations.getString('type'),
@@ -802,7 +755,6 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
     final borderColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
     final localizations = AppLocalizations.of(context);
 
-    // Header Row
     if (row == 0) {
       return Container(
         alignment: Alignment.centerLeft,
@@ -828,11 +780,9 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
       );
     }
 
-    // Data rows
     final employeeIndex = row - 1;
     final employee = employees[employeeIndex];
 
-    // Employee name column with avatar
     if (column == 0) {
       return Container(
         alignment: Alignment.centerLeft,
@@ -875,7 +825,6 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
       );
     }
 
-    // Action column
     if (column == 5) {
       return Container(
         decoration: BoxDecoration(
@@ -956,7 +905,6 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
       );
     }
 
-    // Other columns - dynamic content based on column index
     String cellText = '';
     switch (column) {
       case 1:

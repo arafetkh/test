@@ -107,7 +107,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     padding: EdgeInsets.all(padding),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
-                        // Metrics Grid
                         GridView.count(
                           crossAxisCount: 2,
                           crossAxisSpacing: screenWidth * 0.04,
@@ -509,7 +508,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         required Color shadowColor,
         required Color accentColor,
       }
-      ) {
+      )
+  {
     final iconSize = screenWidth * 0.04;
     final titleFontSize = screenWidth * 0.028;
     final valueFontSize = screenWidth * 0.04;
@@ -589,7 +589,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         required Color shadowColor,
         required Color accentColor,
       }
-      ) {
+      )
+  {
     final localizations = AppLocalizations.of(context);
     final bool isRecent = time == localizations.getString('justNow') ||
         time.contains(localizations.getString('minAgo'));

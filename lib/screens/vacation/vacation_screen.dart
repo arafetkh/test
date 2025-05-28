@@ -1,13 +1,16 @@
+// lib/screens/vacation/vacation_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/vacation_model.dart';
 import '../../models/vacation_balance_model.dart';
+import '../../services/navigation_service.dart';
 import '../../services/vacation_service.dart';
 import '../../theme/adaptive_colors.dart';
 import '../../widget/responsive_navigation_scaffold.dart';
 import '../../widget/user_profile_header.dart';
 import '../../widget/bottom_navigation_bar.dart';
 import '../../localization/app_localizations.dart';
+import '../notifications/notifications_screen.dart';
 import 'widgets/vacation_balance_card.dart';
 import 'widgets/vacation_request_item.dart';
 import 'request_vacation_dialog.dart';
@@ -21,7 +24,7 @@ class VacationScreen extends StatefulWidget {
 }
 
 class _VacationScreenState extends State<VacationScreen> with SingleTickerProviderStateMixin {
-  final int _selectedIndex = 2;
+  int _selectedIndex = 2;
   bool _isHeaderVisible = true;
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
@@ -44,6 +47,14 @@ class _VacationScreenState extends State<VacationScreen> with SingleTickerProvid
       DeviceOrientation.portraitDown,
     ]);
     _loadData();
+  }
+
+  void _onItemTapped(int index) {
+    if (index == _selectedIndex) return;
+    setState(() {
+      _selectedIndex = index;
+    });
+    NavigationService.navigateToScreen(context, index);
   }
 
   @override
@@ -70,9 +81,14 @@ class _VacationScreenState extends State<VacationScreen> with SingleTickerProvid
       // Load balance
       final balanceResult = await _vacationService.getMyBalance();
       if (balanceResult['success']) {
-        _balance = balanceResult['balance'];
+        setState(() {
+          _balance = balanceResult['balance'];
+        });
+        print("Balance loaded: $_balance");
       } else {
-        _error = balanceResult['message'];
+        setState(() {
+          _error = balanceResult['message'];
+        });
       }
 
       // Load requests
@@ -112,20 +128,53 @@ class _VacationScreenState extends State<VacationScreen> with SingleTickerProvid
       builder: (context) => RequestVacationDialog(
         balance: _balance,
         onSubmit: (request) async {
-          final result = await _vacationService.createRequest(request);
-          if (result['success']) {
+          print("=== SUBMITTING VACATION REQUEST ===");
+
+          // Show loading indicator
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+
+          try {
+            final result = await _vacationService.createRequest(request);
+
+            // Close loading indicator
+            Navigator.of(context).pop();
+
+            print("Result: $result");
+
+            if (result['success']) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(result['message'] ?? 'Request submitted successfully'),
+                  backgroundColor: Colors.green,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+              _loadData(); // Reload data
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(result['message'] ?? 'Failed to submit request'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+            }
+          } catch (e) {
+            // Close loading indicator
+            Navigator.of(context).pop();
+
+            print("Exception: $e");
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(result['message']),
-                backgroundColor: Colors.green,
-              ),
-            );
-            _loadData();
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(result['message']),
+                content: Text('Error: $e'),
                 backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
               ),
             );
           }
@@ -146,7 +195,6 @@ class _VacationScreenState extends State<VacationScreen> with SingleTickerProvid
   }
 
   Future<void> _cancelRequest(VacationRequest request) async {
-    // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -197,14 +245,19 @@ class _VacationScreenState extends State<VacationScreen> with SingleTickerProvid
 
     return ResponsiveNavigationScaffold(
       selectedIndex: _selectedIndex,
-      onItemTapped: (index) {
-        // Handle navigation
-      },
+      onItemTapped: _onItemTapped,
       body: SafeArea(
         child: Column(
           children: [
             UserProfileHeader(
               isHeaderVisible: _isHeaderVisible,
+              onNotificationTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen()),
+                );
+              },
             ),
 
             Expanded(
@@ -217,7 +270,7 @@ class _VacationScreenState extends State<VacationScreen> with SingleTickerProvid
                   children: [
                     Text(
                       _error,
-                      style: TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.red),
                       textAlign: TextAlign.center,
                     ),
                     ElevatedButton(
@@ -300,8 +353,7 @@ class _VacationScreenState extends State<VacationScreen> with SingleTickerProvid
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedIndex,
-        onItemTapped: (index) {
-        },
+        onItemTapped: _onItemTapped,
       ),
     );
   }

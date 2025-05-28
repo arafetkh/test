@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:in_out/screens/dashboard.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,8 +25,7 @@ class AuthService {
 
   static Future<Map<String, dynamic>> requestOTP(
       String identifier, String password,
-      {bool rememberMe = false}) async
-  {
+      {bool rememberMe = false}) async {
     final Uri url = Uri.parse("${Global.baseUrl}/public/authentication/login");
 
     try {
@@ -73,7 +73,6 @@ class AuthService {
         return handleSuccessfulLogin(response, identifier, null,
             rememberMe: rememberMe);
       } else {
-        // Handle error response
         String errorMessage = "Authentication failed";
         try {
           if (response.body.isNotEmpty) {
@@ -103,8 +102,8 @@ class AuthService {
       String password,
       BuildContext context, {
         bool rememberMe = false,
-      }) async
-  {
+      }
+      ) async {
     final userSettingsProvider =
     Provider.of<UserSettingsProvider>(context, listen: false);
     final messenger = ScaffoldMessenger.of(context);
@@ -130,23 +129,49 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
 
       if (response.statusCode == 200) {
-        // 2) Any further async work:
+        // ←─ 1) Save the remember-me flag early
         await prefs.setBool(REMEMBER_ME_KEY, rememberMe);
 
-        final result = await _handleSuccessfulLoginNoContext(
+        // ←─ 2) Use the full login handler so we pick up header/body token
+        final result = await handleSuccessfulLogin(
           response,
           identifier,
+          context,
           rememberMe: rememberMe,
-          prefs: prefs,
         );
 
-
-        if (result["success"]) {
-          messenger.showSnackBar(
-            const SnackBar(content: Text("Welcome back!")),
-          );
-          navigator.pushReplacementNamed("/");
+        // ←─ 3) **Immediately** guard against missing token**
+        final String? token = result["token"] as String?;
+        if (result["success"] != true || token == null) {
+          // **If there’s no token**, bail out with a clear message
+          return {
+            "success": false,
+            "message": "OTP verified, but no token was returned by the server."
+          };
         }
+
+        // At this point we have a real token:
+        messenger.showSnackBar(
+          const SnackBar(content: Text("Welcome back!")),
+        );
+
+        // Update your user provider
+        await userSettingsProvider.setCurrentUser(identifier);
+
+        // Save the token in your global helper (and prefs if needed)
+        await Global.setAuthToken(token, rememberMe: rememberMe);
+        if (rememberMe) {
+          final stored = prefs.getString(Global.TOKEN_KEY);
+          if (stored == null) {
+            await prefs.setString(Global.TOKEN_KEY, token);
+          }
+        }
+
+        // Finally: navigate to your dashboard screen
+        await navigator.pushReplacement(
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
+
         return result;
       } else {
         final body = response.body.isNotEmpty
@@ -161,13 +186,13 @@ class AuthService {
     }
   }
 
+
   static Future<Map<String, dynamic>> _handleSuccessfulLoginNoContext(
-      http.Response response,
-      String identifier, {
-        required bool rememberMe,
-        required SharedPreferences prefs,
-      }) async {
-    // parse token, call providers, store tokens, etc.
+    http.Response response,
+    String identifier, {
+    required bool rememberMe,
+    required SharedPreferences prefs,
+  }) async {
     final data = jsonDecode(response.body);
     final token = data["token"] as String?;
     if (rememberMe && token != null) {
@@ -176,11 +201,9 @@ class AuthService {
     return {"success": true, "token": token};
   }
 
-
   static Future<Map<String, dynamic>> handleSuccessfulLogin(
       http.Response response, String identifier, BuildContext? context,
-      {bool rememberMe = false}) async
-  {
+      {bool rememberMe = false}) async {
     try {
       print("LOGIN: Processing successful login response");
       print("LOGIN: Response status: ${response.statusCode}");
@@ -273,13 +296,11 @@ class AuthService {
 
   static Future<bool> shouldAutoLogin() async {
     try {
-      // First check if remember me is enabled
       final prefs = await SharedPreferences.getInstance();
       final rememberMe = prefs.getBool(REMEMBER_ME_KEY) ?? false;
 
       if (!rememberMe) return false;
 
-      // Then check if token exists and is valid
       return await Global.isTokenValid();
     } catch (e) {
       print("Error checking auto login: $e");
@@ -289,11 +310,9 @@ class AuthService {
 
   static Future<Map<String, dynamic>> autoLogin(BuildContext context) async {
     try {
-      // 1. Grab the provider before any await
       final userSettingsProvider =
-      Provider.of<UserSettingsProvider>(context, listen: false);
+          Provider.of<UserSettingsProvider>(context, listen: false);
 
-      // 2. Check session validity
       if (await shouldAutoLogin()) {
         final prefs = await SharedPreferences.getInstance();
         final userId = prefs.getString(USER_ID_KEY);
@@ -342,11 +361,9 @@ class AuthService {
 
   static Future<void> logout(BuildContext context) async {
     try {
-      // 1. Grab the provider BEFORE any await
       final userSettingsProvider =
-      Provider.of<UserSettingsProvider>(context, listen: false);
+          Provider.of<UserSettingsProvider>(context, listen: false);
 
-      // 2. Do all your async work
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(FIRST_NAME_KEY);
       await prefs.remove(LAST_NAME_KEY);
@@ -357,13 +374,11 @@ class AuthService {
       await _secureStorage.delete(key: 'login_password');
       await Global.clearAuthToken();
 
-      // 3. Now clear the provider (no async gap here)
       userSettingsProvider.clearCurrentUser();
     } catch (e) {
       print("Error during logout: $e");
     }
   }
-
 
 // // token storage
   // static Future<void> _saveToken(String token) async {

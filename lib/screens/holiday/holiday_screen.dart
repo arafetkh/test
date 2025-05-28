@@ -21,7 +21,7 @@ class HolidaysScreen extends StatefulWidget {
 }
 
 class _HolidaysScreenState extends State<HolidaysScreen> with SingleTickerProviderStateMixin {
-  int _selectedIndex = 5;
+  int _selectedIndex = 6;
   final ScrollController _scrollController = ScrollController();
   bool _isHeaderVisible = true;
 

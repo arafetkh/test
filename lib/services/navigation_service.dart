@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:in_out/screens/dashboard.dart';
 import 'package:in_out/screens/employees/employee_table_screen.dart';
 import 'package:in_out/screens/attendance/attendance_screen.dart';
+import 'package:in_out/screens/profile/user_profile_screen.dart';
+import '../ai/remote_pointing.dart';
 import '../auth/role_helper.dart';
 import '../screens/holiday/holiday_screen.dart';
 import '../screens/departments/departments_screen.dart';
@@ -22,7 +24,7 @@ class NavigationService {
       case 1:
         screen = const EmployeeTableScreen();
         break;
-    // Vacation
+      // Vacation
       case 2:
         final isManager = await RoleHelper.isUserManager();
         if (isManager) {
@@ -31,20 +33,27 @@ class NavigationService {
           screen = const VacationScreen();
         }
         break;
-      // Attendance
       case 3:
         screen = const AttendanceScreen();
         break;
-      // Departments
+        // Profile
       case 4:
+        screen = const UserProfileScreen();
+        break;
+      // Departments
+      case 5:
         screen = const DepartmentsScreen();
         break;
       // Holidays
-      case 5:
+      case 6:
         screen = const HolidaysScreen();
         break;
+      // Remote Attendance
+      case 7:
+        screen = const RemotePointageScreen();
+        break;
       // Settings
-      case 6:
+      case 8:
         screen = const SettingsScreen();
         break;
 
@@ -56,6 +65,16 @@ class NavigationService {
       context,
       MaterialPageRoute(
         builder: (context) => screen,
+      ),
+    );
+  }
+
+  // Helper method to navigate to remote attendance specifically
+  static void navigateToRemoteAttendance(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const RemotePointageScreen(),
       ),
     );
   }

@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import '../../theme/adaptive_colors.dart';
 
 class TwoFactorDialog {
-  // Show dialog to enter password for enabling 2FA
   static Future<String?> showPasswordDialog(
       BuildContext context,
       String? errorMessage
@@ -14,7 +13,7 @@ class TwoFactorDialog {
     final screenWidth = screenSize.width;
     final screenHeight = screenSize.height;
 
-    bool _obscurePassword = true;
+    bool obscurePassword = true;
 
     return showDialog<String>(
       context: context,
@@ -35,7 +34,7 @@ class TwoFactorDialog {
                       SizedBox(height: screenHeight * 0.02),
                       TextField(
                         controller: passwordController,
-                        obscureText: _obscurePassword,
+                        obscureText: obscurePassword,
                         decoration: InputDecoration(
                           labelText: 'Mot de passe',
                           border: OutlineInputBorder(
@@ -43,11 +42,11 @@ class TwoFactorDialog {
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                              obscurePassword ? Icons.visibility : Icons.visibility_off,
                             ),
                             onPressed: () {
                               setState(() {
-                                _obscurePassword = !_obscurePassword;
+                                obscurePassword = !obscurePassword;
                               });
                             },
                           ),
@@ -82,14 +81,11 @@ class TwoFactorDialog {
         );
       },
     ).then((value) {
-      // Dispose controller when dialog is closed
       passwordController.dispose();
       return value;
     });
   }
 
-  // Show dialog to enter OTP for disabling 2FA with ability to resend code
-  // Méthode showOtpDialog corrigée pour éviter les problèmes de dépendances lors de la fermeture
   static Future<String?> showOtpDialog(
       BuildContext context,
       String? errorMessage,
@@ -254,9 +250,9 @@ class TwoFactorDialog {
                               child: TextButton(
                                 onPressed: isResending ? null : resendOtp,
                                 child: isResending
-                                    ? Row(
+                                    ? const Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: const [
+                                  children: [
                                     SizedBox(
                                       width: 16,
                                       height: 16,
