@@ -74,7 +74,6 @@ class _UserSettingsTabState extends State<UserSettingsTab> {
 
           SizedBox(height: screenWidth * 0.04),
 
-          // Account Information Section
           _buildSectionCard(
             context,
             title: 'Account Information',
@@ -92,7 +91,8 @@ class _UserSettingsTabState extends State<UserSettingsTab> {
     required String title,
     required String subtitle,
     required List<Widget> children,
-  }) {
+  })
+  {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

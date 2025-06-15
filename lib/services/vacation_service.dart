@@ -192,9 +192,6 @@ class VacationService {
     }
   }
 
-  // Manager APIs
-
-  // Get employee vacation balance
   Future<Map<String, dynamic>> getEmployeeBalance(int userId) async {
     try {
       final response = await http.get(
@@ -222,7 +219,6 @@ class VacationService {
     }
   }
 
-  // Get all employee vacation requests (for managers)
   Future<Map<String, dynamic>> getEmployeeRequests() async {
     try {
       final response = await http.get(
@@ -232,6 +228,8 @@ class VacationService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+        print('Received employee requests data: $data');
+
         final requests = data.map((item) => VacationRequest.fromJson(item)).toList();
 
         return {
@@ -239,12 +237,16 @@ class VacationService {
           "requests": requests,
         };
       } else {
+        print('Failed to load employee requests: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
         return {
           "success": false,
           "message": "Failed to load employee requests: ${response.statusCode}",
         };
       }
     } catch (e) {
+      print('Error connecting to server: $e');
       return {
         "success": false,
         "message": "Error connecting to server: $e",
@@ -252,7 +254,6 @@ class VacationService {
     }
   }
 
-  // Approve or reject vacation request
   Future<Map<String, dynamic>> manageRequest(int requestId, String status) async {
     try {
       final response = await http.put(
@@ -313,12 +314,10 @@ class VacationService {
     }
   }
 
-  // Helper method to check if HTTP status code indicates success
   bool _isSuccessStatusCode(int statusCode) {
     return statusCode >= 200 && statusCode < 300;
   }
 
-  // Helper method to get appropriate success message based on status code
   String _getSuccessMessage(int statusCode, String operation) {
     switch (statusCode) {
       case 200:
@@ -334,7 +333,6 @@ class VacationService {
     }
   }
 
-  // Helper method to get appropriate error message
   String _getErrorMessage(int statusCode, String operation, String? responseBody) {
     String baseMessage = "Failed to $operation";
 
@@ -349,4 +347,5 @@ class VacationService {
 
     return "$baseMessage (Status: $statusCode)";
   }
+
 }

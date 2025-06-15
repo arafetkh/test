@@ -1,4 +1,3 @@
-// lib/screens/profile/user_profile_tabs/user_professional_info_tab.dart
 import 'package:flutter/material.dart';
 import 'package:in_out/localization/app_localizations.dart';
 import 'package:in_out/theme/adaptive_colors.dart';

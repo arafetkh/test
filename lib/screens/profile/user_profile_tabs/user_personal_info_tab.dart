@@ -1,4 +1,3 @@
-// lib/screens/profile/user_profile_tabs/user_personal_info_tab.dart
 import 'package:flutter/material.dart';
 import 'package:in_out/localization/app_localizations.dart';
 import 'package:in_out/theme/adaptive_colors.dart';
@@ -46,9 +45,7 @@ class UserPersonalInfoTab extends StatelessWidget {
               ),
             ],
           ),
-
           SizedBox(height: screenWidth * 0.04),
-
           _buildSectionCard(
             context,
             title: 'Contact Information',
@@ -82,9 +79,7 @@ class UserPersonalInfoTab extends StatelessWidget {
                 ),
             ],
           ),
-
           SizedBox(height: screenWidth * 0.04),
-
           _buildSectionCard(
             context,
             title: 'Personal Details',
@@ -147,7 +142,8 @@ class UserPersonalInfoTab extends StatelessWidget {
     required String label,
     required String value,
     required IconData icon,
-  }) {
+  })
+  {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(
@@ -233,4 +229,5 @@ class UserPersonalInfoTab extends StatelessWidget {
         return status;
     }
   }
+
 }

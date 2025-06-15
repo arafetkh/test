@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:in_out/widget/translate_text.dart';
 import 'package:in_out/screens/notifications/notifications_screen.dart';
+import 'package:provider/provider.dart';
 import '../auth/auth_service.dart';
+import '../provider/notification_provider.dart';
+import '../screens/notifications/newnotifscreen.dart';
 import '../theme/adaptive_colors.dart';
 
 class UserProfileHeader extends StatefulWidget {
@@ -28,14 +31,23 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
   void initState() {
     super.initState();
     _loadUserDetails();
+
+    // Initialize notifications when header is created
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<NotificationProvider>().initialize();
+      }
+    });
   }
 
   Future<void> _loadUserDetails() async {
     final userDetails = await AuthService.getUserDetails();
-    setState(() {
-      _fullName = '${userDetails['firstName']} ${userDetails['lastName']}'.trim();
-      _role = userDetails['role'] ?? '';
-    });
+    if (mounted) {
+      setState(() {
+        _fullName = '${userDetails['firstName']} ${userDetails['lastName']}'.trim();
+        _role = userDetails['role'] ?? '';
+      });
+    }
   }
 
   @override
@@ -69,7 +81,7 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
             backgroundColor: const Color(0xFFFFD6EC),
             child: Text(
               _fullName.isNotEmpty
-                  ? _fullName.split(' ').map((e) => e[0]).take(2).join('')
+                  ? _fullName.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join('')
                   : "RA",
               style: TextStyle(
                 color: const Color(0xFFD355A8),
@@ -105,51 +117,65 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
               ],
             ),
           ),
-          GestureDetector(
-            onTap: widget.onNotificationTap ?? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-              );
-            },
-            child: Container(
-              padding: EdgeInsets.all(screenWidth * 0.02),
-              decoration: BoxDecoration(
-                color: isDarkMode
-                    ? const Color(0xFF1E4620) // Version sombre du vert clair
-                    : const Color(0xFFE5F5E5),
-                borderRadius: BorderRadius.circular(screenWidth * 0.06),
-              ),
-              child: Stack(
-                children: [
-                  Icon(
-                    Icons.notifications_outlined,
-                    color: AdaptiveColors.primaryGreen,
-                    size: screenWidth * 0.05,
+          // Notification button with unread count
+          Consumer<NotificationProvider>(
+            builder: (context, notificationProvider, child) {
+              return GestureDetector(
+                onTap: widget.onNotificationTap ?? () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EnhancedNotificationsScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: EdgeInsets.all(screenWidth * 0.02),
+                  decoration: BoxDecoration(
+                    color: isDarkMode
+                        ? const Color(0xFF1E4620)
+                        : const Color(0xFFE5F5E5),
+                    borderRadius: BorderRadius.circular(screenWidth * 0.06),
                   ),
-                  if (widget.unreadNotificationsCount != null && widget.unreadNotificationsCount! > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        padding: EdgeInsets.all(screenWidth * 0.01),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          widget.unreadNotificationsCount.toString(),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: screenWidth * 0.02,
-                            fontWeight: FontWeight.bold,
+                  child: Stack(
+                    children: [
+                      Icon(
+                        Icons.notifications_outlined,
+                        color: AdaptiveColors.primaryGreen,
+                        size: screenWidth * 0.05,
+                      ),
+                      if (notificationProvider.unreadCount > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: EdgeInsets.all(screenWidth * 0.008),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: BoxConstraints(
+                              minWidth: screenWidth * 0.04,
+                              minHeight: screenWidth * 0.04,
+                            ),
+                            child: Text(
+                              notificationProvider.unreadCount > 99
+                                  ? '99+'
+                                  : notificationProvider.unreadCount.toString(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth * 0.018,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

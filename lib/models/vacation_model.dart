@@ -13,6 +13,10 @@ class VacationRequest {
   final int? userId;
   final String? userName;
   final String? userEmail;
+  final String? userFirstName;  // Ajout du prénom de l'utilisateur
+  final String? userLastName;   // Ajout du nom de famille de l'utilisateur
+  final String? userDepartment; // Ajout du département de l'utilisateur
+  final String? userDesignation; // Ajout de la désignation de l'utilisateur
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -28,11 +32,45 @@ class VacationRequest {
     this.userId,
     this.userName,
     this.userEmail,
+    this.userFirstName,
+    this.userLastName,
+    this.userDepartment,
+    this.userDesignation,
     this.createdAt,
     this.updatedAt,
   });
 
   factory VacationRequest.fromJson(Map<String, dynamic> json) {
+    // Récupérer les détails de l'utilisateur
+    String? userFirstName;
+    String? userLastName;
+    String? userDepartment;
+    String? userDesignation;
+    String? userFullName;
+    String? userEmail;
+
+    // Extraire les informations de l'utilisateur si disponibles
+    if (json['user'] != null) {
+      final user = json['user'];
+      userFirstName = user['firstName'];
+      userLastName = user['lastName'];
+      userEmail = user['email'];
+
+      // Déterminer le nom complet
+      if (userFirstName != null && userLastName != null) {
+        userFullName = '$userFirstName $userLastName';
+      }
+
+      // Extraire le département et la désignation si disponibles
+      if (user['attributes'] != null) {
+        final attributes = user['attributes'];
+        if (attributes['department'] != null) {
+          userDepartment = attributes['department']['name'];
+        }
+        userDesignation = user['designation'];
+      }
+    }
+
     return VacationRequest(
       id: json['id'],
       startDate: json['startDate'] ?? '',
@@ -42,9 +80,13 @@ class VacationRequest {
       type: json['type'] ?? 'ANNUAL_LEAVE',
       reason: json['reason'] ?? '',
       status: json['status'] ?? 'PENDING',
-      userId: json['userId'],
-      userName: json['userName'],
-      userEmail: json['userEmail'],
+      userId: json['userId'] ?? (json['user'] != null ? json['user']['id'] : null),
+      userName: userFullName ?? json['userName'],
+      userEmail: userEmail ?? json['userEmail'],
+      userFirstName: userFirstName,
+      userLastName: userLastName,
+      userDepartment: userDepartment,
+      userDesignation: userDesignation,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'])
           : null,
@@ -106,6 +148,14 @@ class VacationRequest {
     }
   }
 
+  // Get the user's full name or fallback to userName
+  String get fullName {
+    if (userFirstName != null && userLastName != null) {
+      return '$userFirstName $userLastName';
+    }
+    return userName ?? 'Unknown Employee';
+  }
+
   bool get canEdit => status == 'PENDING';
   bool get canCancel => status == 'PENDING';
 }
@@ -115,11 +165,19 @@ class VacationType {
   static const String sickLeave = 'SICK_LEAVE';
   static const String regularLeave = 'REGULAR_LEAVE';
   static const String unpaidLeave = 'UNPAID_LEAVE';
+  static const String annualLeave = 'ANNUAL_LEAVE';   // Ajout du type de congé annuel
+  static const String maternityLeave = 'MATERNITY_LEAVE'; // Ajout du congé maternité
+  static const String paternityLeave = 'PATERNITY_LEAVE'; // Ajout du congé paternité
+  static const String personalLeave = 'PERSONAL_LEAVE'; // Ajout du congé personnel
 
   static Map<String, String> get displayNames => {
     sickLeave: 'Sick Leave',
     regularLeave: 'Regular Leave',
     unpaidLeave: 'Unpaid Leave',
+    annualLeave: 'Annual Leave',
+    maternityLeave: 'Maternity Leave',
+    paternityLeave: 'Paternity Leave',
+    personalLeave: 'Personal Leave',
   };
 }
 

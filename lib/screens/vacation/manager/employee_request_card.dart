@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../theme/adaptive_colors.dart';
+import '../../../theme/adaptive_colors.dart';
 import '../../../models/vacation_model.dart';
+import '../../../localization/app_localizations.dart';
 
 class EmployeeRequestCard extends StatelessWidget {
   final VacationRequest request;
@@ -21,6 +22,7 @@ class EmployeeRequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    final localizations = AppLocalizations.of(context);
 
     return Container(
       margin: EdgeInsets.only(bottom: screenHeight * 0.015),
@@ -55,9 +57,9 @@ class EmployeeRequestCard extends StatelessWidget {
                             children: [
                               CircleAvatar(
                                 radius: screenWidth * 0.05,
-                                backgroundColor: _getAvatarColor(request.userName ?? ''),
+                                backgroundColor: _getAvatarColor(request.fullName),
                                 child: Text(
-                                  _getInitials(request.userName ?? 'NA'),
+                                  _getInitials(request.fullName),
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -71,7 +73,7 @@ class EmployeeRequestCard extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      request.userName ?? 'Unknown Employee',
+                                      request.fullName,
                                       style: TextStyle(
                                         fontSize: screenWidth * 0.04,
                                         fontWeight: FontWeight.bold,
@@ -84,6 +86,19 @@ class EmployeeRequestCard extends StatelessWidget {
                                         style: TextStyle(
                                           fontSize: screenWidth * 0.03,
                                           color: AdaptiveColors.secondaryTextColor(context),
+                                        ),
+                                      ),
+                                    // Afficher le département et la désignation si disponibles
+                                    if (request.userDepartment != null || request.userDesignation != null)
+                                      Text(
+                                        [
+                                          if (request.userDepartment != null) request.userDepartment,
+                                          if (request.userDesignation != null) request.userDesignation
+                                        ].where((e) => e != null).join(' - '),
+                                        style: TextStyle(
+                                          fontSize: screenWidth * 0.03,
+                                          color: AdaptiveColors.secondaryTextColor(context),
+                                          fontStyle: FontStyle.italic,
                                         ),
                                       ),
                                   ],
@@ -150,7 +165,7 @@ class EmployeeRequestCard extends StatelessWidget {
                     ),
                     SizedBox(width: screenWidth * 0.02),
                     Text(
-                      '${request.numberOfDays} day${request.numberOfDays != 1 ? 's' : ''}',
+                      '${request.numberOfDays} ${request.numberOfDays != 1 ? localizations.getString('days') : localizations.getString('day')}',
                       style: TextStyle(
                         fontSize: screenWidth * 0.035,
                         color: AdaptiveColors.primaryTextColor(context),
@@ -172,7 +187,7 @@ class EmployeeRequestCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Reason:',
+                          '${localizations.getString('reason')}:',
                           style: TextStyle(
                             fontSize: screenWidth * 0.03,
                             color: AdaptiveColors.secondaryTextColor(context),
@@ -196,7 +211,7 @@ class EmployeeRequestCard extends StatelessWidget {
                 if (request.createdAt != null) ...[
                   SizedBox(height: screenHeight * 0.01),
                   Text(
-                    'Requested on ${DateFormat('MMM dd, yyyy').format(request.createdAt!)}',
+                    localizations.getString('requestedOn').replaceAll('{date}', DateFormat('MMM dd, yyyy').format(request.createdAt!)),
                     style: TextStyle(
                       fontSize: screenWidth * 0.03,
                       color: AdaptiveColors.secondaryTextColor(context),
@@ -229,7 +244,7 @@ class EmployeeRequestCard extends StatelessWidget {
                           Icons.account_balance_wallet,
                           size: screenWidth * 0.04,
                         ),
-                        label: const Text('Balance'),
+                        label: Text(localizations.getString('viewBalance')),
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.blue,
                         ),
@@ -249,7 +264,7 @@ class EmployeeRequestCard extends StatelessWidget {
                           Icons.check_circle,
                           size: screenWidth * 0.04,
                         ),
-                        label: const Text('Approve'),
+                        label: Text(localizations.getString('approveRequest')),
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.green,
                         ),
@@ -269,7 +284,7 @@ class EmployeeRequestCard extends StatelessWidget {
                           Icons.cancel,
                           size: screenWidth * 0.04,
                         ),
-                        label: const Text('Reject'),
+                        label: Text(localizations.getString('rejectRequest')),
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.red,
                         ),
@@ -287,6 +302,7 @@ class EmployeeRequestCard extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final color = VacationStatus.colors[status] ?? Colors.grey;
     final displayName = VacationStatus.displayNames[status] ?? status;
+    final localizations = AppLocalizations.of(context);
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -298,7 +314,7 @@ class EmployeeRequestCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        displayName,
+        localizations.getString(displayName.toLowerCase()) ?? displayName,
         style: TextStyle(
           color: color,
           fontSize: screenWidth * 0.03,

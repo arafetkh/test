@@ -7,6 +7,7 @@ import '../ai/remote_pointing.dart';
 import '../auth/role_helper.dart';
 import '../screens/holiday/holiday_screen.dart';
 import '../screens/departments/departments_screen.dart';
+import '../screens/notifications/newnotifscreen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/vacation/manager/vacation_management_screen.dart';
 import '../screens/vacation/vacation_screen.dart';
@@ -16,15 +17,15 @@ class NavigationService {
     final Widget screen;
 
     switch (index) {
-      // Dashboard
+    // Dashboard
       case 0:
         screen = const DashboardScreen();
         break;
-      // Employees
+    // Employees
       case 1:
         screen = const EmployeeTableScreen();
         break;
-      // Vacation
+    // Vacation
       case 2:
         final isManager = await RoleHelper.isUserManager();
         if (isManager) {
@@ -36,25 +37,29 @@ class NavigationService {
       case 3:
         screen = const AttendanceScreen();
         break;
-        // Profile
+    // Profile
       case 4:
         screen = const UserProfileScreen();
         break;
-      // Departments
+    // Departments
       case 5:
         screen = const DepartmentsScreen();
         break;
-      // Holidays
+    // Holidays
       case 6:
         screen = const HolidaysScreen();
         break;
-      // Remote Attendance
+    // Remote Attendance
       case 7:
         screen = const RemotePointageScreen();
         break;
-      // Settings
+    // Settings
       case 8:
         screen = const SettingsScreen();
+        break;
+    // Notifications (new index)
+      case 9:
+        screen = const EnhancedNotificationsScreen();
         break;
 
       default:
@@ -69,7 +74,15 @@ class NavigationService {
     );
   }
 
-  // Helper method to navigate to remote attendance specifically
+  static void navigateToEnhancedNotifications(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const EnhancedNotificationsScreen(),
+      ),
+    );
+  }
+
   static void navigateToRemoteAttendance(BuildContext context) {
     Navigator.push(
       context,

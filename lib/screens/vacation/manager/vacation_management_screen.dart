@@ -9,6 +9,7 @@ import '../../../theme/adaptive_colors.dart';
 import '../../../widget/responsive_navigation_scaffold.dart';
 import '../../../widget/user_profile_header.dart';
 import '../../../widget/bottom_navigation_bar.dart';
+import '../../../localization/app_localizations.dart';
 import 'employee_request_card.dart';
 
 class VacationManagementScreen extends StatefulWidget {
@@ -20,7 +21,7 @@ class VacationManagementScreen extends StatefulWidget {
 
 class _VacationManagementScreenState extends State<VacationManagementScreen>
     with SingleTickerProviderStateMixin {
-  int _selectedIndex = 2;
+  final int   _selectedIndex = 2;
   bool _isHeaderVisible = true;
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
@@ -103,18 +104,24 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
   }
 
   Future<void> _handleRequestAction(VacationRequest request, String action) async {
+    final localizations = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('${action == VacationStatus.approved ? 'Approve' : 'Reject'} Request'),
+        title: Text(action == VacationStatus.approved ?
+        localizations.getString('confirmApprove') :
+        localizations.getString('confirmReject')),
         content: Text(
-          'Are you sure you want to ${action == VacationStatus.approved ? 'approve' : 'reject'} '
-              '${request.userName}\'s vacation request for ${request.numberOfDays} days?',
+            (action == VacationStatus.approved ?
+            localizations.getString('confirmApproveMessage') :
+            localizations.getString('confirmRejectMessage'))
+                .replaceAll('{name}', request.fullName)
+                .replaceAll('{days}', request.numberOfDays.toString())
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(localizations.getString('cancel')),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -123,7 +130,9 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
                   ? Colors.green
                   : Colors.red,
             ),
-            child: Text(action == VacationStatus.approved ? 'Approve' : 'Reject'),
+            child: Text(action == VacationStatus.approved ?
+            localizations.getString('approveRequest') :
+            localizations.getString('rejectRequest')),
           ),
         ],
       ),
@@ -164,23 +173,25 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
 
     if (result['success']) {
       final balance = result['balance'] as VacationBalance;
+      final localizations = AppLocalizations.of(context);
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('$userName\'s Balance'),
+          title: Text(localizations.getString('employeeBalance').replaceAll('{name}', userName)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildBalanceRow('Total Days', balance.totalDays),
-              _buildBalanceRow('Used Days', balance.usedDays),
-              _buildBalanceRow('Available Days', balance.availableDays),
-              _buildBalanceRow('Pending Days', balance.pendingDays),
+              _buildBalanceRow(localizations.getString('totalDays'), balance.totalDays),
+              _buildBalanceRow(localizations.getString('usedDays'), balance.usedDays),
+              _buildBalanceRow(localizations.getString('availableDays'), balance.availableDays),
+              _buildBalanceRow(localizations.getString('pendingDays'), balance.pendingDays),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: Text(localizations.getString('close')),
             ),
           ],
         ),
@@ -214,6 +225,7 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final localizations = AppLocalizations.of(context);
 
     return ResponsiveNavigationScaffold(
       selectedIndex: _selectedIndex,
@@ -232,7 +244,7 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Vacation Management',
+                    localizations.getString('vacationManagement'),
                     style: TextStyle(
                       fontSize: screenWidth * 0.05,
                       fontWeight: FontWeight.bold,
@@ -253,12 +265,11 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
                       value: _filterType,
                       underline: const SizedBox(),
                       isDense: true,
-                      items: const [
-                        DropdownMenuItem(value: 'all', child: Text('All Types')),
-
-                        DropdownMenuItem(value: VacationType.sickLeave, child: Text('Sick Leave')),
-                        DropdownMenuItem(value: VacationType.regularLeave, child: Text('Regular Leave')),
-                        DropdownMenuItem(value: VacationType.unpaidLeave, child: Text('Unpaid Leave')),
+                      items: [
+                        DropdownMenuItem(value: 'all', child: Text(localizations.getString('allTypes'))),
+                        DropdownMenuItem(value: VacationType.sickLeave, child: Text(localizations.getString('sickLeave'))),
+                        DropdownMenuItem(value: VacationType.regularLeave, child: Text(localizations.getString('regularLeave'))),
+                        DropdownMenuItem(value: VacationType.unpaidLeave, child: Text(localizations.getString('unpaidLeave'))),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -278,9 +289,9 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
               unselectedLabelColor: AdaptiveColors.secondaryTextColor(context),
               indicatorColor: AdaptiveColors.primaryGreen,
               tabs: [
-                Tab(text: 'Pending (${_pendingRequests.length})'),
-                const Tab(text: 'Approved'),
-                const Tab(text: 'Rejected'),
+                Tab(text: '${localizations.getString('pending')} (${_pendingRequests.length})'),
+                Tab(text: localizations.getString('approved')),
+                Tab(text: localizations.getString('rejected')),
               ],
             ),
 
@@ -300,7 +311,7 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
                     ),
                     ElevatedButton(
                       onPressed: _loadData,
-                      child: const Text('Retry'),
+                      child: Text(localizations.getString('refreshData')),
                     ),
                   ],
                 ),
@@ -337,10 +348,16 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
           ],
         ),
       ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
     );
   }
 
   Widget _buildRequestsList(List<VacationRequest> requests, bool showActions) {
+    final localizations = AppLocalizations.of(context);
+
     if (requests.isEmpty) {
       return Center(
         child: Column(
@@ -353,7 +370,7 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'No requests to display',
+              localizations.getString('noRequestsToDisplay'),
               style: TextStyle(
                 color: AdaptiveColors.secondaryTextColor(context),
               ),
@@ -378,7 +395,7 @@ class _VacationManagementScreenState extends State<VacationManagementScreen>
               ? () => _handleRequestAction(request, VacationStatus.rejected)
               : null,
           onViewBalance: request.userId != null
-              ? () => _showEmployeeBalance(request.userId!, request.userName ?? 'Employee')
+              ? () => _showEmployeeBalance(request.userId!, request.fullName)
               : null,
         );
       },

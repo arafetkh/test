@@ -10,8 +10,7 @@ import 'user_profile_tabs/user_professional_info_tab.dart';
 import 'user_profile_tabs/user_settings_tab.dart';
 import '../../widget/responsive_navigation_scaffold.dart';
 import '../../services/navigation_service.dart';
-import '../../widget/user_profile_header.dart';
-import '../../screens/notifications/notifications_screen.dart';
+
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -244,7 +243,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
           ),
         ),
 
-// Tab Content
+        // Tab Content
         SliverFillRemaining(
           child: TabBarView(
             controller: _tabController,
@@ -362,6 +361,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
       ),
     );
   }
+
 }
 
 // Custom delegate for pinned tab bar

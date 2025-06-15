@@ -241,6 +241,7 @@ class AppLocalizations {
         return apply;
       case "toUpload":
         return toUpload;
+    // === HOLIDAYS ===
       case "holidays":
         return holidays;
       case "holidaysList":
@@ -249,6 +250,10 @@ class AppLocalizations {
         return noHolidays;
       case "addHoliday":
         return addHoliday;
+      case "editHoliday":
+        return editHoliday;
+      case "deleteHoliday":
+        return deleteHoliday;
       case "holidayName":
         return holidayName;
       case "holidayDate":
@@ -263,6 +268,8 @@ class AppLocalizations {
         return holidayType;
       case "recurringYearly":
         return recurringYearly;
+      case "recurring":
+        return recurring;
       case "holidayNameRequired":
         return holidayNameRequired;
       case "holidayAddedSuccessfully":
@@ -273,8 +280,6 @@ class AppLocalizations {
         return confirmDelete;
       case "deleteHolidayConfirmation":
         return deleteHolidayConfirmation;
-      case "recurring":
-        return recurring;
       case "today":
         return today;
       case "date":
@@ -291,8 +296,6 @@ class AppLocalizations {
         return publicHolidayInfo;
       case "companyHolidayInfo":
         return companyHolidayInfo;
-      case "pleaseFillRequiredFields":
-        return pleaseFillRequiredFields;
       case "upcoming":
         return upcoming;
       case "pastHolidays":
@@ -459,11 +462,17 @@ class AppLocalizations {
         return confirmReject;
       case "confirmRejectMessage":
         return confirmRejectMessage;
+        case "unpaidLeave":
+        return unpaidLeave;
+      case "regularLeave":
+        return regularLeave;
       default:
         return key;
     }
   }
 
+  String get editHoliday => Intl.message('Edit Holiday', name: 'editHoliday');
+  String get deleteHoliday => Intl.message('Delete Holiday', name: 'deleteHoliday');
   String get primaryColor => Intl.message('Primary Color', name: 'primaryColor');
   String get choosePrimaryColor => Intl.message('Choose your primary app color', name: 'choosePrimaryColor');
   String get secondaryColor => Intl.message('Secondary Color', name: 'secondaryColor');
@@ -805,6 +814,9 @@ class AppLocalizations {
   String get personalLeave => Intl.message('Personal Leave', name: 'personalLeave');
   String get maternityLeave => Intl.message('Maternity Leave', name: 'maternityLeave');
   String get paternityLeave => Intl.message('Paternity Leave', name: 'paternityLeave');
+  String get unpaidLeave => Intl.message('Unpaid Leave', name: 'unpaidLeave');
+  String get regularLeave => Intl.message('Regular Leave', name: 'regularLeave');
+
   String get startDate => Intl.message('Start Date', name: 'startDate');
   String get endDate => Intl.message('End Date', name: 'endDate');
   String get startTime => Intl.message('Start Time', name: 'startTime');

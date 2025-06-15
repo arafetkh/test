@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../localization/app_localizations.dart';
 import '../../theme/adaptive_colors.dart';
+import '../../services/locales_service.dart';
 
 class AddHolidayScreen extends StatefulWidget {
   final Function(Map<String, dynamic>)? onHolidayAdded;
@@ -16,33 +17,67 @@ class AddHolidayScreen extends StatefulWidget {
 }
 
 class _AddHolidayScreenState extends State<AddHolidayScreen> {
-  // Controllers for text fields
-  final TextEditingController _nameEnController = TextEditingController();
-  final TextEditingController _nameFrController = TextEditingController();
+  // Controllers for text fields - dynamic based on supported languages
+  final Map<String, TextEditingController> _nameControllers = {};
   final TextEditingController _descriptionController = TextEditingController();
+
+  // Supported languages
+  List<String> _supportedLanguages = [];
+  bool _isLoadingLanguages = true;
 
   // Selected values
   DateTime _selectedDate = DateTime.now();
-  bool _isRecurring = false; // Renamed from _isRecurringYearly
+  bool _isRecurring = false;
   String _holidayType = 'Public'; // Public or Company
-  int _count = 1; // Add count field (default to 1)
+  int _count = 1;
 
   // Form validation
   final _formKey = GlobalKey<FormState>();
   bool _formIsValid = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadSupportedLanguages();
+  }
+
+  Future<void> _loadSupportedLanguages() async {
+    try {
+      final localesService = LocalesService();
+      final languages = await localesService.getSupportedLocales();
+
+      setState(() {
+        _supportedLanguages = languages;
+        _isLoadingLanguages = false;
+
+        // Create controllers for each supported language
+        for (final lang in languages) {
+          _nameControllers[lang] = TextEditingController();
+        }
+      });
+    } catch (e) {
+      print('Error loading supported languages: $e');
+      // Fallback to English only if service fails
+      setState(() {
+        _supportedLanguages = ['en'];
+        _isLoadingLanguages = false;
+        _nameControllers['en'] = TextEditingController();
+      });
+    }
+  }
+
+  @override
   void dispose() {
-    _nameEnController.dispose();
-    _nameFrController.dispose();
+    _nameControllers.forEach((_, controller) => controller.dispose());
     _descriptionController.dispose();
     super.dispose();
   }
 
   void _validateForm() {
     setState(() {
-      // Both English and French names are required
-      _formIsValid = _nameEnController.text.isNotEmpty && _nameFrController.text.isNotEmpty;
+      // At least one language name must be filled (preferably the primary language)
+      _formIsValid = _nameControllers.entries
+          .any((entry) => entry.value.text.isNotEmpty);
     });
   }
 
@@ -72,12 +107,16 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
       return;
     }
 
-    // Create holiday data with both English and French names
+    // Create holiday data with names for all supported languages
+    final Map<String, String> labels = {};
+    _nameControllers.forEach((lang, controller) {
+      if (controller.text.isNotEmpty) {
+        labels[lang] = controller.text;
+      }
+    });
+
     final Map<String, dynamic> holidayData = {
-      'name': {
-        'en': _nameEnController.text,
-        'fr': _nameFrController.text,
-      },
+      'name': labels,
       'description': _descriptionController.text,
       'date': _selectedDate,
       'count': _count,
@@ -86,7 +125,8 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
     };
 
     // Debug info
-    print('Submitting holid ay with recurring: $_isRecurring');
+    print('Submitting holiday with labels: $labels');
+    print('Recurring: $_isRecurring');
 
     // Call callback if exists
     if (widget.onHolidayAdded != null) {
@@ -103,6 +143,76 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
 
     // Navigate back
     Navigator.pop(context);
+  }
+
+  String _getLanguageDisplayName(String langCode) {
+    final localeInfo = LocalesService.getLocaleInfo();
+    return localeInfo[langCode]?['nativeName'] ?? langCode.toUpperCase();
+  }
+
+  Widget _buildLanguageFields(double screenWidth, double screenHeight, double baseFontSize) {
+    if (_isLoadingLanguages) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return Column(
+      children: _supportedLanguages.map((langCode) {
+        final isFirstLanguage = langCode == _supportedLanguages.first;
+        final displayName = _getLanguageDisplayName(langCode);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Holiday Name ($displayName) ${isFirstLanguage ? '*' : ''}',
+              style: TextStyle(
+                fontSize: baseFontSize,
+                fontWeight: FontWeight.w500,
+                color: AdaptiveColors.primaryTextColor(context),
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.01),
+            TextFormField(
+              controller: _nameControllers[langCode],
+              decoration: InputDecoration(
+                hintText: 'Enter holiday name in $displayName',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.green.shade800),
+                ),
+                filled: true,
+                fillColor: AdaptiveColors.cardColor(context),
+                contentPadding: EdgeInsets.all(screenWidth * 0.03),
+              ),
+              style: TextStyle(
+                fontSize: baseFontSize,
+                color: AdaptiveColors.primaryTextColor(context),
+              ),
+              validator: isFirstLanguage
+                  ? (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Holiday name is required in at least one language';
+                }
+                return null;
+              }
+                  : null,
+              onChanged: (value) => _validateForm(),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+          ],
+        );
+      }).toList(),
+    );
   }
 
   @override
@@ -145,91 +255,8 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // English Holiday Name
-                        Text(
-                          'Holiday Name (English) *',
-                          style: TextStyle(
-                            fontSize: baseFontSize,
-                            fontWeight: FontWeight.w500,
-                            color: AdaptiveColors.primaryTextColor(context),
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.01),
-                        TextFormField(
-                          controller: _nameEnController,
-                          decoration: InputDecoration(
-                            hintText: 'Enter holiday name in English',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.green.shade800),
-                            ),
-                            filled: true,
-                            fillColor: AdaptiveColors.cardColor(context),
-                            contentPadding: EdgeInsets.all(screenWidth * 0.03),
-                          ),
-                          style: TextStyle(
-                            fontSize: baseFontSize,
-                            color: AdaptiveColors.primaryTextColor(context),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'English holiday name is required';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: screenHeight * 0.02),
-
-                        // French Holiday Name
-                        Text(
-                          'Nom du jour férié (Français) *',
-                          style: TextStyle(
-                            fontSize: baseFontSize,
-                            fontWeight: FontWeight.w500,
-                            color: AdaptiveColors.primaryTextColor(context),
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.01),
-                        TextFormField(
-                          controller: _nameFrController,
-                          decoration: InputDecoration(
-                            hintText: 'Entrez le nom du jour férié en français',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.green.shade800),
-                            ),
-                            filled: true,
-                            fillColor: AdaptiveColors.cardColor(context),
-                            contentPadding: EdgeInsets.all(screenWidth * 0.03),
-                          ),
-                          style: TextStyle(
-                            fontSize: baseFontSize,
-                            color: AdaptiveColors.primaryTextColor(context),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Le nom du jour férié en français est requis';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: screenHeight * 0.02),
+                        // Dynamic language fields
+                        _buildLanguageFields(screenWidth, screenHeight, baseFontSize),
 
                         // Holiday Description
                         Text(
@@ -415,7 +442,7 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
                         ),
                         SizedBox(height: screenHeight * 0.02),
 
-                        // Recurring Yearly Option (renamed from _isRecurringYearly to _isRecurring)
+                        // Recurring Yearly Option
                         Row(
                           children: [
                             Checkbox(
@@ -470,7 +497,7 @@ class _AddHolidayScreenState extends State<AddHolidayScreen> {
                       ),
                       SizedBox(width: screenWidth * 0.02),
                       ElevatedButton(
-                        onPressed: _submitHoliday,
+                        onPressed: _isLoadingLanguages ? null : _submitHoliday,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green.shade800,
                           padding: EdgeInsets.symmetric(

@@ -85,7 +85,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required String subtitle,
     required List<Widget> children,
-  }) {
+  })
+  {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -715,7 +716,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required bool value,
     required Function(bool) onChanged,
     required IconData icon,
-  }) {
+  })
+  {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1162,14 +1164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Then update the backend
     final success = await profileProvider.updateLanguage(languageCode);
 
-    if (!success) {
-      // Show error message but don't revert the UI (to avoid jarring language switch)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-            Text("Failed to update language: ${profileProvider.error}")),
-      );
-    }
+
   }
 
   Future<void> _updateTwoFactorAuthentication(bool enabled) async {

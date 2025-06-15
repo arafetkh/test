@@ -40,8 +40,7 @@ class _CustomSideNavigationBarState extends State<CustomSideNavigationBar> {
       }
     } catch (e) {
       print('Error loading navigation items: $e');
-
-    if (mounted) {
+      if (mounted) {
         setState(() {
           _navigationItems = RoleHelper.employeeNavItems;
           _isLoading = false;
@@ -53,7 +52,7 @@ class _CustomSideNavigationBarState extends State<CustomSideNavigationBar> {
   Widget _buildNavItem(NavigationItem item, double iconSize) {
     final isSelected = widget.selectedIndex == item.index;
     final color = isSelected
-        ? AdaptiveColors.primaryGreen
+        ? AdaptiveColors.getPrimaryColor(context)
         : AdaptiveColors.secondaryTextColor(context);
 
     String outlineIcon, filledIcon;
@@ -95,33 +94,31 @@ class _CustomSideNavigationBarState extends State<CustomSideNavigationBar> {
         outlineIcon = Mdi.cog_outline;
         filledIcon = Mdi.cog;
         break;
-
       default:
         outlineIcon = Mdi.help_circle_outline;
         filledIcon = Mdi.help_circle;
     }
 
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height * 0.02),
-      child: Container(
-        decoration: BoxDecoration(
-          border: isSelected
-              ? Border(
-              left: BorderSide(
-                color: AdaptiveColors.primaryGreen,
-                width: MediaQuery.of(context).size.width * 0.003,
-              ))
-              : null,
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        border: isSelected
+            ? Border(
+            left: BorderSide(
+              color: AdaptiveColors.getPrimaryColor(context),
+              width: MediaQuery.of(context).size.width * 0.003,
+            ))
+            : null,
+      ),
+      child: IconButton(
+        icon: Iconify(
+          isSelected ? filledIcon : outlineIcon,
+          size: iconSize,
+          color: color,
         ),
-        child: IconButton(
-          icon: Iconify(
-            isSelected ? filledIcon : outlineIcon,
-            size: iconSize,
-            color: color,
-          ),
-          onPressed: () => widget.onItemTapped(item.index),
-          tooltip: item.label,
-        ),
+        onPressed: () => widget.onItemTapped(item.index),
+        tooltip: item.label,
+        padding: EdgeInsets.zero,
       ),
     );
   }
@@ -131,7 +128,7 @@ class _CustomSideNavigationBarState extends State<CustomSideNavigationBar> {
     final screenSize = MediaQuery.of(context).size;
     final screenWidth = screenSize.width;
     final screenHeight = screenSize.height;
-    final iconSize = screenHeight * 0.05;
+    final iconSize = screenHeight * 0.032;
 
     if (_isLoading) {
       return Container(
@@ -175,7 +172,7 @@ class _CustomSideNavigationBarState extends State<CustomSideNavigationBar> {
         ],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: _navigationItems
             .map((item) => _buildNavItem(item, iconSize))
             .toList(),

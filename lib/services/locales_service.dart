@@ -76,14 +76,10 @@ class LocalesService {
       isLoadingNotifier.value = false;
     }
   }
-
-  // Get default locales as fallback
   List<String> _getDefaultLocales() {
-    // If we have cached data, return it even if expired
     if (_supportedLocales != null) {
       return _supportedLocales!;
     }
-    // Otherwise return English only as default
     return ['en'];
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:in_out/services/navigation_service.dart';
 import 'package:in_out/widget/responsive_navigation_scaffold.dart';
 import 'package:in_out/widget/user_profile_header.dart';
+import 'notifications/newnotifscreen.dart';
 import 'notifications/notifications_screen.dart';
 import '../localization/app_localizations.dart';
 
@@ -93,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onNotificationTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                  MaterialPageRoute(builder: (context) => const EnhancedNotificationsScreen()),
                 );
               },
             ),

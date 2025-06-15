@@ -36,12 +36,9 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
   final int _itemsPerPage = 10;
   String _searchQuery = '';
 
-  // Employee data variables
   List<Map<String, dynamic>> _employees = [];
   bool _isLoading = true;
   String _errorMessage = '';
-
-  // Selected filters
   List<Map<String, dynamic>> _departments = [];
   Set<int> _selectedDepartmentIds = {};
 
@@ -80,7 +77,6 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
     ]);
     _mainScrollController.addListener(_scrollListener);
     _fetchDepartments();
-    // Initial data fetch
     _fetchEmployees();
   }
 
@@ -108,13 +104,10 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
     });
 
     try {
-      // Si un département est sélectionné, utiliser l'API spécifique aux départements
+
       if (_selectedDepartmentIds.isNotEmpty) {
-        // Assurons-nous de ne prendre que le premier département sélectionné
-        // car l'API ne semble prendre qu'un seul ID de département
         final departmentId = _selectedDepartmentIds.first;
 
-        // Construire l'URL avec l'ID du département et les paramètres de pagination
         final Uri url = Uri.parse(
             "${Global.baseUrl}/secure/user-department/users?departmentId=$departmentId&page=$_currentPage&size=$_itemsPerPage"
         );
@@ -129,17 +122,15 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
         if (response.statusCode == 200) {
           final Map<String, dynamic> data = json.decode(response.body);
 
-          // Mise à jour des informations de pagination si elles existent dans cette API
           _totalElements = data['page']?['totalElements'] ?? 0;
           _totalPages = data['page']?['totalPages'] ?? 1;
 
           List<Map<String, dynamic>> employees = [];
 
-          // Récupérer les données des employés
           final List<dynamic> usersList = data['content'] ?? [];
 
           for (var emp in usersList) {
-            // Extraire le département si disponible
+
             String department = 'Unknown';
             if (emp['attributes'] != null &&
                 emp['attributes']['department'] != null &&
@@ -186,11 +177,11 @@ class _EmployeeTableScreenState extends State<EmployeeTableScreen> {
       }
       else {
         final Uri url = Uri.parse("${Global.baseUrl}/secure/users/filter?page=$_currentPage&size=$_itemsPerPage");
-
         final Map<String, dynamic> filterBody = {};
 
         if (_searchQuery.isNotEmpty) {
           filterBody['name'] = _searchQuery;
+          filterBody['companyId'] = _searchQuery;
         }
         if (_selectedWorkType != null) {
           filterBody['type'] = [_selectedWorkType];
@@ -895,6 +886,7 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
                 );
               }
             },
+
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               _buildPopupItem(context, 'view', Icons.visibility_outlined, 'view'),
               _buildPopupItem(context, 'edit', Icons.edit_outlined, 'edit'),
@@ -955,8 +947,6 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
             backgroundColor: Colors.green,
           ),
         );
-
-        // Refresh the page
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
@@ -965,7 +955,8 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
             ),
           );
         }
-      } else {
+      }
+      else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: ${result["message"]}'),
@@ -973,7 +964,8 @@ class TwoDimensionalEmployeeTable extends StatelessWidget {
           ),
         );
       }
-    } catch (e) {
+    }
+    catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $e'),

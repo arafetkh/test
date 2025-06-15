@@ -117,9 +117,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         for (var attendance in result["content"]) {
           // Extract employee name from attributes
           String employeeName = 'Unknown';
-          if (attendance['attributes'] != null) {
-            final firstName = attendance['attributes']['firstName'] ?? '';
-            final lastName = attendance['attributes']['lastName'] ?? '';
+          if (attendance['user'] != null) {
+            final firstName = attendance['user']['firstName'] ?? '';
+            final lastName = attendance['user']['lastName'] ?? '';
             employeeName = '$firstName $lastName'.trim();
 
             if (employeeName.isEmpty) {
@@ -135,12 +135,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             'employeeName': employeeName,
             'userId': attendance['userId']?.toString() ?? '',
             'type': attendance['type'] ?? '',
-            'designation': attendance['attributes']?['designation'] ?? '',
+            'designation': attendance['user']?['designation'] ?? '',
             'date': attendance['date'] ?? '',
             'isLate': attendance['late'] == true,
             'status': attendance['late'] == true ? 'Late' : 'On Time',
             'entries': attendance['entries'] ?? [],
-            // Extract up to 4 check-in/check-out times
             'checkInTime1': attendance['entries']?.length > 0 ? attendance['entries'][0] : '',
             'checkInTime2': attendance['entries']?.length > 1 ? attendance['entries'][1] : '',
             'checkInTime3': attendance['entries']?.length > 2 ? attendance['entries'][2] : '',
@@ -284,7 +283,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      _currentPage = 0; // Reset to first page on filter change
+                      _currentPage = 0;
                       _fetchAttendanceData();
                     },
                     child: Text(localizations.getString('apply')),

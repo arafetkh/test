@@ -224,8 +224,6 @@ class _AttendanceTabState extends State<AttendanceTab> {
         ),
       );
     }
-
-    // Show error if any
     if (_errorMessage.isNotEmpty) {
       return Center(
         child: Column(

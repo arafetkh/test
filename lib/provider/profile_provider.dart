@@ -19,8 +19,7 @@ class ProfileProvider with ChangeNotifier {
   String get error => _error;
 
   // Initialize and load profile data
-  Future<void> initialize() async {
-    if (_userProfile != null) return; // Already initialized
+  Future<void> initialize() async {// Already initialized
     await loadProfile();
   }
 
